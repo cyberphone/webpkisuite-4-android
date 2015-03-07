@@ -1,0 +1,37 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion "21.1.2"
+
+    defaultConfig {
+        applicationId "org.webpki.mobile.android"
+        minSdkVersion 10
+        targetSdkVersion 16
+    }
+    signingConfigs {
+        release {
+            storeFile file("C:\\android-release-key\\webpki.org-android-release-key-with-password-foo123")
+            storePassword "foo123"
+            keyAlias "release"
+            keyPassword "foo123"
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            signingConfig signingConfigs.release
+        }
+    }
+    // Fix to get embedded resources working as in ANT/Eclipse
+    sourceSets {
+        main {
+            resources.srcDirs = ['src/main/java']
+        }
+    }
+}
+
+dependencies {
+    compile files('libs/scprov-jdk15-1.46.99.3-UNOFFICIAL-ROBERTO-RELEASE.jar')
+}

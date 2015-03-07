@@ -1,0 +1,72 @@
+ECLIPSE ANDROID PROJECT IMPORT SUMMARY
+======================================
+
+Ignored Files:
+--------------
+The following files were *not* copied into the new Gradle project; you
+should evaluate whether these are still needed in your project and if
+so manually move them:
+
+* ant.properties
+* build.xml
+* miscellaneous\
+* miscellaneous\.svn\
+* miscellaneous\.svn\all-wcprops
+* miscellaneous\.svn\entries
+* miscellaneous\drawables\
+* miscellaneous\drawables\.svn\
+* miscellaneous\drawables\.svn\all-wcprops
+* miscellaneous\drawables\.svn\entries
+* miscellaneous\drawables\.svn\prop-base\
+* miscellaneous\drawables\.svn\prop-base\appshaddow.9.psd.svn-base
+* miscellaneous\drawables\.svn\text-base\
+* miscellaneous\drawables\.svn\text-base\appshaddow.9.psd.svn-base
+* miscellaneous\drawables\appshaddow.9.psd
+* miscellaneous\launcher-icons\
+* miscellaneous\launcher-icons\.svn\
+* miscellaneous\launcher-icons\.svn\all-wcprops
+* miscellaneous\launcher-icons\.svn\entries
+* miscellaneous\launcher-icons\.svn\prop-base\
+* miscellaneous\launcher-icons\.svn\prop-base\qrid72.psd.svn-base
+* miscellaneous\launcher-icons\.svn\prop-base\qrid96.psd.svn-base
+* miscellaneous\launcher-icons\.svn\prop-base\webpki48.psd.svn-base
+* miscellaneous\launcher-icons\.svn\prop-base\webpki72.psd.svn-base
+* miscellaneous\launcher-icons\.svn\prop-base\webpki96.psd.svn-base
+* miscellaneous\launcher-icons\.svn\text-base\
+* miscellaneous\launcher-icons\.svn\text-base\qrid72.psd.svn-base
+* miscellaneous\launcher-icons\.svn\text-base\qrid96.psd.svn-base
+* miscellaneous\launcher-icons\.svn\text-base\webpki48.psd.svn-base
+* miscellaneous\launcher-icons\.svn\text-base\webpki72.psd.svn-base
+* miscellaneous\launcher-icons\.svn\text-base\webpki96.psd.svn-base
+* miscellaneous\launcher-icons\qrid72.psd
+* miscellaneous\launcher-icons\qrid96.psd
+* miscellaneous\launcher-icons\webpki48.psd
+* miscellaneous\launcher-icons\webpki72.psd
+* miscellaneous\launcher-icons\webpki96.psd
+* proguard-project.txt
+
+Moved Files:
+------------
+Android Gradle projects use a different directory structure than ADT
+Eclipse projects. Here's how the projects were restructured:
+
+* AndroidManifest.xml => app\src\main\AndroidManifest.xml
+* assets\ => app\src\main\assets\
+* libs\scprov-jdk15-1.46.99.3-UNOFFICIAL-ROBERTO-RELEASE.jar => app\libs\scprov-jdk15-1.46.99.3-UNOFFICIAL-ROBERTO-RELEASE.jar
+* res\ => app\src\main\res\
+* src\ => app\src\main\java\
+
+Next Steps:
+-----------
+You can now build the project. The Gradle project needs network
+connectivity to download dependencies.
+
+Bugs:
+-----
+If for some reason your project does not build, and you determine that
+it is due to a bug or limitation of the Eclipse to Gradle importer,
+please file a bug at http://b.android.com with category
+Component-Tools.
+
+(This import summary is for your information only, and can be deleted
+after import once you are satisfied with the results.)
