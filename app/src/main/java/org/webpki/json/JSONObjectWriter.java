@@ -73,7 +73,7 @@ public class JSONObjectWriter implements Serializable
     
     /**
      * For updating already read JSON objects.
-     * @throws IOException 
+     * @throws java.io.IOException
      */
     public JSONObjectWriter (JSONObjectReader reader) throws IOException
       {
@@ -219,8 +219,8 @@ public class JSONObjectWriter implements Serializable
      * Set signature property in JSON object.
      * This is the JCS signature creation method.
      * @param signer The interface to the signing key and type
-     * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException In case there a problem with keys etc.
+     * @return Current instance of {@link JSONObjectWriter}
+     * @throws java.io.IOException In case there a problem with keys etc.
      * <br>&nbsp;<br><b>Sample Code:</b>
  <pre>
 import java.io.IOException;
