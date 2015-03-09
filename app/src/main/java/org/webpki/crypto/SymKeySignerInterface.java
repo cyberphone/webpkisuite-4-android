@@ -22,8 +22,8 @@ import java.io.IOException;
 public interface SymKeySignerInterface
   {
 
-    public byte[] signData (byte[] data) throws IOException;
+    public byte[] signData(byte[] data) throws IOException;
 
-    public MACAlgorithms getMacAlgorithm () throws IOException;
+    public MACAlgorithms getMacAlgorithm() throws IOException;
 
   }

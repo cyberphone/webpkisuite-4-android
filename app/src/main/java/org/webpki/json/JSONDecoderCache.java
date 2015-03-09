@@ -24,7 +24,7 @@ import java.util.Hashtable;
 import org.webpki.util.ArrayUtil;
 
 /**
- * Stores {@link JSONDecoder} classes for automatic instantiation during parsing.
+ * Stores {@link org.webpki.json.JSONDecoder} classes for automatic instantiation during parsing.
  * This is (sort of) an emulation of XML schema caches.
  * <p>
  * The cache system assumes that JSON documents follow a strict convention:<br>

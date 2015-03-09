@@ -46,8 +46,6 @@ public interface WebAuthConstants
 
     String PREFERRED_LANGUAGES_JSON        = "preferredLanguages";
 
-    String REQUESTED_CLIENT_FEATURES_JSON  = "requestedClientFeatures";
-
     String REQUEST_URL_JSON                = "requestUrl";
 
     String SERVER_CERT_FP_JSON             = "serverCertificateFingerPrint";
@@ -59,6 +57,4 @@ public interface WebAuthConstants
     String SUBMIT_URL_JSON                 = "submitUrl";
 
     String TYPE_JSON                       = "type";
-
-    String VALUES_JSON                     = "values";
   }

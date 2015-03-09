@@ -20,7 +20,7 @@ import java.io.IOException;
 
 /**
  * JSON output types.
- * It is used by {@link JSONObjectWriter}.
+ * It is used by {@link org.webpki.json.JSONObjectWriter}.
  */
 public enum JSONOutputFormats 
   {

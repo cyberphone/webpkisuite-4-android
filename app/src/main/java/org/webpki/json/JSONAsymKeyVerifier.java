@@ -31,10 +31,10 @@ public class JSONAsymKeyVerifier extends JSONVerifier
 
     /**
      * Verifier for asymmetric keys.
-     * Note that you can access the received public key from {@link JSONSignatureDecoder}
+     * Note that you can access the received public key from {@link org.webpki.json.JSONSignatureDecoder}
      * which is useful if there are multiple keys possible.
      * @param expected_public_key Expected public key
-     * @throws IOException
+     * @throws java.io.IOException
      */
     public JSONAsymKeyVerifier (PublicKey expected_public_key) throws IOException
       {

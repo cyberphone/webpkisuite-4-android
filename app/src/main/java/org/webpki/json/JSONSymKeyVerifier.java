@@ -32,9 +32,9 @@ public class JSONSymKeyVerifier extends JSONVerifier
     
     /**
      * Verifier for symmetric keys.
-     * Note that you can access the received KeyID from {@link JSONSignatureDecoder}.
+     * Note that you can access the received KeyID from {@link org.webpki.json.JSONSignatureDecoder}.
      * @param verifier Verifies that the key and signature value match.
-     * @throws IOException
+     * @throws java.io.IOException
      */
     public JSONSymKeyVerifier (SymKeyVerifierInterface verifier) throws IOException
       {

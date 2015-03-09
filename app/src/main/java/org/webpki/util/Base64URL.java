@@ -132,7 +132,7 @@ public class Base64URL
      * For every 4 base64 bytes you'll get 3 binary bytes.
      * @param base64url encoded data
      * @return decoded data as a byte array
-     * @exception IOException if the input data isn't valid base64 data
+     * @exception java.io.IOException if the input data isn't valid base64 data
      * or if the input String contains characters
      * other than ASCII8.
      */
