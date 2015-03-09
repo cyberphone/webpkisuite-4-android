@@ -19,15 +19,15 @@ package org.webpki.crypto;
 
 public interface SKSAlgorithms
   {
-    public boolean isMandatorySKSAlgorithm();
+    public boolean isMandatorySKSAlgorithm ();
 
-    public String getURI();
+    public String getURI ();
     
-    public String getOID();
+    public String getOID ();
 
-    public String getJCEName();
+    public String getJCEName ();
     
-    public String getJOSEName();
+    public String getJOSEName ();
 
-    public boolean isSymmetric();
+    public boolean isSymmetric ();
   }

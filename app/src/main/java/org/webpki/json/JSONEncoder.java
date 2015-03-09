@@ -53,7 +53,7 @@ public abstract class JSONEncoder implements Serializable
 
     /**
      * @return Document in JSON format
-     * @throws java.io.IOException
+     * @throws IOException
      */
     public byte[] serializeJSONDocument (JSONOutputFormats output_format) throws IOException
       {

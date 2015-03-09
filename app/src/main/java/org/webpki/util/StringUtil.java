@@ -155,7 +155,7 @@ public class StringUtil
 
     // TODO: document better
     /**
-     * Uses {@link java.util.StringTokenizer StringTokenizer}.
+     * Uses {@link StringTokenizer StringTokenizer}.
      */
     public static String[] tokenVector(String s, String delimiters)
       {
@@ -164,7 +164,7 @@ public class StringUtil
 
     // TODO: document better
     /**
-     * Uses {@link java.util.StringTokenizer StringTokenizer}.
+     * Uses {@link StringTokenizer StringTokenizer}.
      */
     public static String[] tokenVector(String s)
       {
@@ -187,9 +187,9 @@ public class StringUtil
       }
     
    /**
-     * Converts a set of characters represented as a string to a {@link java.util.BitSet BitSet}.
+     * Converts a set of characters represented as a string to a {@link BitSet BitSet}.
      * <p>The BitSet returned is suitable for use with 
-     * {@link #checkAllowedChars(String, java.util.BitSet) checkAllowedChars()}.
+     * {@link #checkAllowedChars(String, BitSet) checkAllowedChars()}.
      */
     public static BitSet charSet(String s)
       {

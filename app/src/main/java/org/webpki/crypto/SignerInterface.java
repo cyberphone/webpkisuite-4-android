@@ -31,10 +31,10 @@ public interface SignerInterface
     /**
      * Returns the certificate path associated with the key.
      */
-    public X509Certificate[] getCertificatePath() throws IOException;
+    public X509Certificate[] getCertificatePath () throws IOException;
 
     /**
      * Signs data using the key.
      */
-    public byte[] signData(byte[] data, AsymSignatureAlgorithms algorithm) throws IOException;
+    public byte[] signData (byte[] data, AsymSignatureAlgorithms algorithm) throws IOException;
   }

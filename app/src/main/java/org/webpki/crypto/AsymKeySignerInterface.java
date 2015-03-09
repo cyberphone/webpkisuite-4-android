@@ -26,8 +26,8 @@ import org.webpki.crypto.AsymSignatureAlgorithms;
 public interface AsymKeySignerInterface
   {
 
-    public byte[] signData(byte[] data, AsymSignatureAlgorithms algorithm) throws IOException;
+    public byte[] signData (byte[] data, AsymSignatureAlgorithms algorithm) throws IOException;
 
-    public PublicKey getPublicKey() throws IOException;
+    public PublicKey getPublicKey () throws IOException;
 
   }
