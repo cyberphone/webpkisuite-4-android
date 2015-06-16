@@ -21,15 +21,11 @@ import java.io.ObjectOutputStream;
 
 import java.math.BigInteger;
 
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.Security;
 
-import java.security.SignatureException;
 import java.security.spec.ECGenParameterSpec;
 
 import java.util.Date;
@@ -74,45 +70,37 @@ public abstract class SKSStore
             catch (Exception e)
               {
                 Log.i (caller_for_log, "SKS not found, recreating it");
-                  try {
-                      KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
-                      ECGenParameterSpec eccgen = new ECGenParameterSpec("secp256r1");
-                      generator.initialize(eccgen, new SecureRandom());
-                      KeyPair kp = generator.generateKeyPair();
-                      X509V3CertificateGenerator cert_gen = new X509V3CertificateGenerator();
-                      byte[] serial = new byte[8];
-                      new SecureRandom().nextBytes(serial);
-                      cert_gen.setSerialNumber(new BigInteger(1, serial));
-                      String android_id = Settings.Secure.getString(caller.getContentResolver(), Settings.Secure.ANDROID_ID);
-                      X509Principal x509_name = new X509Principal("serialNumber=" + (android_id == null ? "N/A" : android_id) +
-                              ",CN=Android SKS");
-                      cert_gen.setIssuerDN(x509_name);
-                      cert_gen.setNotBefore(new Date(System.currentTimeMillis() - 1000L * 60 * 10));  // EJBCA also uses 10 minutes predating...
-                      cert_gen.setNotAfter(new Date(System.currentTimeMillis() + (1000L * 60 * 60 * 24 * 365 * 25)));
-                      cert_gen.setSubjectDN(x509_name);
-                      cert_gen.addExtension(X509Extensions.BasicConstraints, true, new BasicConstraints(false));
-                      cert_gen.addExtension(X509Extensions.KeyUsage, true, new KeyUsage(KeyUsage.digitalSignature));
-                      cert_gen.setPublicKey(kp.getPublic());
-                      cert_gen.setSignatureAlgorithm("SHA256withECDSA");
-                      sks = new SKSImplementation(cert_gen.generateX509Certificate(kp.getPrivate()), kp.getPrivate());
-                      if (save_if_new) {
-                          serializeSKS(caller_for_log, caller);
+                try
+                  {
+                    KeyPairGenerator generator = KeyPairGenerator.getInstance ("EC");
+                    ECGenParameterSpec eccgen = new ECGenParameterSpec ("secp256r1");
+                    generator.initialize (eccgen, new SecureRandom ());
+                    KeyPair kp = generator.generateKeyPair ();
+                    X509V3CertificateGenerator cert_gen = new X509V3CertificateGenerator();
+                    byte[] serial = new byte[8];
+                    new SecureRandom ().nextBytes (serial);
+                    cert_gen.setSerialNumber (new BigInteger (1, serial));
+                    String android_id = Settings.Secure.getString(caller.getContentResolver(), Settings.Secure.ANDROID_ID);
+                    X509Principal x509_name = new X509Principal ("serialNumber=" + (android_id == null ? "N/A" : android_id) +
+                                                                 ",CN=Android SKS"); 
+                    cert_gen.setIssuerDN (x509_name);  
+                    cert_gen.setNotBefore (new Date (System.currentTimeMillis() - 1000L * 60 * 10));  // EJBCA also uses 10 minutes predating...
+                    cert_gen.setNotAfter (new Date (System.currentTimeMillis() + (1000L * 60 * 60 * 24 * 365 * 100)));  
+                    cert_gen.setSubjectDN (x509_name);  
+                    cert_gen.addExtension (X509Extensions.BasicConstraints, true, new BasicConstraints (false));
+                    cert_gen.addExtension (X509Extensions.KeyUsage, true, new KeyUsage (KeyUsage.digitalSignature));
+                    cert_gen.setPublicKey (kp.getPublic ());  
+                    cert_gen.setSignatureAlgorithm ("SHA256withECDSA");   
+                    sks = new SKSImplementation (cert_gen.generateX509Certificate (kp.getPrivate ()), kp.getPrivate ());
+                    if (save_if_new)
+                      {
+                        serializeSKS (caller_for_log, caller);
                       }
-                      getAlgorithms();
-                  } catch (IllegalArgumentException e2) {
-                      Log.e(caller_for_log, e2.getMessage());
-                  } catch (SecurityException e2) {
-                      Log.e(caller_for_log, e2.getMessage());
-                  } catch (InvalidAlgorithmParameterException e2) {
-                      Log.e(caller_for_log, e2.getMessage());
-                  } catch (InvalidKeyException e2) {
-                      Log.e(caller_for_log, e2.getMessage());
-                  } catch (NoSuchAlgorithmException e2) {
-                      Log.e(caller_for_log, e2.getMessage());
-                  } catch (SignatureException e2) {
-                      Log.e(caller_for_log, e2.getMessage());
-                  } catch (SKSException e2) {
-                      Log.e(caller_for_log, e2.getMessage());
+                    getAlgorithms ();
+                  }
+                catch (Exception e2)
+                  {
+                    Log.e (caller_for_log, e2.getMessage ());
                   }
               }
           }
