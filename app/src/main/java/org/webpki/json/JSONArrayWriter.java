@@ -53,19 +53,30 @@ public class JSONArrayWriter implements Serializable
         return add (JSONTypes.STRING, value);
       }
 
+    public JSONArrayWriter setNumberAsText (String value) throws IOException
+      {
+        array.add (JSONObjectWriter.setNumberAsText (value));
+        return this;
+      }
+
     public JSONArrayWriter setInt (int value) throws IOException
       {
-        return add (JSONTypes.INTEGER, Integer.toString (value));
+        return setLong (value);
       }
 
     public JSONArrayWriter setLong (long value) throws IOException
       {
-        return add (JSONTypes.INTEGER, Long.toString (value));
+        return add (JSONTypes.NUMBER, JSONObjectWriter.es6Long2NumberConversion (value));
       }
 
     public JSONArrayWriter setBigDecimal (BigDecimal value) throws IOException
       {
-        return setString (value.toString ());
+        return setString (JSONObjectWriter.bigDecimalToString (value, null));
+      }
+
+    public JSONArrayWriter setBigDecimal (BigDecimal value, Integer decimals) throws IOException
+      {
+        return setString (JSONObjectWriter.bigDecimalToString (value, decimals));
       }
 
     public JSONArrayWriter setBigInteger (BigInteger value) throws IOException
@@ -75,7 +86,7 @@ public class JSONArrayWriter implements Serializable
 
     public JSONArrayWriter setDouble (double value) throws IOException
       {
-        return add (JSONTypes.DOUBLE, Double.toString (value));
+        return add (JSONTypes.NUMBER, JSONObjectWriter.es6JsonNumberSerialization (value));
       }
 
     public JSONArrayWriter setBoolean (boolean value) throws IOException
@@ -88,9 +99,9 @@ public class JSONArrayWriter implements Serializable
         return add (JSONTypes.NULL, "null");
       }
 
-    public JSONArrayWriter setDateTime (Date date_time, boolean force_utc) throws IOException
+    public JSONArrayWriter setDateTime (Date date_time, boolean forceUtc) throws IOException
       {
-        return setString (ISODateTime.formatDateTime (date_time, force_utc));
+        return setString (ISODateTime.formatDateTime (date_time, forceUtc));
       }
 
     public JSONArrayWriter setBinary (byte[] value) throws IOException 
@@ -124,10 +135,10 @@ public class JSONArrayWriter implements Serializable
         return this;
       }
 
-    public byte[] serializeJSONArray (JSONOutputFormats output_format) throws IOException
+    public byte[] serializeJSONArray (JSONOutputFormats outputFormat) throws IOException
       {
         JSONObject dummy = new JSONObject ();
         dummy.properties.put (null, new JSONValue (JSONTypes.ARRAY, array));
-        return new JSONObjectWriter (dummy).serializeJSONObject (output_format);
+        return new JSONObjectWriter (dummy).serializeJSONObject (outputFormat);
       }
   }

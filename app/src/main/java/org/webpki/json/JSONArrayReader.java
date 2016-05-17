@@ -57,12 +57,12 @@ public class JSONArrayReader implements Serializable
           }
       }
     
-    Object get (JSONTypes expected_type) throws IOException
+    Object get (JSONTypes expectedType) throws IOException
       {
         inRangeCheck ();
         JSONValue value = array.elementAt (index++);
-        value.read_flag = true;
-        JSONTypes.compatibilityTest (expected_type, value);
+        value.readFlag = true;
+        JSONTypes.compatibilityTest (expectedType, value);
         return value.value;
       }
 
@@ -73,12 +73,17 @@ public class JSONArrayReader implements Serializable
 
     public int getInt () throws IOException
       {
-        return Integer.parseInt ((String) get (JSONTypes.INTEGER));
+        return JSONObjectReader.parseInt ((String) get (JSONTypes.NUMBER));
       }
 
     public long getLong () throws NumberFormatException, IOException
       {
-        return Long.parseLong ((String) get (JSONTypes.INTEGER));
+        return JSONObjectReader.parseLong ((String) get (JSONTypes.NUMBER));
+      }
+
+    public double getDouble () throws IOException
+      {
+        return Double.valueOf ((String) get (JSONTypes.NUMBER));
       }
 
     public BigInteger getBigInteger () throws IOException
@@ -88,7 +93,12 @@ public class JSONArrayReader implements Serializable
 
     public BigDecimal getBigDecimal () throws IOException
       {
-        return JSONObjectReader.parseBigDecimal (getString ());
+        return JSONObjectReader.parseBigDecimal (getString (), null);
+      }
+
+    public BigDecimal getBigDecimal (Integer decimals) throws IOException
+      {
+        return JSONObjectReader.parseBigDecimal (getString (), decimals);
       }
 
     public GregorianCalendar getDateTime () throws IOException
@@ -99,11 +109,6 @@ public class JSONArrayReader implements Serializable
     public byte[] getBinary () throws IOException
       {
         return Base64URL.decode (getString ());
-      }
-
-    public double getDouble () throws IOException
-      {
-        return new Double ((String) get (JSONTypes.DOUBLE));
       }
 
     public boolean getBoolean () throws IOException

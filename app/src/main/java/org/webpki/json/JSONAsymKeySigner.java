@@ -22,6 +22,7 @@ import java.security.PublicKey;
 
 import org.webpki.crypto.AsymKeySignerInterface;
 import org.webpki.crypto.AsymSignatureAlgorithms;
+import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.KeyAlgorithms;
 import org.webpki.crypto.SignatureAlgorithms;
 
@@ -38,17 +39,23 @@ public class JSONAsymKeySigner extends JSONSigner
     
     PublicKey public_key;
     
+    public JSONAsymKeySigner (AsymKeySignerInterface signer) throws IOException
+      {
+        this.signer = signer;
+        public_key = signer.getPublicKey ();
+        algorithm = KeyAlgorithms.getKeyAlgorithm (public_key).getRecommendedSignatureAlgorithm ();
+      }
+
     public JSONAsymKeySigner setSignatureAlgorithm (AsymSignatureAlgorithms algorithm)
       {
         this.algorithm = algorithm;
         return this;
       }
 
-    public JSONAsymKeySigner (AsymKeySignerInterface signer) throws IOException
+    public JSONAsymKeySigner setAlgorithmPreferences (AlgorithmPreferences algorithmPreferences)
       {
-        this.signer = signer;
-        public_key = signer.getPublicKey ();
-        algorithm = KeyAlgorithms.getKeyAlgorithm (public_key).getRecommendedSignatureAlgorithm ();
+        this.algorithmPreferences = algorithmPreferences;
+        return this;
       }
 
     @Override
@@ -66,6 +73,6 @@ public class JSONAsymKeySigner extends JSONSigner
     @Override
     void writeKeyData (JSONObjectWriter wr) throws IOException
       {
-        wr.setPublicKey (public_key);
+        wr.setPublicKey (public_key, algorithmPreferences);
       }
   }

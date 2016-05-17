@@ -18,6 +18,7 @@ package org.webpki.json;
 
 import java.io.IOException;
 
+import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.MACAlgorithms;
 import org.webpki.crypto.SignatureAlgorithms;
 import org.webpki.crypto.SymKeySignerInterface;
@@ -37,6 +38,12 @@ public class JSONSymKeySigner extends JSONSigner
       {
         this.signer = signer;
         algorithm = signer.getMacAlgorithm ();
+      }
+
+    public JSONSymKeySigner setAlgorithmPreferences (AlgorithmPreferences algorithmPreferences)
+      {
+        this.algorithmPreferences = algorithmPreferences;
+        return this;
       }
 
     @Override

@@ -37,22 +37,21 @@ public class JSONParser
     static final char COMMA_CHARACTER     = ',';
     static final char BACK_SLASH          = '\\';
     
-    static final Pattern INTEGER_PATTERN  = Pattern.compile ("(0)|(-?[1-9][0-9]*)");
     static final Pattern BOOLEAN_PATTERN  = Pattern.compile ("true|false");
-    static final Pattern DOUBLE_PATTERN   = Pattern.compile ("[-+]?(([0-9]*\\.?[0-9]+)|([0-9]+\\.?[0-9]*))([eE][-+]?[0-9]+)?");
+    static final Pattern NUMBER_PATTERN   = Pattern.compile ("[-+]?(([0-9]*\\.?[0-9]+)|([0-9]+\\.?[0-9]*))([eE][-+]?[0-9]+)?");
     
     int index;
     
-    int max_length;
+    int maxLength;
     
-    String json_data;
+    String jsonData;
     
     JSONParser () {}
     
-    JSONObjectReader internal_parse (String json_string) throws IOException
+    JSONObjectReader internalParse (String jsonString) throws IOException
       {
-        json_data = json_string;
-        max_length = json_data.length ();
+        jsonData = jsonString;
+        maxLength = jsonData.length ();
         JSONObject root = new JSONObject ();
         if (testNextNonWhiteSpaceChar () == LEFT_BRACKET)
           {
@@ -64,9 +63,9 @@ public class JSONParser
             scanFor (LEFT_CURLY_BRACKET);
             scanObject (root);
           }
-        while (index < max_length)
+        while (index < maxLength)
           {
-            if (!isWhiteSpace (json_data.charAt (index++)))
+            if (!isWhiteSpace (jsonData.charAt (index++)))
               {
                 throw new IOException ("Improperly terminated JSON object");
               }
@@ -74,9 +73,9 @@ public class JSONParser
         return new JSONObjectReader (root);
       }
 
-    public static JSONObjectReader parse (String json_string) throws IOException
+    public static JSONObjectReader parse (String jsonString) throws IOException
       {
-        return new JSONParser ().internal_parse (json_string);
+        return new JSONParser ().internalParse (jsonString);
       }
 
     public static JSONObjectReader parse (byte[] json_utf8) throws IOException
@@ -172,7 +171,7 @@ public class JSONParser
     JSONValue scanSimpleType () throws IOException
       {
         index--;
-        StringBuffer temp_buffer = new StringBuffer ();
+        StringBuffer tempBuffer = new StringBuffer ();
         char c;
         while ((c = testNextNonWhiteSpaceChar ()) != COMMA_CHARACTER && c != RIGHT_BRACKET && c != RIGHT_CURLY_BRACKET)
           {
@@ -180,15 +179,15 @@ public class JSONParser
               {
                 break;
               }
-            temp_buffer.append (c);
+            tempBuffer.append (c);
           }
-        String result = temp_buffer.toString ();
+        String result = tempBuffer.toString ();
         if (result.length () == 0)
           {
             throw new IOException ("Missing argument");
           }
-        JSONTypes type = JSONTypes.INTEGER;
-        if (!INTEGER_PATTERN.matcher (result).matches ())
+        JSONTypes type = JSONTypes.NUMBER;
+        if (!NUMBER_PATTERN.matcher (result).matches ())
           {
             if (BOOLEAN_PATTERN.matcher (result).matches ())
               {
@@ -200,11 +199,7 @@ public class JSONParser
               }
             else
               {
-                type = JSONTypes.DOUBLE;
-                if (!DOUBLE_PATTERN.matcher (result).matches ())
-                  {
-                    throw new IOException ("Undecodable argument: " + result);
-                  }
+                throw new IOException ("Undecodable argument: " + result);
               }
           }
         return new JSONValue (type, result);
@@ -326,9 +321,9 @@ public class JSONParser
 
     char nextChar () throws IOException
       {
-        if (index < max_length)
+        if (index < maxLength)
           {
-            return json_data.charAt (index++);
+            return jsonData.charAt (index++);
           }
         throw new IOException ("Unexpected EOF reached");
       }

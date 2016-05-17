@@ -31,6 +31,8 @@ import java.util.Vector;
 
 import java.util.regex.Pattern;
 
+import org.webpki.crypto.AlgorithmPreferences;
+
 import org.webpki.util.Base64URL;
 import org.webpki.util.ISODateTime;
 
@@ -45,7 +47,8 @@ public class JSONObjectReader implements Serializable, Cloneable
   {
     private static final long serialVersionUID = 1L;
 
-    static final Pattern DECIMAL_PATTERN = Pattern.compile ("-?([1-9][0-9]+|0)[\\.][0-9]+");
+    static final Pattern DECIMAL_PATTERN = Pattern.compile ("-?([1-9][0-9]*|0)[\\.][0-9]+");
+    static final Pattern INTEGER_PATTERN = Pattern.compile ("-?[1-9][0-9]*|0");
 
     JSONObject root;
 
@@ -80,7 +83,7 @@ public class JSONObjectReader implements Serializable, Cloneable
       {
         JSONValue value = getProperty (name);
         JSONTypes.compatibilityTest (expected_type, value);
-        value.read_flag = true;
+        value.readFlag = true;
         return value;
       }
 
@@ -95,14 +98,45 @@ public class JSONObjectReader implements Serializable, Cloneable
         return getString (name, JSONTypes.STRING);
       }
 
+    static long parseLong (String value) throws IOException
+      {
+        if (INTEGER_PATTERN.matcher (value).matches ())
+          {
+            double number = Double.valueOf (value);
+            if (Math.abs (number) > JSONObjectWriter.MAX_SAFE_INTEGER)
+              {
+                throw new IOException ("Integer values must not exceeed " + 
+                                       JSONObjectWriter.MAX_SAFE_INTEGER  +
+                                       ", found: " + value);
+              }
+            return (long) number;
+          }
+        throw new IOException ("Value is not an integer: " + value);
+      }
+
+    static int parseInt (String value) throws IOException
+      {
+        long longValue = parseLong (value);
+        if (longValue > Integer.MAX_VALUE || longValue < Integer.MIN_VALUE)
+          {
+            throw new IOException ("Java \"int\" out of range: " + value);
+          }
+        return (int)longValue;
+      }
+
     public int getInt (String name) throws IOException
       {
-        return Integer.parseInt (getString (name, JSONTypes.INTEGER));
+        return parseInt (getString (name, JSONTypes.NUMBER));
       }
 
     public long getLong (String name) throws IOException
       {
-        return Long.parseLong (getString (name, JSONTypes.INTEGER));
+        return parseLong (getString (name, JSONTypes.NUMBER));
+      }
+
+    public double getDouble (String name) throws IOException
+      {
+        return Double.valueOf (getString (name, JSONTypes.NUMBER));
       }
 
     public boolean getBoolean (String name) throws IOException
@@ -122,19 +156,24 @@ public class JSONObjectReader implements Serializable, Cloneable
 
     static BigInteger parseBigInteger (String value) throws IOException
       {
-        if (JSONParser.INTEGER_PATTERN.matcher (value).matches ())
+        if (INTEGER_PATTERN.matcher (value).matches ())
           {
             return new BigInteger (value);
           }
         throw new IOException ("Malformed \"BigInteger\": " + value);
       }
 
-    static BigDecimal parseBigDecimal (String value) throws IOException
+    static BigDecimal parseBigDecimal (String value, Integer decimals) throws IOException
       {
-        if (JSONParser.INTEGER_PATTERN.matcher (value).matches () ||
+        if (INTEGER_PATTERN.matcher (value).matches () ||
             DECIMAL_PATTERN.matcher (value).matches ())
           {
-            return new BigDecimal (value);
+            BigDecimal parsed = new BigDecimal (value);
+            if (decimals != null && parsed.scale () != decimals)
+              {
+                throw new IOException ("Incorrect number of decimals in \"BigDecimal\": " + parsed.scale ());
+              }
+            return parsed;
           }
         throw new IOException ("Malformed \"BigDecimal\": " + value);
       }
@@ -146,12 +185,12 @@ public class JSONObjectReader implements Serializable, Cloneable
 
     public BigDecimal getBigDecimal (String name) throws IOException
       {
-        return parseBigDecimal (getString (name));
+        return parseBigDecimal (getString (name), null);
       }
 
-    public double getDouble (String name) throws IOException
+    public BigDecimal getBigDecimal (String name, Integer decimals) throws IOException
       {
-        return new Double (getString (name, JSONTypes.DOUBLE));
+        return parseBigDecimal (getString (name), decimals);
       }
 
     @SuppressWarnings("unchecked")
@@ -213,15 +252,15 @@ public class JSONObjectReader implements Serializable, Cloneable
         return hasProperty (name) ? getStringArray (name) : null;
       }
 
-    String [] getSimpleArray (String name, JSONTypes expected_type) throws IOException
+    String [] getSimpleArray (String name, JSONTypes expectedType) throws IOException
       {
         Vector<String> array = new Vector<String> ();
         @SuppressWarnings("unchecked")
-        Vector<JSONValue> array_elements = ((Vector<JSONValue>) getProperty (name, JSONTypes.ARRAY).value);
-        for (JSONValue value : array_elements)
+        Vector<JSONValue> arrayElements = ((Vector<JSONValue>) getProperty (name, JSONTypes.ARRAY).value);
+        for (JSONValue value : arrayElements)
           {
-            JSONTypes.compatibilityTest (expected_type, value);
-            value.read_flag = true;
+            JSONTypes.compatibilityTest (expectedType, value);
+            value.readFlag = true;
             array.add ((String)value.value);
           }
         return array.toArray (new String[0]);
@@ -263,16 +302,26 @@ public class JSONObjectReader implements Serializable, Cloneable
      * @see org.webpki.json.JSONObjectWriter#setSignature(JSONSigner)
      * @throws IOException In case there is something wrong with the signature 
      */
+    public JSONSignatureDecoder getSignature (AlgorithmPreferences algorithmPreferences) throws IOException
+      {
+        return new JSONSignatureDecoder (this, algorithmPreferences);
+      }
+
     public JSONSignatureDecoder getSignature () throws IOException
       {
-        return new JSONSignatureDecoder (this);
+        return new JSONSignatureDecoder (this, AlgorithmPreferences.JOSE_ACCEPT_PREFER);
       }
-    
+ 
+    public PublicKey getPublicKey (AlgorithmPreferences algorithmPreferences) throws IOException
+      {
+        return JSONSignatureDecoder.getPublicKey (this, algorithmPreferences);
+      }
+
     public PublicKey getPublicKey () throws IOException
       {
-        return JSONSignatureDecoder.getPublicKey (this);
+        return JSONSignatureDecoder.getPublicKey (this, AlgorithmPreferences.JOSE_ACCEPT_PREFER);
       }
-    
+
     public X509Certificate[] getCertificatePath () throws IOException
       {
         return JSONSignatureDecoder.getCertificatePath (this);
@@ -309,5 +358,11 @@ public class JSONObjectReader implements Serializable, Cloneable
           {
             throw new RuntimeException (e);
           }
+      }
+ 
+    @Override
+    public String toString ()
+      {
+        return new JSONObjectWriter (root).toString ();
       }
   }

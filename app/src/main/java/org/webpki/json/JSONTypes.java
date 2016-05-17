@@ -26,8 +26,7 @@ public enum JSONTypes
   {
     NULL    (false),
     BOOLEAN (false),
-    INTEGER (false),
-    DOUBLE  (false),
+    NUMBER  (false),
     STRING  (false),
     ARRAY   (true),
     OBJECT  (true);
@@ -39,11 +38,11 @@ public enum JSONTypes
         this.complex = complex;
       }
 
-    static void compatibilityTest (JSONTypes expected_type, JSONValue value) throws IOException
+    static void compatibilityTest (JSONTypes expectedType, JSONValue value) throws IOException
       {
-        if (expected_type != value.type && (expected_type != JSONTypes.DOUBLE || value.type != JSONTypes.INTEGER))
+        if (expectedType != value.type)
           {
-            throw new IOException ("Incompatible types, expected: " + expected_type + " actual: " + value.type);
+            throw new IOException ("Incompatible types, expected: " + expectedType + " actual: " + value.type);
           }
       }
   }

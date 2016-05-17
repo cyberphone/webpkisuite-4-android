@@ -37,21 +37,16 @@ public class JSONSymKeyVerifier extends JSONVerifier
      */
     public JSONSymKeyVerifier (SymKeyVerifierInterface verifier)
       {
+        super(JSONSignatureTypes.SYMMETRIC_KEY);
         this.verifier = verifier;
       }
 
     @Override
-    void verify (JSONSignatureDecoder signature_decoder) throws IOException
+    void verify (JSONSignatureDecoder signatureDecoder) throws IOException
       {
-        signature_decoder.checkVerification (verifier.verifyData (signature_decoder.normalized_data,
-                                                                  signature_decoder.signature_value,
-                                                                  (MACAlgorithms)signature_decoder.algorithm,
-                                                                  signature_decoder.key_id));
-      }
-
-    @Override
-    JSONSignatureTypes getVerifierType () throws IOException
-      {
-        return JSONSignatureTypes.SYMMETRIC_KEY;
+        signatureDecoder.checkVerification (verifier.verifyData (signatureDecoder.normalizedData,
+                                                                 signatureDecoder.signatureValue,
+                                                                 (MACAlgorithms)signatureDecoder.algorithm,
+                                                                 signatureDecoder.keyId));
       }
   }
