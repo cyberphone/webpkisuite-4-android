@@ -1,37 +1,53 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 19
-    buildToolsVersion "21.1.2"
+    compileSdkVersion 23
+    buildToolsVersion '23.0.3'
 
     defaultConfig {
-        applicationId "org.webpki.mobile.android"
-        minSdkVersion 10
-        targetSdkVersion 16
+        minSdkVersion 19
+        targetSdkVersion project.androidTargetSdk
+        versionCode 330
+        versionName "3.3.0"
     }
-    signingConfigs {
-        release {
-            storeFile file("C:\\android-release-key\\webpki.org-android-release-key-with-password-foo123")
-            storePassword "foo123"
-            keyAlias "release"
-            keyPassword "foo123"
+
+    Properties properties = new Properties()
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+    def keystoreFile = properties.getProperty('keystore.file')
+    def keystorePassword = properties.getProperty('keystore.password')
+    def keystoreAlias = properties.getProperty('keystore.alias')
+    def validConfig = keystoreFile != null && keystorePassword != null && keystoreAlias != null;
+
+    if(validConfig) {
+        System.out.println("Release signing configured with " + keystoreFile)
+        signingConfigs {
+            release {
+                storeFile project.rootProject.file(keystoreFile)
+                storePassword keystorePassword
+                keyAlias keystoreAlias
+                keyPassword keystorePassword
+            }
         }
+    } else {
+        System.out.println("Specify keystore.file, keystore.alias and keystore.password in local.properties to enable release signing.")
     }
+
     buildTypes {
         release {
+            if(validConfig) {
+                signingConfig signingConfigs.release
+            }
+
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
-            signingConfig signingConfigs.release
-        }
-    }
-    // Fix to get embedded resources working as in ANT/Eclipse
-    sourceSets {
-        main {
-            resources.srcDirs = ['src/main/java']
         }
     }
 }
 
 dependencies {
-    compile files('libs/scprov-jdk15-1.46.99.3-UNOFFICIAL-ROBERTO-RELEASE.jar')
+    // If you use this from an external project, use the following instead:
+    //   compile 'com.journeyapps:zxing-android-embedded:<version>'
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile project(':zxing-android-embedded')
+    compile 'com.android.support:appcompat-v7:23.1.0'
 }

@@ -12,7 +12,10 @@
     <string name="title_activity_protocol_view">Protocol View</string>
     <string name="title_activity_cert_view">Certificate Properties</string>
     <string name="title_activity_credentials">User Credentials</string>
-    
+
+    <!-- Override of ZXING -->
+    <string name="zxing_msg_default_status">Scan QR code to activate WebPKI App</string>
+
   <string name="button_ok">OK</string>
   <string name="button_cancel">Cancel</string>
   <string name="msg_auth_user_question">Do you want to authenticate to the\nparty above?</string>

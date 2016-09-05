@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import java.security.KeyPair;
 import java.security.PublicKey;
 
 import java.security.cert.X509Certificate;
@@ -314,13 +315,45 @@ public class JSONObjectReader implements Serializable, Cloneable
  
     public PublicKey getPublicKey (AlgorithmPreferences algorithmPreferences) throws IOException
       {
-        return JSONSignatureDecoder.getPublicKey (this, algorithmPreferences);
+        return getObject(JSONSignatureDecoder.PUBLIC_KEY_JSON).getCorePublicKey(algorithmPreferences);
       }
 
     public PublicKey getPublicKey () throws IOException
       {
-        return JSONSignatureDecoder.getPublicKey (this, AlgorithmPreferences.JOSE_ACCEPT_PREFER);
+        return getPublicKey (AlgorithmPreferences.JOSE_ACCEPT_PREFER);
       }
+
+    void clearReadFlags() {
+        for (JSONValue value : root.properties.values()) {
+            value.readFlag = false;
+        }
+    }
+
+    public PublicKey getCorePublicKey(AlgorithmPreferences algorithmPreferences) throws IOException {
+        clearReadFlags();
+        PublicKey publicKey = JSONSignatureDecoder.decodePublicKey(this,
+                                                                   algorithmPreferences, 
+                                                                   JSONSignatureDecoder.TYPE_JSON,
+                                                                   JSONSignatureDecoder.CURVE_JSON);
+        checkForUnread ();
+        return publicKey;
+    }
+
+    public PublicKey getPublicKeyFromJwk() throws IOException {
+        return JSONSignatureDecoder.decodePublicKey(this,
+                                                    AlgorithmPreferences.JOSE, 
+                                                    JSONSignatureDecoder.JWK_KTY_JSON,
+                                                    JSONSignatureDecoder.JWK_CRV_JSON);
+    }
+
+    public KeyPair getKeyPairFromJwk() throws IOException {
+        PublicKey publicKey = getPublicKeyFromJwk();
+        return new KeyPair(publicKey, JSONSignatureDecoder.decodeJwkPrivateKey(this, publicKey));
+    }
+
+    public JSONDecryptionDecoder getEncryptionObject() throws IOException {
+        return new JSONDecryptionDecoder(this);
+    }
 
     public X509Certificate[] getCertificatePath () throws IOException
       {

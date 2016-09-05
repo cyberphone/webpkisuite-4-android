@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 
+import java.net.HttpURLConnection;
 import java.net.URL;
 
 import java.security.cert.X509Certificate;
@@ -42,8 +43,6 @@ import android.content.Intent;
 import android.net.Uri;
 
 import android.util.Log;
-
-import org.apache.http.HttpStatus;
 
 import org.webpki.json.JSONDecoder;
 import org.webpki.json.JSONDecoderCache;
@@ -279,7 +278,6 @@ public abstract class BaseProxyActivity extends Activity
             
           }
         SKSStore.serializeSKS (getProtocolName (), this);
-        finish ();
       }
 
     public void launchBrowser (String url)
@@ -288,6 +286,7 @@ public abstract class BaseProxyActivity extends Activity
         Intent intent = new Intent (Intent.ACTION_VIEW).setData (Uri.parse (url));
         startActivity (intent);
         closeProxy ();
+        finish ();
       }
 
     public void postJSONData (String url,
@@ -300,7 +299,7 @@ public abstract class BaseProxyActivity extends Activity
         byte[] posted_data = json_object.serializeJSONDocument (JSONOutputFormats.PRETTY_PRINT);
         protocol_log.add (posted_data);
         https_wrapper.makePostRequest (url, posted_data);
-        if (https_wrapper.getResponseCode () == HttpStatus.SC_MOVED_TEMPORARILY)
+        if (https_wrapper.getResponseCode () == HttpURLConnection.HTTP_MOVED_TEMP)
           {
             if ((redirect_url = https_wrapper.getHeaderValue ("Location")) == null)
               {
@@ -314,7 +313,7 @@ public abstract class BaseProxyActivity extends Activity
           }
         else
           {
-            if (https_wrapper.getResponseCode () != HttpStatus.SC_OK)
+            if (https_wrapper.getResponseCode () != HttpURLConnection.HTTP_OK)
               {
                 throw new IOException (https_wrapper.getResponseMessage ());
               }
@@ -366,6 +365,7 @@ public abstract class BaseProxyActivity extends Activity
         intent.putExtra (FailLoggerActivity.LOG_MESSAGE, logger.toString ());
         startActivity (intent);
         closeProxy ();
+        finish ();
       }
 
     public void addDecoder (Class<? extends JSONDecoder> decoder_class) throws IOException
@@ -431,13 +431,13 @@ public abstract class BaseProxyActivity extends Activity
                                  initialization_url.substring (ver_index + VERSION_MACRO.length ());
           }
         https_wrapper.makeGetRequest (initialization_url);
-        if (https_wrapper.getResponseCode () == HttpStatus.SC_OK)
+        if (https_wrapper.getResponseCode () == HttpURLConnection.HTTP_OK)
           {
             initial_request_object = https_wrapper.getData ();
             server_certificate = https_wrapper.getServerCertificate ();
             checkContentType ();
           }
-        else if (https_wrapper.getResponseCode () == HttpStatus.SC_MOVED_TEMPORARILY)
+        else if (https_wrapper.getResponseCode () == HttpURLConnection.HTTP_MOVED_TEMP)
           {
             if ((redirect_url = https_wrapper.getHeaderValue ("Location")) == null)
               {
