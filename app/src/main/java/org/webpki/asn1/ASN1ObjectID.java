@@ -161,23 +161,8 @@ public final class ASN1ObjectID extends Simple
       }
     
     public static void tryReadOIDNames (String filename) throws IOException
-      {
-        InputStream in = (filename == null) ?
-           new ASN1OIDDefinitions ().getOIDStream () :
-           new FileInputStream (filename);
-        BufferedReader r = new BufferedReader (new InputStreamReader (in));
-        Hashtable<String,String> on = new Hashtable<String,String>(), no = new Hashtable<String,String>();
-        String s;
-        while((s = r.readLine()) != null)
-          {
-            if(s.startsWith("Description = "))
-              {
-                int i1 = s.indexOf("("), i2 = s.indexOf(")");
-                on.put(s.substring(i1 + 1, i2).replace(' ', '.'), s.substring("Description = ".length(), i1 - 1));
-                no.put(s.substring("Description = ".length(), i1 - 1), s.substring(i1 + 1, i2).replace(' ', '.'));
-              }
-          }
-        r.close ();
+      { 
+        Hashtable<String,String> on = new Hashtable<String,String>(), no = new Hashtable<String,String>(); 
         oidToName = on;
         nameToOID = no;
       }
