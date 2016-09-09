@@ -17,6 +17,7 @@
 package org.webpki.mobile.android.saturn;
 
 import java.io.IOException;
+import java.net.URL;
 
 import android.os.AsyncTask;
 
@@ -108,19 +109,27 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
         saturnActivity.noMoreWorkToDo();
         if (success) {
             saturnActivity.setTitle("Requester: " + saturnActivity.getRequestingHost());
-            if (saturnActivity.cardCollection.isEmpty()) {
-                saturnActivity.simpleDisplay(
-                    "You do not seem to have any payment cards." +
-                    "<p>For a selection of test cards, you can enroll such at the Saturn proof-of-concept site.</p>");
-            } else if (saturnActivity.cardCollection.size () == 1) {
-                try {
+            try {
+                if (saturnActivity.cardCollection.isEmpty()) {
+                    URL url = new URL(saturnActivity.getInitializationURL());
+                    String host = url.getHost();
+                    if (host.equals("test.webpki.org")) {
+                        host = "mobilepki.org";
+                    }
+                    String modifiedUrl = new URL(url.getProtocol(), host, url.getPort(), "webpay-keyprovider").toExternalForm();
+                    saturnActivity.simpleDisplay(
+                        "You do not seem to have any payment cards." +
+                        "<p>For a selection of test cards, you can enroll such at the Saturn " +
+                        "proof-of-concept site <span style='white-space:nowrap'><a href='" +
+                        modifiedUrl + "' target='_blank'>" + modifiedUrl + "</a>.</span></p>");
+                } else if (saturnActivity.cardCollection.size () == 1) {
                     saturnActivity.selectCard("0");
-                } catch (IOException e) {
-                    saturnActivity.logException(e);
-                    saturnActivity.showFailLog();
+                } else {
+                    saturnActivity.showCardCollection();
                 }
-            } else {
-                saturnActivity.showCardCollection();
+            } catch (IOException e){
+                saturnActivity.logException(e);
+                saturnActivity.showFailLog();
             }
         } else {
             saturnActivity.showFailLog();

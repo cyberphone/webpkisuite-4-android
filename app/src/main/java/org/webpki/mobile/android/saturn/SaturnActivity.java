@@ -216,9 +216,10 @@ public class SaturnActivity extends BaseProxyActivity {
         currentForm = FORM.SIMPLE;
         loadHtml("var simple = document.getElementById('simple');\n" +
                  "simple.style.top = ((Saturn.height() - simple.offsetHeight) / 2) + 'px';\n" +
+                 "simple.style.left = ((Saturn.width() - simple.offsetWidth) / 2) + 'px';\n" +
                  "simple.style.visibility='visible';\n",
-                 "<table id='simple' style='visibility:hidden;position:absolute;width:100%'>" +
-                 "<tr><td style='text-align:center;padding:20pt'>" +
+                 "<table id='simple' style='visibility:hidden;position:absolute'>" +
+                 "<tr><td style='padding:20pt'>" +
                  simpleHtml +
                  "</td></tr></table>");
     }
@@ -618,8 +619,11 @@ public class SaturnActivity extends BaseProxyActivity {
             closeProxy();
             finish ();
         } else {
-            if (selectedCard == null || cardCollection.size() == 1) {
+            if (selectedCard == null) {
                 conditionalAbort(null);
+            } else if (cardCollection.size() == 1) {
+                conditionalAbort(null);
+                return;
             }
             selectedCard = null;
             showCardCollection();
