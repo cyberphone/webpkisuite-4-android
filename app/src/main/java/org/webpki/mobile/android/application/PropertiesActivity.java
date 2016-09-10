@@ -17,15 +17,22 @@
 package org.webpki.mobile.android.application;
 
 import org.webpki.crypto.DeviceID;
+
 import org.webpki.sks.SKSException;
+
 import org.webpki.mobile.android.R;
+
 import org.webpki.mobile.android.keygen2.KeyGen2Activity;
+
 import org.webpki.mobile.android.webauth.WebAuthActivity;
+
 import org.webpki.mobile.android.saturn.SaturnActivity;
+
 import org.webpki.mobile.android.sks.SKSImplementation;
 import org.webpki.mobile.android.sks.SKSStore;
 
 import android.os.Bundle;
+
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,9 +40,11 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
+
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
+
 import android.content.DialogInterface;
 import android.content.Intent;
 
@@ -45,13 +54,11 @@ public class PropertiesActivity extends ListActivity
     static final int SETTINGS_DEVICE_ID = 1;
     static final int SETTINGS_USER_CREDENTIALS = 2;
     static final int SETTINGS_DEVICE_CERT = 3;
-    static final int SETTINGS_EXT_DEVICE_ID = 4;
-    static final int SETTINGS_PROTOCOL_LOG = 5;
+    static final int SETTINGS_PROTOCOL_LOG = 4;
     String[] items = { "About", 
                        "Device ID",
                        "User Credentials",
                        "Device Certificate",
-                       "Extended Device ID",
                        "Show Protocol Log"};
     SKSImplementation sks;
 

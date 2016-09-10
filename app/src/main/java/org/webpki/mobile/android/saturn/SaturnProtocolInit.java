@@ -17,6 +17,7 @@
 package org.webpki.mobile.android.saturn;
 
 import java.io.IOException;
+
 import java.net.URL;
 
 import android.os.AsyncTask;
@@ -48,7 +49,6 @@ import org.webpki.sks.EnumeratedKey;
 import org.webpki.sks.Extension;
 import org.webpki.sks.SKSException;
 import org.webpki.sks.SecureKeyStore;
-
 
 public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
     private SaturnActivity saturnActivity;

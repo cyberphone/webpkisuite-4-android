@@ -36,6 +36,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 
+import android.webkit.WebView;
 import android.widget.Toast;
 
 import org.webpki.mobile.android.R;
@@ -98,7 +99,7 @@ public class SaturnActivity extends BaseProxyActivity {
     
     WalletRequestDecoder walletRequest;
     
-    enum FORM {SIMPLE, COLLECTION, PAYMENTREQUEST};
+    enum FORM {SIMPLE, COLLECTION, PAYMENTREQUEST}
     
     FORM currentForm = FORM.SIMPLE;
 
@@ -116,7 +117,7 @@ public class SaturnActivity extends BaseProxyActivity {
     
     boolean done;
     
-    SaturnView saturnView;
+    WebView saturnView;
     int factor;
     DisplayMetrics displayMetrics;
 
@@ -229,7 +230,7 @@ public class SaturnActivity extends BaseProxyActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_saturn);
-        saturnView = (SaturnView) findViewById(R.id.saturnMain);
+        saturnView = (WebView) findViewById(R.id.saturnMain);
         WebSettings webSettings = saturnView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         saturnView.addJavascriptInterface (this, "Saturn");
@@ -542,7 +543,7 @@ public class SaturnActivity extends BaseProxyActivity {
                             return sks.signHashedData(selectedCard.keyHandle,
                                                       algorithm.getAlgorithmId (AlgorithmPreferences.SKS),
                                                       null,
-                                                      new String(pin).getBytes("UTF-8"),
+                                                      pin.getBytes("UTF-8"),
                                                       algorithm.getDigestAlgorithm().digest(data));
                         }
                     });
