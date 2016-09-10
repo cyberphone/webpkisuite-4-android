@@ -22,44 +22,21 @@ import java.math.BigDecimal;
 
 import java.security.PublicKey;
 
-import java.util.Date;
 import java.util.GregorianCalendar;
 
 import org.webpki.crypto.AlgorithmPreferences;
 
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
-import org.webpki.json.JSONAsymKeySigner;
 
 public class PaymentRequest implements BaseProperties {
-    
-    public static final String SOFTWARE_NAME    = "WebPKI.org - Merchant";
-    public static final String SOFTWARE_VERSION = "1.00";
-
-    public static JSONObjectWriter encode(Payee payee,
-                                          BigDecimal amount,
-                                          Currencies currency,
-                                          String referenceId,
-                                          Date expires,
-                                          JSONAsymKeySigner signer) throws IOException {
-        return new JSONObjectWriter()
-            .setObject(PAYEE_JSON, payee.writeObject())
-            .setBigDecimal(AMOUNT_JSON, amount, currency.getDecimals())
-            .setString(CURRENCY_JSON, currency.toString())
-            .setString(REFERENCE_ID_JSON, referenceId)
-            .setDateTime(TIME_STAMP_JSON, new Date(), true)
-            .setDateTime(EXPIRES_JSON, expires, true)
-            .setObject(SOFTWARE_JSON, Software.encode(SOFTWARE_NAME, SOFTWARE_VERSION))
-            .setSignature(signer);
-    }
 
     public PaymentRequest(JSONObjectReader rd) throws IOException {
         root = rd;
         payee = new Payee(rd.getObject(PAYEE_JSON));
-        try {
-            currency = Currencies.valueOf(rd.getString(CURRENCY_JSON));
-        } catch (Exception e) {
-            throw new IOException(e);
+        currency = Currencies.valueOf(rd.getString(CURRENCY_JSON));
+        if (rd.hasProperty(NON_DIRECT_PAYMENT_JSON)) {
+            nonDirectPayment = NonDirectPayments.fromType(rd.getString(NON_DIRECT_PAYMENT_JSON));
         }
         amount = rd.getBigDecimal(AMOUNT_JSON, currency.getDecimals());
         referenceId = rd.getString(REFERENCE_ID_JSON);
@@ -75,43 +52,41 @@ public class PaymentRequest implements BaseProperties {
         return expires;
     }
 
-    
     Payee payee;
     public Payee getPayee() {
         return payee;
     }
-
 
     BigDecimal amount;
     public BigDecimal getAmount() {
         return amount;
     }
 
-
     Currencies currency;
     public Currencies getCurrency() {
         return currency;
     }
 
+    NonDirectPayments nonDirectPayment;
+    public NonDirectPayments getNonDirectPayment() {
+        return nonDirectPayment;
+    }
 
     String referenceId;
     public String getReferenceId() {
         return referenceId;
     }
-
     
     GregorianCalendar dateTime;
     public GregorianCalendar getDateTime() {
         return dateTime;
     }
 
-
     Software software;
     public Software getSoftware() {
         return software;
     }
 
-    
     PublicKey publicKey;
     public PublicKey getPublicKey() {
         return publicKey;
@@ -126,6 +101,7 @@ public class PaymentRequest implements BaseProperties {
     public void consistencyCheck(PaymentRequest paymentRequest) throws IOException {
         if (paymentRequest.currency != currency ||
             !paymentRequest.amount.equals(amount) ||
+            paymentRequest.nonDirectPayment != nonDirectPayment ||
             !paymentRequest.referenceId.equals(referenceId) ||
             !paymentRequest.payee.commonName.equals(payee.commonName)) {
             throw new IOException("Inconsistent \"" + PAYMENT_REQUEST_JSON + "\" objects");
