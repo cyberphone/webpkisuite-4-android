@@ -64,6 +64,7 @@ import org.webpki.mobile.android.proxy.BaseProxyActivity;
 import org.webpki.mobile.android.saturn.common.AccountDescriptor;
 import org.webpki.mobile.android.saturn.common.AuthorizationData;
 import org.webpki.mobile.android.saturn.common.ChallengeResult;
+import org.webpki.mobile.android.saturn.common.NonDirectPayments;
 import org.webpki.mobile.android.saturn.common.PaymentRequest;
 import org.webpki.mobile.android.saturn.common.WalletRequestDecoder;
 
@@ -80,12 +81,16 @@ public class SaturnActivity extends BaseProxyActivity {
     
     static final String HTML_HEADER = "<html><head><style type='text/css'>\n" +
                                       "body {margin:0;font-size:12pt;color:#000000;font-family:Roboto;background-color:white}\n" +
-                                      "td.label {text-align:right;padding:2pt 3pt 3pt 0pt}\n" +
-                                      "td.field {padding:2pt 6pt 3pt 6pt;border-width:1px;" +
+                                      "td.label {text-align:right;padding:3pt 3pt 3pt 0pt}\n" +
+                                      "td.field {padding:3pt 6pt 3pt 6pt;border-width:1px;" +
                                       "border-style:solid;border-color:#808080;background-color:#fafafa;min-width:10em}\n" +
                                       "td.pan {text-align:center;padding:5pt 0 0 0;font-size:9pt;font-family:monospace}\n" +
                                       "div.cardimage {border-style:groove;border-width:2px;border-color:#c0c0c0;border-radius:12pt;" +
                                       "box-shadow:3pt 3pt 3pt #d0d0d0;background-size:cover;background-repeat:no-repeat}\n" +
+                                      "span.marquee {display:inline-block;position:relative;top:1pt;white-space:nowrap;animation-name:rollingtext;" +
+                                      "animation-duration:7s;animation-timing-function:linear;animation-delay:2s;" +
+                                      "animation-iteration-count:infinite;font-size:10pt}\n" +
+                                      "@keyframes rollingtext {0% {transform:translate(0, 0)} 100% {transform:translate(-100%, 0)} }\n" +
                                       "</style>\n" +
                                       "<script type='text/javascript'>\n" +
                                       "'use strict';\n" +
@@ -311,7 +316,7 @@ public class SaturnActivity extends BaseProxyActivity {
                     "var kbdTop = Math.floor(Saturn.height() - gutter - kbd.offsetHeight);\n" +
                     "kbd.style.top = kbdTop + 'px';\n" +
                     "paydata.style.left = gutter + 'px';\n" +
-                    "paydata.style.top = Math.floor((kbdTop - paydata.offsetHeight) / 2) + 'px';\n"+
+                    "paydata.style.top = Math.floor(((kbdTop - paydata.offsetHeight) * 3) / 5) + 'px';\n"+
                     "kbd.style.visibility='visible';\n");
             } else {
                 js.append(
@@ -342,6 +347,12 @@ public class SaturnActivity extends BaseProxyActivity {
                     "paydata.style.top = (gutter * 5 + card.offsetHeight) + 'px';\n");
             }
         }
+        if (selectedCard.paymentRequest.getNonDirectPayment() == NonDirectPayments.GAS_STATION) {
+            js.append("document.getElementById('amount').style.maxWidth = document.getElementById('payfield').offsetWidth + 'px';\n" +
+                      "document.getElementById('amount').innerHTML += " +
+                      "\"<br><span class='marquee'><i>Reserved</i>, actual payment will match fuel quantity</span>\";\n");
+        }
+
         js.append(
             "card.style.visibility='visible';\n" +
             "paydata.style.visibility='visible';\n" +
@@ -354,7 +365,7 @@ public class SaturnActivity extends BaseProxyActivity {
                 "if (pin.length == 0) {\n" +
                 "pinfield.innerHTML = \"<span style='color:#a0a0a0'>Please enter PIN</span>\";\n" +
                 "} else {\n"+
-                "var pwd = \"<span style='font-size:10pt'>\";\n" +
+                "var pwd = \"<span style='font-size:10pt;position:relative;top:-1pt'>\";\n" +
                 "for (var i = 0; i < pin.length; i++) {\n" +
                 "pwd += '\u25cf\u2009';\n" +
                 "}\n" +
@@ -401,9 +412,9 @@ public class SaturnActivity extends BaseProxyActivity {
           .append(HTMLEncoder.encode(selectedCard.paymentRequest.getPayee().getCommonName()))
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
-            "<tr><td class='label'>Amount</td><td class='field'>")
+            "<tr><td>Amount</td><td id='amount' class='field' class='label' style='overflow:hidden;white-space:nowrap'>")
           .append(selectedCard.paymentRequest.getCurrency().amountToDisplayString(selectedCard.paymentRequest.getAmount()))
-          .append("</td></tr>" + 
+          .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
             "<tr><td class='label'>PIN</td>");
 
