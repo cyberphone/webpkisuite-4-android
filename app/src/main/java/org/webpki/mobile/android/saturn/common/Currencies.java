@@ -17,10 +17,11 @@
 package org.webpki.mobile.android.saturn.common;
 
 import java.io.IOException;
-
 import java.io.Serializable;
 
 import java.math.BigDecimal;
+
+import java.util.regex.Pattern;
 
 public enum Currencies implements Serializable {
 
@@ -42,7 +43,14 @@ public enum Currencies implements Serializable {
         return decimals;
     }
 
-    public String amountToDisplayString(BigDecimal amount) throws IOException {
+    static final Pattern ZERO_FRACTION_PATTERN = Pattern.compile("[0-9]*\\.[0]+");
+
+    public String amountToDisplayString(BigDecimal amount, boolean skipTrailingZeroFraction) throws IOException {
+        String sign = "";
+        if (amount.signum() < 0) {
+            amount = amount.negate();
+            sign = "-";
+        }
         String amountString = amount.setScale(decimals).toPlainString();
         int dp = amountString.indexOf('.');
         StringBuffer amountString2 = new StringBuffer();
@@ -52,7 +60,9 @@ public enum Currencies implements Serializable {
                 amountString2.append(',');
             }
         }
-        amountString2.append(amountString.substring(dp));
-        return symbolFirst ? symbol + amountString2.toString() : amountString2.toString() + symbol;
+        if (!skipTrailingZeroFraction || !ZERO_FRACTION_PATTERN.matcher(amountString).matches()) {
+            amountString2.append(amountString.substring(dp));
+        }
+        return sign + (symbolFirst ? symbol + amountString2.toString() : amountString2.toString() + symbol);
     }
 }

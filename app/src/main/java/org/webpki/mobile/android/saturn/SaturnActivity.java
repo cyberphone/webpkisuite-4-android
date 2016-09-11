@@ -88,9 +88,10 @@ public class SaturnActivity extends BaseProxyActivity {
                                       "div.cardimage {border-style:groove;border-width:2px;border-color:#c0c0c0;border-radius:12pt;" +
                                       "box-shadow:3pt 3pt 3pt #d0d0d0;background-size:cover;background-repeat:no-repeat}\n" +
                                       "span.marquee {display:inline-block;position:relative;top:1pt;white-space:nowrap;animation-name:rollingtext;" +
-                                      "animation-duration:7s;animation-timing-function:linear;animation-delay:2s;" +
+                                      "animation-duration:12s;animation-timing-function:linear;" +
                                       "animation-iteration-count:infinite;font-size:10pt}\n" +
-                                      "@keyframes rollingtext {0% {transform:translate(0, 0)} 100% {transform:translate(-100%, 0)} }\n" +
+                                      "@keyframes rollingtext {0% {transform:translate(0, 0)} 40% {transform:translate(0, 0)}" +
+                                      " 65% {transform:translate(-105%, 0)} 75% {transform:translate(-105%, 0)} 100% {transform:translate(0, 0)}}\n" +
                                       "</style>\n" +
                                       "<script type='text/javascript'>\n" +
                                       "'use strict';\n" +
@@ -279,7 +280,9 @@ public class SaturnActivity extends BaseProxyActivity {
     String htmlOneCard(Account account, int width, String card, String clickOption) {
         return new StringBuffer("<table id='")
             .append(card)
-            .append("' style='visibility:hidden;position:absolute'><tr><td><div class='cardimage' style='width:")
+            .append("' style='visibility:hidden;position:absolute'><tr><td id='")
+            .append(card)
+            .append("image'><div class='cardimage' style='width:")
             .append((width * 100) / factor)
             .append("px;height:")
             .append((width * 60) / factor)
@@ -316,7 +319,7 @@ public class SaturnActivity extends BaseProxyActivity {
                     "var kbdTop = Math.floor(Saturn.height() - gutter - kbd.offsetHeight);\n" +
                     "kbd.style.top = kbdTop + 'px';\n" +
                     "paydata.style.left = gutter + 'px';\n" +
-                    "paydata.style.top = Math.floor(((kbdTop - paydata.offsetHeight) * 3) / 5) + 'px';\n"+
+                    "paydata.style.top = Math.floor(((document.getElementById('cardimage').offsetHeight - paydata.offsetHeight) / 2) + gutter) + 'px';\n"+
                     "kbd.style.visibility='visible';\n");
             } else {
                 js.append(
@@ -413,7 +416,7 @@ public class SaturnActivity extends BaseProxyActivity {
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
             "<tr><td>Amount</td><td id='amount' class='field' class='label' style='overflow:hidden;white-space:nowrap'>")
-          .append(selectedCard.paymentRequest.getCurrency().amountToDisplayString(selectedCard.paymentRequest.getAmount()))
+          .append(selectedCard.paymentRequest.getCurrency().amountToDisplayString(selectedCard.paymentRequest.getAmount(), true))
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
             "<tr><td class='label'>PIN</td>");
