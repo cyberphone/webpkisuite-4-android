@@ -394,9 +394,19 @@ public class CaptureManager {
             } catch (IOException e) {
             }
         }
-        Intent intent = resultIntent(rawResult, getBarcodeImagePath(rawResult));
-        activity.setResult(Activity.RESULT_OK, intent);
-        finish();
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder (activity)
+            .setMessage ("Not a WebPKI QR-code")
+            .setCancelable (false)
+            .setPositiveButton ("OK", new DialogInterface.OnClickListener () {
+                public void onClick (DialogInterface dialog, int id) {
+                    // The user decided that this is not what he/she wants...
+                    dialog.cancel();
+                    finish();
+                }
+            });
+        // Create and show alert dialog
+        alertDialog.create ().show();
+        return;
     }
 
     protected void displayFrameworkBugMessageAndExit() {
