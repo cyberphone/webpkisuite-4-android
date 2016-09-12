@@ -23,7 +23,7 @@
             android:taskAffinity=".application.QRIDActivity"
             android:name=".application.QRIDActivity"
             android:icon="@drawable/qr_launcher"
-            android:label="@string/title_activity_qrid"
+            android:label="@string/zxing_app_name"
             android:stateNotNeeded="true"
             android:screenOrientation="fullSensor"
             android:theme="@android:style/Theme.Holo"

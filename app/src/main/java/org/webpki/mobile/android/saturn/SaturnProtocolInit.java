@@ -120,7 +120,7 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                     saturnActivity.simpleDisplay(
                         "You do not seem to have any payment cards." +
                         "<p>For a selection of test cards, you can enroll such at the Saturn " +
-                        "proof-of-concept site <span style='white-space:nowrap'><a href='" +
+                        "proof-of-concept site: <span style='white-space:nowrap'><a style='font-size:10pt;font-weight:bold;text-decoration:none;color:blue' href='" +
                         modifiedUrl + "' target='_blank'>" + modifiedUrl + "</a>.</span></p>");
                 } else if (saturnActivity.cardCollection.size () == 1) {
                     saturnActivity.selectCard("0");
