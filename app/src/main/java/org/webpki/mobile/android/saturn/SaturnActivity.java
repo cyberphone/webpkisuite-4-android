@@ -88,10 +88,11 @@ public class SaturnActivity extends BaseProxyActivity {
                                       "div.cardimage {border-style:groove;border-width:2px;border-color:#c0c0c0;border-radius:12pt;" +
                                       "box-shadow:3pt 3pt 3pt #d0d0d0;background-size:cover;background-repeat:no-repeat}\n" +
                                       "span.marquee {display:inline-block;position:relative;top:1pt;white-space:nowrap;animation-name:rollingtext;" +
-                                      "animation-duration:12s;animation-timing-function:linear;" +
+                                      "animation-duration:10s;animation-timing-function:linear;" +
                                       "animation-iteration-count:infinite;font-size:10pt}\n" +
-                                      "@keyframes rollingtext {0% {transform:translate(0, 0)} 40% {transform:translate(0, 0)}" +
-                                      " 65% {transform:translate(-105%, 0)} 75% {transform:translate(-105%, 0)} 100% {transform:translate(0, 0)}}\n" +
+                                      "@keyframes rollingtext {0% {opacity:1;text-indent:0em} 33% {opacity:1;text-indent:0em} " +
+                                      "75% {opacity:1;text-indent:-30em} 76% {opacity:0;text-indent:-30em} 77% {opacity:0;text-indent:15em} " +
+                                      "78% {opacity:1;text-indent:15em} 100% {opacity:1;text-indent:0em}}\n" +
                                       "</style>\n" +
                                       "<script type='text/javascript'>\n" +
                                       "'use strict';\n" +
