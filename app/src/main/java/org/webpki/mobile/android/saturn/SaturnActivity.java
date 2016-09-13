@@ -68,6 +68,7 @@ import org.webpki.mobile.android.saturn.common.NonDirectPayments;
 import org.webpki.mobile.android.saturn.common.PaymentRequest;
 import org.webpki.mobile.android.saturn.common.WalletRequestDecoder;
 
+import org.webpki.mobile.android.sks.SKSStore;
 import org.webpki.sks.KeyProtectionInfo;
 import org.webpki.sks.PassphraseFormat;
 import org.webpki.sks.SKSException;
@@ -568,6 +569,7 @@ public class SaturnActivity extends BaseProxyActivity {
                 if (e.getError() != SKSException.ERROR_AUTHORIZATION) {
                     throw new Exception(e);
                 }
+                SKSStore.serializeSKS(SATURN, this);
             }
             if (!pinBlockCheck()) {
                 Log.w(SATURN, "Incorrect PIN");
