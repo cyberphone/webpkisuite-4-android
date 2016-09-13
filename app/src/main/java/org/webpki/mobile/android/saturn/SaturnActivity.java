@@ -413,11 +413,11 @@ public class SaturnActivity extends BaseProxyActivity {
             html.append("<form onsubmit=\"return validatePin()\">");
         }
         html.append(
-            "<tr><td id='payfield' class='label'>Payee</td><td class='field'>")
+            "<tr><td id='payfield' class='label'>Payee</td><td class='field' onClick=\"Saturn.toast('Name of merchant')\">")
           .append(HTMLEncoder.encode(selectedCard.paymentRequest.getPayee().getCommonName()))
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
-            "<tr><td>Amount</td><td id='amount' class='field' class='label' style='overflow:hidden;white-space:nowrap'>")
+            "<tr><td>Amount</td><td id='amount' class='field' class='label' style='overflow:hidden;white-space:nowrap' onClick=\"Saturn.toast('Amount to pay')\">")
           .append(selectedCard.paymentRequest.getCurrency().amountToDisplayString(selectedCard.paymentRequest.getAmount(), true))
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
@@ -443,7 +443,7 @@ public class SaturnActivity extends BaseProxyActivity {
                         "</form></table>");
         }
           
-        html.append(htmlOneCard(selectedCard, landscapeMode ? (width * 4) / 11 : (width * 3) / 5, "card", ""));
+        html.append(htmlOneCard(selectedCard, landscapeMode ? (width * 4) / 11 : (width * 3) / 5, "card", " onClick=\"Saturn.toast('The selected card')\""));
         loadHtml(js.toString(), html.toString());
     }
 
