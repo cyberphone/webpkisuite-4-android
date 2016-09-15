@@ -304,7 +304,9 @@ public class SaturnActivity extends BaseProxyActivity {
         StringBuffer js = new StringBuffer(
             "pinfield = document.getElementById('pinfield');\n" +
             "var card = document.getElementById('card');\n" +
-            "var paydata = document.getElementById('paydata');\n");
+            "var paydata = document.getElementById('paydata');\n" +
+            "pinfield.style.maxWidth = document.getElementById('amount').style.maxWidth = " +
+            "document.getElementById('payfield').offsetWidth + 'px';\n");
         if (numericPin) {
             js.append(
                 "var payfield = document.getElementById('payfield');\n" +
@@ -353,8 +355,7 @@ public class SaturnActivity extends BaseProxyActivity {
             }
         }
         if (selectedCard.paymentRequest.getNonDirectPayment() == NonDirectPayments.GAS_STATION) {
-            js.append("document.getElementById('amount').style.maxWidth = document.getElementById('payfield').offsetWidth + 'px';\n" +
-                      "document.getElementById('amount').innerHTML += " +
+            js.append("document.getElementById('amount').innerHTML += " +
                       "\"<br><span class='marquee'><i>Reserved</i>, actual payment will match fuel quantity</span>\";\n");
         }
 
@@ -378,7 +379,7 @@ public class SaturnActivity extends BaseProxyActivity {
                 "}\n" +
                 "}\n" +
                 "function addDigit(digit) {\n" +
-                "if (pin.length < 20) {\n" +
+                "if (pin.length < 16) {\n" +
                 "pinfield.innerHTML = pin.length == 0 ? digit : pinfield.innerHTML.substring(0, pinfield.innerHTML.length - 34)  + digit;\n" +
                 "pin += digit;\n" +
                 "setTimeout(function() {\n" +
