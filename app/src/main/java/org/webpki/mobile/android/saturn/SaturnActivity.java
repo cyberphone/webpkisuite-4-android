@@ -83,8 +83,8 @@ public class SaturnActivity extends BaseProxyActivity {
     static final String HTML_HEADER = "<html><head><style type='text/css'>\n" +
                                       "body {margin:0;font-size:12pt;color:#000000;font-family:Roboto;background-color:white}\n" +
                                       "td.label {text-align:right;padding:3pt 3pt 3pt 0pt}\n" +
-                                      "td.field {padding:3pt 6pt 3pt 6pt;border-width:1px;" +
-                                      "border-style:solid;border-color:#808080;background-color:#fafafa;min-width:10em}\n" +
+                                      "td.field {min-width:10em;max-width:12em;padding:3pt 6pt 3pt 6pt;border-width:1px;" +
+                                      "border-style:solid;border-color:#808080;background-color:#fafafa;overflow:hidden;white-space:nowrap}\n" +
                                       "td.pan {text-align:center;padding:5pt 0 0 0;font-size:9pt;font-family:monospace}\n" +
                                       "div.cardimage {border-style:groove;border-width:2px;border-color:#c0c0c0;border-radius:12pt;" +
                                       "box-shadow:3pt 3pt 3pt #d0d0d0;background-size:cover;background-repeat:no-repeat}\n" +
@@ -378,7 +378,7 @@ public class SaturnActivity extends BaseProxyActivity {
                 "}\n" +
                 "}\n" +
                 "function addDigit(digit) {\n" +
-                "if (pin.length < 12) {\n" +
+                "if (pin.length < 20) {\n" +
                 "pinfield.innerHTML = pin.length == 0 ? digit : pinfield.innerHTML.substring(0, pinfield.innerHTML.length - 34)  + digit;\n" +
                 "pin += digit;\n" +
                 "setTimeout(function() {\n" +
@@ -421,7 +421,7 @@ public class SaturnActivity extends BaseProxyActivity {
           .append(HTMLEncoder.encode(selectedCard.paymentRequest.getPayee().getCommonName()))
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
-            "<tr><td class='label'>Amount</td><td id='amount' class='field' style='overflow:hidden;white-space:nowrap' onClick=\"Saturn.toast('Amount to pay')\">")
+            "<tr><td class='label'>Amount</td><td id='amount' class='field' onClick=\"Saturn.toast('Amount to pay')\">")
           .append(selectedCard.paymentRequest.getCurrency().amountToDisplayString(selectedCard.paymentRequest.getAmount(), true))
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
