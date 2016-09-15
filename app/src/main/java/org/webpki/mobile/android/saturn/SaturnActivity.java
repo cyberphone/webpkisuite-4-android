@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2015 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -69,6 +69,7 @@ import org.webpki.mobile.android.saturn.common.PaymentRequest;
 import org.webpki.mobile.android.saturn.common.WalletRequestDecoder;
 
 import org.webpki.mobile.android.sks.SKSStore;
+
 import org.webpki.sks.KeyProtectionInfo;
 import org.webpki.sks.PassphraseFormat;
 import org.webpki.sks.SKSException;
@@ -79,12 +80,13 @@ import org.webpki.util.HTMLEncoder;
 public class SaturnActivity extends BaseProxyActivity {
 
     public static final String SATURN = "Saturn";
-    
+
     static final String HTML_HEADER = "<html><head><style type='text/css'>\n" +
                                       "body {margin:0;font-size:12pt;color:#000000;font-family:Roboto;background-color:white}\n" +
                                       "td.label {text-align:right;padding:3pt 3pt 3pt 0pt}\n" +
-                                      "td.field {min-width:10em;max-width:12em;padding:3pt 6pt 3pt 6pt;border-width:1px;" +
-                                      "border-style:solid;border-color:#808080;background-color:#fafafa;overflow:hidden;white-space:nowrap}\n" +
+                                      "td.field {min-width:11em;max-width:15em;padding:3pt 6pt 3pt 6pt;border-width:1px;" +
+                                      "border-style:solid;border-color:#808080;background-color:#fafafa;overflow:hidden;" +
+                                      "white-space:nowrap;box-sizing:border-box}\n" +
                                       "td.pan {text-align:center;padding:5pt 0 0 0;font-size:9pt;font-family:monospace}\n" +
                                       "div.cardimage {border-style:groove;border-width:2px;border-color:#c0c0c0;border-radius:12pt;" +
                                       "box-shadow:3pt 3pt 3pt #d0d0d0;background-size:cover;background-repeat:no-repeat}\n" +
@@ -100,31 +102,31 @@ public class SaturnActivity extends BaseProxyActivity {
                                       "function positionElements() {\n";
 
     String htmlBodyPrefix;
- 
+
     boolean landscapeMode;
-    
+
     boolean oldAndroid;
-    
+
     WalletRequestDecoder walletRequest;
-    
+
     enum FORM {SIMPLE, COLLECTION, PAYMENTREQUEST}
-    
+
     FORM currentForm = FORM.SIMPLE;
 
     Account selectedCard;
-    
+
     String pin = "";
-    
+
     ChallengeResult[] challengeResults;
-    
+
     byte[] dataEncryptionKey;
-    
+
     String keyboardSvg;
-    
+
     JSONObjectWriter authorizationData;
-    
+
     boolean done;
-    
+
     WebView saturnView;
     int factor;
     DisplayMetrics displayMetrics;
@@ -175,8 +177,8 @@ public class SaturnActivity extends BaseProxyActivity {
                 saturnView.loadData(html, "text/html; charset=utf-8", null);
             }
         });
-    } 
-    
+    }
+
     @Override
     public void launchBrowser(String url) {
         if (url.startsWith("get:")) {
@@ -265,7 +267,7 @@ public class SaturnActivity extends BaseProxyActivity {
             unconditionalAbort("Saturn didn't initialize!");
             return;
         }
-        
+
         showHeavyWork(PROGRESS_INITIALIZING);
 
         // Start of Saturn
@@ -274,7 +276,7 @@ public class SaturnActivity extends BaseProxyActivity {
 
     static String formatAccountId(Account card) {
         return card.cardFormatAccountId ?
-            AuthorizationData.formatCardNumber(card.accountDescriptor.getAccountId()) 
+            AuthorizationData.formatCardNumber(card.accountDescriptor.getAccountId())
                                         :
             card.accountDescriptor.getAccountId();
     }
@@ -302,14 +304,14 @@ public class SaturnActivity extends BaseProxyActivity {
         boolean numericPin = sks.getKeyProtectionInfo(selectedCard.keyHandle).getPinFormat() == PassphraseFormat.NUMERIC;
         int width = displayMetrics.widthPixels;
         StringBuffer js = new StringBuffer(
-            "pinfield = document.getElementById('pinfield');\n" +
             "var card = document.getElementById('card');\n" +
-            "var paydata = document.getElementById('paydata');\n" +
-            "pinfield.style.maxWidth = document.getElementById('amount').style.maxWidth = " +
-            "document.getElementById('payfield').offsetWidth + 'px';\n");
+            "var paydata = document.getElementById('paydata');\n");
         if (numericPin) {
             js.append(
-                "var payfield = document.getElementById('payfield');\n" +
+                "var pinfield = document.getElementById('pinfield');\n" +
+                "pinfield.style.maxWidth = document.getElementById('amountfield').style.maxWidth = " +
+                "document.getElementById('payeefield').offsetWidth + 'px';\n" +
+                "var payeelabel = document.getElementById('payeelabel');\n" +
                 "var kbd = document.getElementById('kbd');\n" +
                 "showPin();\n");
         }
@@ -337,7 +339,7 @@ public class SaturnActivity extends BaseProxyActivity {
             if (numericPin) {
                 js.append(
                     "card.style.left = ((Saturn.width() - card.offsetWidth) / 2) + 'px';\n" +
-                    "paydata.style.left = ((Saturn.width() - paydata.offsetWidth - payfield.offsetWidth) / 2) + 'px';\n" +
+                    "paydata.style.left = ((Saturn.width() - paydata.offsetWidth - payeelabel.offsetWidth) / 2) + 'px';\n" +
                     "var kbdTop = Saturn.height() - Math.floor(kbd.offsetHeight * 1.20);\n" +
                     "kbd.style.top = kbdTop + 'px';\n" +
                     "kbd.style.left = ((Saturn.width() - kbd.offsetWidth) / 2) + 'px';\n" +
@@ -348,14 +350,14 @@ public class SaturnActivity extends BaseProxyActivity {
             } else {
                 js.append(
                     "card.style.left = ((Saturn.width() - card.offsetWidth) / 2) + 'px';\n" +
-                    "paydata.style.left = ((Saturn.width() - paydata.offsetWidth - payfield.offsetWidth) / 2) + 'px';\n" +
+                    "paydata.style.left = ((Saturn.width() - paydata.offsetWidth - payeelabel.offsetWidth) / 2) + 'px';\n" +
                     "var gutter = Math.floor((Saturn.height() - card.offsetHeight - paydata.offsetHeight) / 8);\n" +
                     "card.style.top = (gutter * 3) + 'px';\n" +
                     "paydata.style.top = (gutter * 5 + card.offsetHeight) + 'px';\n");
             }
         }
         if (selectedCard.paymentRequest.getNonDirectPayment() == NonDirectPayments.GAS_STATION) {
-            js.append("document.getElementById('amount').innerHTML += " +
+            js.append("document.getElementById('amountfield').innerHTML += " +
                       "\"<br><span class='marquee'><i>Reserved</i>, actual payment will match fuel quantity</span>\";\n");
         }
 
@@ -365,7 +367,6 @@ public class SaturnActivity extends BaseProxyActivity {
             "}\n");
         if (numericPin) {
             js.append(
-                "var pinfield;\n" +
                 "var pin = '" + HTMLEncoder.encode(pin) + "';\n" +
                 "function showPin() {\n" +
                 "if (pin.length == 0) {\n" +
@@ -404,7 +405,7 @@ public class SaturnActivity extends BaseProxyActivity {
         } else {
             js.append(
                 "function validatePin() {\n" +
-                "var pin = pinfield.value;\n" +
+                "var pin = alphanum.value;\n" +
                 "if (pin.length == 0) {\n" +
                 "Saturn.toast('Empty PIN - Ignored');\n" +
                 "} else {\n" +
@@ -418,11 +419,11 @@ public class SaturnActivity extends BaseProxyActivity {
             html.append("<form onsubmit=\"return validatePin()\">");
         }
         html.append(
-            "<tr><td id='payfield' class='label'>Payee</td><td class='field' onClick=\"Saturn.toast('Name of merchant')\">")
+            "<tr><td id='payeelabel' class='label'>Payee</td><td id='payeefield' class='field' onClick=\"Saturn.toast('Name of merchant')\">")
           .append(HTMLEncoder.encode(selectedCard.paymentRequest.getPayee().getCommonName()))
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
-            "<tr><td class='label'>Amount</td><td id='amount' class='field' onClick=\"Saturn.toast('Amount to pay')\">")
+            "<tr><td class='label'>Amount</td><td id='amountfield' class='field' onClick=\"Saturn.toast('Amount to pay')\">")
           .append(selectedCard.paymentRequest.getCurrency().amountToDisplayString(selectedCard.paymentRequest.getAmount(), true))
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
@@ -440,14 +441,14 @@ public class SaturnActivity extends BaseProxyActivity {
                 .append(keyboardSvg)
                 .append("</div>");
         } else {
-            html.append("<td><input id='pinfield' style='font-size:inherit' autofocus type='password' size='15' value='")
+            html.append("<td><input id='alphanum' style='font-size:inherit;width:100%' autofocus type='password' size='12' maxlength='16' value='")
                 .append(HTMLEncoder.encode(pin))
                 .append("'></td></tr>" +
                         "<tr><td></td><td style='padding-top:12pt;text-align:center'>" +
                         "<input type='submit' style='font-size:inherit' value='Validate'></td></tr>" +
                         "</form></table>");
         }
-          
+
         html.append(htmlOneCard(selectedCard, landscapeMode ? (width * 4) / 11 : (width * 3) / 5, "card", " onClick=\"Saturn.toast('The selected card')\""));
         loadHtml(js.toString(), html.toString());
     }
