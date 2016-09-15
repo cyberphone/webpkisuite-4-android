@@ -378,11 +378,15 @@ public class SaturnActivity extends BaseProxyActivity {
                 "}\n" +
                 "}\n" +
                 "function addDigit(digit) {\n" +
+                "if (pin.length < 12) {\n" +
                 "pinfield.innerHTML = pin.length == 0 ? digit : pinfield.innerHTML.substring(0, pinfield.innerHTML.length - 34)  + digit;\n" +
                 "pin += digit;\n" +
                 "setTimeout(function() {\n" +
                 "showPin();\n" +
                 "}, 500);\n" +
+                "} else {\n" +
+                "Saturn.toast('PIN digit ignored');\n" +
+                "}\n" +
                 "}\n" +
                 "function validatePin() {\n" +
                 "if (pin.length == 0) {\n" +
@@ -417,7 +421,7 @@ public class SaturnActivity extends BaseProxyActivity {
           .append(HTMLEncoder.encode(selectedCard.paymentRequest.getPayee().getCommonName()))
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
-            "<tr><td>Amount</td><td id='amount' class='field' class='label' style='overflow:hidden;white-space:nowrap' onClick=\"Saturn.toast('Amount to pay')\">")
+            "<tr><td class='label'>Amount</td><td id='amount' class='field' style='overflow:hidden;white-space:nowrap' onClick=\"Saturn.toast('Amount to pay')\">")
           .append(selectedCard.paymentRequest.getCurrency().amountToDisplayString(selectedCard.paymentRequest.getAmount(), true))
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
