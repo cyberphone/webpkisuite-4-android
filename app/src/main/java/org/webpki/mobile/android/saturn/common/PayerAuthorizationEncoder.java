@@ -36,12 +36,9 @@ public class PayerAuthorizationEncoder extends JSONEncoder implements BaseProper
 
     String accountType;
 
-    PaymentRequest paymentRequest;
-    
     JSONObjectWriter encryptedData;
 
-    public PayerAuthorizationEncoder(PaymentRequest paymentRequest,
-                                     JSONObjectWriter unencryptedAuthorizationData,
+    public PayerAuthorizationEncoder(JSONObjectWriter unencryptedAuthorizationData,
                                      String providerAuthorityUrl,
                                      String accountType,
                                      DataEncryptionAlgorithms dataEncryptionAlgorithm,
@@ -49,7 +46,6 @@ public class PayerAuthorizationEncoder extends JSONEncoder implements BaseProper
                                      KeyEncryptionAlgorithms keyEncryptionAlgorithm) throws GeneralSecurityException, IOException {
         this.providerAuthorityUrl = providerAuthorityUrl;
         this.accountType = accountType;
-        this.paymentRequest = paymentRequest;
         this.encryptedData = new JSONObjectWriter()
             .setEncryptionObject(unencryptedAuthorizationData.serializeJSONObject(JSONOutputFormats.NORMALIZED),
                                  dataEncryptionAlgorithm,
@@ -61,7 +57,6 @@ public class PayerAuthorizationEncoder extends JSONEncoder implements BaseProper
     protected void writeJSONData(JSONObjectWriter wr) throws IOException {
         wr.setString(PROVIDER_AUTHORITY_URL_JSON, providerAuthorityUrl)
           .setString(ACCOUNT_TYPE_JSON, accountType)
-          .setObject(PAYMENT_REQUEST_JSON, paymentRequest.root)
           .setObject(ENCRYPTED_AUTHORIZATION_JSON, encryptedData);
     }
 

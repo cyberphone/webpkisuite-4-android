@@ -48,8 +48,7 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
             // and process user authorizations.
             saturnActivity.postJSONData(
                 saturnActivity.walletRequest.getAndroidTransactionUrl(),
-                new PayerAuthorizationEncoder(saturnActivity.selectedCard.paymentRequest,
-                                              saturnActivity.authorizationData,
+                new PayerAuthorizationEncoder(saturnActivity.authorizationData,
                                               saturnActivity.selectedCard.authorityUrl,
                                               saturnActivity.selectedCard.accountDescriptor.getAccountType(),
                                               saturnActivity.selectedCard.dataEncryptionAlgorithm,

@@ -41,18 +41,17 @@ public interface BaseProperties {
 
     String KEY_JSON                         = "key";                        // Wallet-originated encryption key
 
-    String CHALLENGE_RESULTS_JSON           = "challengeResults";           // Result of ProviderUserResponse 
+    String RESPONSE_TO_CHALLENGE_JSON       = "responseToChallenge";        // Result of ProviderUserResponse 
 
     String PAYMENT_NETWORKS_JSON            = "paymentNetworks";
     String PAYMENT_REQUEST_JSON             = "paymentRequest";
     String HTTP_VERSION_JSON                = "httpVersion";                // For per partner being able to use HTTP/2 and further
-    String INITIATOR_AUTHORITY_URL_JSON     = "initiatorAuthorityUrl";      // Payee bank authority URL
     String ACQUIRER_AUTHORITY_URL_JSON      = "acquirerAuthorityUrl";       // For CreditCard payments
-    String PAYEE_ACCOUNTS_JSON              = "payeeAccounts";              // For Account2Account payments
     String PAYEE_ACCOUNT_JSON               = "payeeAccount";               // Selected payee Account2Account
     String EXPIRES_JSON                     = "expires";                    // Object expiration time
-    String AUTHORITY_URL_JSON               = "authorityUrl";
-    String TRANSACTION_URL_JSON             = "transactionUrl";
+    String AUTHORITY_URL_JSON               = "authorityUrl";               // Double use self in *Authority objects and initiator
+    String SERVICE_URL_JSON                 = "serviceUrl";                 // Saturn "lite" (standard)
+    String EXTENDED_SERVICE_URL_JSON        = "extendedServiceUrl";         // Native Saturn payment system
     String AMOUNT_JSON                      = "amount";
     String CURRENCY_JSON                    = "currency";
     String NON_DIRECT_PAYMENT_JSON          = "nonDirectPayment";           // Deposit, automated gas station, booking
@@ -64,6 +63,7 @@ public interface BaseProperties {
     String PAYEE_JSON                       = "payee";                      // Payee object
     String ENCRYPTED_AUTHORIZATION_JSON     = "encryptedAuthorization";     // Payer authorization data
     String PROVIDER_AUTHORITY_URL_JSON      = "providerAuthorityUrl";       // URL to payment provider
+    String PROVIDER_ACCOUNT_TYPES_JSON      = "providerAccountTypes";       // List of Account2Account types "understood" by provider
     String ACCEPTED_ACCOUNT_TYPES_JSON      = "acceptedAccountTypes";       // List of ACCOUNT_TYPE_JSON
     String ACCOUNT_JSON                     = "account";                    // Payer Account2Account or Card
     String ACCOUNT_REFERENCE_JSON           = "accountReference";           // Account/Card number for payee (like ************5678)
@@ -75,7 +75,7 @@ public interface BaseProperties {
     String REQUEST_HASH_JSON                = "requestHash";
     String DOMAIN_NAME_JSON                 = "domainName";
     String SIGNATURE_ALGORITHM_JSON         = "signatureAlgorithm";
-    String KEY_ENCRYPTION_ALGORITHM_JSON    = "keyEncryptionAlgorithm";     // For "Authority" encryption key
+    String KEY_ENCRYPTION_ALGORITHM_JSON    = "keyEncryptionAlgorithm";     // For "ProviderAuthority" encryption key
     String DATA_ENCRYPTION_ALGORITHM_JSON   = "dataEncryptionAlgorithm";    //    -"-
     String ENCRYPTION_PARAMETERS_JSON       = "encryptionParameters";       //    -"-
     String SOFTWARE_JSON                    = "software";
@@ -86,7 +86,7 @@ public interface BaseProperties {
     String FIELD3_JSON                      = "field3";
     String VERSION_JSON                     = "version";
     
-    String SATURN_WEB_PAY_CONTEXT_URI       = "http://xmlns.webpki.org/webpay/v2";
+    String SATURN_WEB_PAY_CONTEXT_URI       = "http://webpki.org/saturn/v3";
 
     String JSON_CONTENT_TYPE                = "application/json";
 }

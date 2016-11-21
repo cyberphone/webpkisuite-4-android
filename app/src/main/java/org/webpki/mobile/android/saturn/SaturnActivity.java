@@ -63,7 +63,7 @@ import org.webpki.mobile.android.proxy.BaseProxyActivity;
 
 import org.webpki.mobile.android.saturn.common.AccountDescriptor;
 import org.webpki.mobile.android.saturn.common.AuthorizationData;
-import org.webpki.mobile.android.saturn.common.ChallengeResult;
+import org.webpki.mobile.android.saturn.common.ResponseToChallenge;
 import org.webpki.mobile.android.saturn.common.NonDirectPayments;
 import org.webpki.mobile.android.saturn.common.PaymentRequest;
 import org.webpki.mobile.android.saturn.common.WalletRequestDecoder;
@@ -117,7 +117,7 @@ public class SaturnActivity extends BaseProxyActivity {
 
     String pin = "";
 
-    ChallengeResult[] challengeResults;
+    ResponseToChallenge[] challengeResults;
 
     byte[] dataEncryptionKey;
 
@@ -512,14 +512,14 @@ public class SaturnActivity extends BaseProxyActivity {
     @JavascriptInterface
     public boolean getChallengeJSON(String json) {
         try {
-            Vector<ChallengeResult> temp = new Vector<ChallengeResult>();
+            Vector<ResponseToChallenge> temp = new Vector<ResponseToChallenge>();
             JSONArrayReader challengeArray = JSONParser.parse(json).getJSONArrayReader();
              do {
                  JSONObjectReader challengeObject = challengeArray.getObject();
                  String id = challengeObject.getProperties()[0];
-                 temp.add(new ChallengeResult(id, challengeObject.getString(id)));
+                 temp.add(new ResponseToChallenge(id, challengeObject.getString(id)));
             } while (challengeArray.hasMore());
-            challengeResults = temp.toArray(new ChallengeResult[0]);
+            challengeResults = temp.toArray(new ResponseToChallenge[0]);
             hideSoftKeyBoard();
             ShowPaymentRequest();
             paymentEvent();
@@ -545,7 +545,7 @@ public class SaturnActivity extends BaseProxyActivity {
             try {
                 // User authorizations are always signed by a key that only needs to be
                 // understood by the issuing Payment Provider (bank).
-                ChallengeResult[] tempChallenge = challengeResults;
+                ResponseToChallenge[] tempChallenge = challengeResults;
                 challengeResults = null;
                 authorizationData = AuthorizationData.encode(
                     selectedCard.paymentRequest,

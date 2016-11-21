@@ -31,9 +31,18 @@ public enum Messages {
     PAYER_AUTHORIZATION           ("PayerAuthorization"),            // Created by the PaymentClient
     
     PROVIDER_USER_RESPONSE        ("ProviderUserResponse"),          // May replace any RESPONSE message
+    
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    // One-step payment operation in Account2Account mode
+    // Saturn basic mode
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    AUTHORIZATION_REQUEST         ("AuthorizationRequest"),            // Payee provider to Payer provider
+    AUTHORIZATION_RESPONSE        ("AuthorizationResponse"),           // Response to the former
+    CARD_PAYMENT_REQUEST          ("CardPaymentRequest"),              // Payee provider to Acquirer
+    CARD_PAYMENT_RESPONSE         ("CardPaymentResponse"),             // Response to the former
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // One-step payment operation in "Native" Account2Account mode
     ///////////////////////////////////////////////////////////////////////////////////////////////
     BASIC_CREDIT_REQUEST          ("BasicCreditRequest",             // Payee request to Payee provider
                                    false, true),
@@ -44,7 +53,7 @@ public enum Messages {
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    // Two-step payment operation in the Account2Account mode
+    // Two-step payment operation in "Native" Account2Account mode
     //
     // First step - Payee to Payee provider
     RESERVE_CREDIT_REQUEST        ("ReserveCreditRequest",           // Reserve debit funds at provider
@@ -65,7 +74,7 @@ public enum Messages {
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    // Two-step payment operation in the Card payment mode
+    // Two-step payment operation in "Native" Card payment mode
     //
     // First step - Payee to Payee provider.  Note that Payee provider may be = Acquirer
     RESERVE_CARDPAY_REQUEST       ("ReserveCardpayRequest",          // Reserve funds at provider
@@ -81,8 +90,10 @@ public enum Messages {
                                    true, false),
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
-    AUTHORITY                     ("Authority");                     // Published entity data
+    PROVIDER_AUTHORITY            ("ProviderAuthority"),             // Published provider entity data
     
+    PAYEE_AUTHORITY               ("PayeeAuthority");                // Published Payee entity data
+
     String qualifier;
     
     Boolean cardPayment;
