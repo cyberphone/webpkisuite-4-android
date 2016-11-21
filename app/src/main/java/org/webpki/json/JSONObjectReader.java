@@ -130,7 +130,7 @@ public class JSONObjectReader implements Serializable, Cloneable
         return parseInt (getString (name, JSONTypes.NUMBER));
       }
 
-    public long getLong (String name) throws IOException
+    public long getInt53 (String name) throws IOException
       {
         return parseLong (getString (name, JSONTypes.NUMBER));
       }
@@ -360,10 +360,16 @@ public class JSONObjectReader implements Serializable, Cloneable
         return JSONSignatureDecoder.getCertificatePath (this);
       }
 
-    public void scanAway (String name) throws IOException
-      {
-        getProperty (name, getPropertyType (name));
-      }
+    public JSONObjectReader scanAway (String name) throws IOException {
+        JSONValue value = getProperty (name);
+        value.readFlag = true;
+        if (value.type == JSONTypes.OBJECT) {
+            JSONObject.setObjectAsRead((JSONObject)value.value);
+        } else if (value.type == JSONTypes.ARRAY) {
+            JSONObject.setArrayAsRead(value);
+        }
+        return this;
+    }
 
     public JSONObjectReader removeProperty (String name) throws IOException
       {
