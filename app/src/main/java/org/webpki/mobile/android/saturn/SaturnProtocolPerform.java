@@ -121,7 +121,11 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
                         }
                         html.append("<input style='font-size:inherit' ")
                             .append(autofocus)
-                            .append("type='password' id='")
+                            .append("type='")
+                            .append(challengeField.getType() == ChallengeField.TYPE.ALPHANUMERIC_SECRET ||
+                                    challengeField.getType() == ChallengeField.TYPE.NUMERIC_SECRET ?
+                                "password" : "text")
+                            .append("' id='")
                             .append(challengeField.getId())
                             .append("' size='")
                             .append(challengeField.getLength())
