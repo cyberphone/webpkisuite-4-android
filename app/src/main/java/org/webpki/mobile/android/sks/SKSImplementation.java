@@ -93,7 +93,7 @@ import android.util.Log;
  */
 public class SKSImplementation implements SKSError, SecureKeyStore, Serializable, GrantInterface
   {
-    private static final long serialVersionUID = 7L;
+    private static final long serialVersionUID = 8L;
 
     /////////////////////////////////////////////////////////////////////////////////////////////
     // SKS version and configuration data
