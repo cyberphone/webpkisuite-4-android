@@ -904,7 +904,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         return alg;
     }
 
-    static final int ALG_SYM_ENC   = 0x00000001;
+    static final int ALG_SYM_ENC  = 0x00000001;
     static final int ALG_IV_REQ   = 0x00000002;
     static final int ALG_IV_INT   = 0x00000004;
     static final int ALG_SYML_128 = 0x00000008;
@@ -913,7 +913,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
     static final int ALG_HMAC     = 0x00000040;
     static final int ALG_ASYM_ENC = 0x00000080;
     static final int ALG_ASYM_SGN = 0x00000100;
-    static final int ALG_RSA_KEY = 0x00004000;
+    static final int ALG_RSA_KEY  = 0x00004000;
     static final int ALG_RSA_GMSK = 0x00003FFF;
     static final int ALG_RSA_EXP  = 0x00008000;
     static final int ALG_HASH_160 = 0x00140000;
