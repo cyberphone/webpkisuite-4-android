@@ -361,14 +361,14 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
             }
         }
 
-        void checkEECerificateAvailablity() throws SKSException {
+        void checkEECertificateAvailability() throws SKSException {
             if (certificatePath == null) {
                 owner.abort("Missing \"setCertificatePath\" for: " + id);
             }
         }
 
         MacBuilder getEeCertMacBuilder(byte[] method) throws SKSException {
-            checkEECerificateAvailablity();
+            checkEECertificateAvailability();
             MacBuilder macBuilder = owner.getMacBuilderForMethodCall(method);
             try {
                 macBuilder.addArray(certificatePath[0].getEncoded());
@@ -2463,7 +2463,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
                 ///////////////////////////////////////////////////////////////////////////////////
                 // A key provisioned in this session
                 ///////////////////////////////////////////////////////////////////////////////////
-                keyEntry.checkEECerificateAvailablity();
+                keyEntry.checkEECertificateAvailability();
 
                 ///////////////////////////////////////////////////////////////////////////////////
                 // Check public versus private key match
