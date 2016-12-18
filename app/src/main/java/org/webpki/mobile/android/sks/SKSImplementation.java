@@ -97,14 +97,14 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
     /////////////////////////////////////////////////////////////////////////////////////////////
     // SKS version and configuration data
     /////////////////////////////////////////////////////////////////////////////////////////////
-    static final String SKS_VENDOR_NAME = "WebPKI.org";
-    static final String SKS_VENDOR_DESCRIPTION = "SKS for Android";
-    static final String SKS_UPDATE_URL = null;   // Change here to test or disable
-    static final boolean SKS_DEVICE_PIN_SUPPORT = false;  // Change here to test or disable
-    static final boolean SKS_BIOMETRIC_SUPPORT = false;  // Change here to test or disable
+    static final String SKS_VENDOR_NAME           = "WebPKI.org";
+    static final String SKS_VENDOR_DESCRIPTION    = "SKS for Android";
+    static final String SKS_UPDATE_URL            = null;   // Change here to test or disable
+    static final boolean SKS_DEVICE_PIN_SUPPORT   = false;  // Change here to test or disable
+    static final boolean SKS_BIOMETRIC_SUPPORT    = false;  // Change here to test or disable
     static final boolean SKS_RSA_EXPONENT_SUPPORT = true;   // Change here to test or disable
-    static final int MAX_LENGTH_CRYPTO_DATA = 16384;
-    static final int MAX_LENGTH_EXTENSION_DATA = 65536;
+    static final int MAX_LENGTH_CRYPTO_DATA       = 16384;
+    static final int MAX_LENGTH_EXTENSION_DATA    = 65536;
 
     private static final String SKS_DEBUG = "SKS";  // Android SKS debug constant
 
@@ -748,9 +748,9 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
 
     class SignatureWrapper {
         static final int ASN1_SEQUENCE = 0x30;
-        static final int ASN1_INTEGER = 0x02;
+        static final int ASN1_INTEGER  = 0x02;
 
-        static final int LEADING_ZERO = 0x00;
+        static final int LEADING_ZERO  = 0x00;
 
         Signature instance;
         boolean rsaFlag;
@@ -904,29 +904,29 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         return alg;
     }
 
-    static final int ALG_SYM_ENC = 0x00000001;
-    static final int ALG_IV_REQ = 0x00000002;
-    static final int ALG_IV_INT = 0x00000004;
+    static final int ALG_SYM_ENC   = 0x00000001;
+    static final int ALG_IV_REQ   = 0x00000002;
+    static final int ALG_IV_INT   = 0x00000004;
     static final int ALG_SYML_128 = 0x00000008;
     static final int ALG_SYML_192 = 0x00000010;
     static final int ALG_SYML_256 = 0x00000020;
-    static final int ALG_HMAC = 0x00000040;
+    static final int ALG_HMAC     = 0x00000040;
     static final int ALG_ASYM_ENC = 0x00000080;
     static final int ALG_ASYM_SGN = 0x00000100;
     static final int ALG_RSA_KEY = 0x00004000;
     static final int ALG_RSA_GMSK = 0x00003FFF;
-    static final int ALG_RSA_EXP = 0x00008000;
+    static final int ALG_RSA_EXP  = 0x00008000;
     static final int ALG_HASH_160 = 0x00140000;
     static final int ALG_HASH_256 = 0x00200000;
     static final int ALG_HASH_384 = 0x00300000;
     static final int ALG_HASH_512 = 0x00400000;
     static final int ALG_HASH_DIV = 0x00010000;
     static final int ALG_HASH_MSK = 0x0000007F;
-    static final int ALG_NONE = 0x00800000;
-    static final int ALG_ASYM_KA = 0x01000000;
-    static final int ALG_AES_PAD = 0x02000000;
-    static final int ALG_EC_KEY = 0x04000000;
-    static final int ALG_KEY_GEN = 0x08000000;
+    static final int ALG_NONE     = 0x00800000;
+    static final int ALG_ASYM_KA  = 0x01000000;
+    static final int ALG_AES_PAD  = 0x02000000;
+    static final int ALG_EC_KEY   = 0x04000000;
+    static final int ALG_KEY_GEN  = 0x08000000;
     static final int ALG_KEY_PARM = 0x10000000;
 
     static {
