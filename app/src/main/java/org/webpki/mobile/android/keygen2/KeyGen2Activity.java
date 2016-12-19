@@ -1,11 +1,11 @@
 /*
- *  Copyright 2006-2015 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,8 +28,7 @@ import org.webpki.keygen2.KeyCreationRequestDecoder;
 import org.webpki.keygen2.InvocationRequestDecoder;
 import org.webpki.keygen2.ProvisioningInitializationRequestDecoder;
 
-public class KeyGen2Activity extends BaseProxyActivity
-  {
+public class KeyGen2Activity extends BaseProxyActivity {
     public static final String KEYGEN2 = "KeyGen2";
 
     InvocationRequestDecoder invocation_request;
@@ -41,48 +40,39 @@ public class KeyGen2Activity extends BaseProxyActivity
     int provisioning_handle;
 
     @Override
-    public void onCreate (Bundle savedInstanceState)
-      {
-        super.onCreate (savedInstanceState);
-        setContentView (R.layout.activity_keygen2);
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_keygen2);
 
-        showHeavyWork (PROGRESS_INITIALIZING);
+        showHeavyWork(PROGRESS_INITIALIZING);
 
         // Start of keygen2
-        new KeyGen2ProtocolInit (this).execute ();
-      }
+        new KeyGen2ProtocolInit(this).execute();
+    }
 
     @Override
-    protected String getProtocolName ()
-      {
+    protected String getProtocolName() {
         return KEYGEN2;
-      }
+    }
 
     @Override
-    protected void abortTearDown ()
-      {
-        if (provisioning_handle != 0)
-          {
-            try
-              {
-                sks.abortProvisioningSession (provisioning_handle);
-              }
-            catch (Exception e)
-              {
-                Log.e (KEYGEN2, "Failed to abort SKS session");
-              }
-          }
-      }
+    protected void abortTearDown() {
+        if (provisioning_handle != 0) {
+            try {
+                sks.abortProvisioningSession(provisioning_handle);
+            } catch (Exception e) {
+                Log.e(KEYGEN2, "Failed to abort SKS session");
+            }
+        }
+    }
 
     @Override
-    public void onBackPressed ()
-      {
-        conditionalAbort (null);
-      }
+    public void onBackPressed() {
+        conditionalAbort(null);
+    }
 
     @Override
-    protected String getAbortString ()
-      {
+    protected String getAbortString() {
         return "Do you want to abort the current enrollment process?";
-      }
-  }
+    }
+}
