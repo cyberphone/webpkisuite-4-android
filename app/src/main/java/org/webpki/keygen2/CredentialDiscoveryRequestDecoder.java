@@ -125,7 +125,7 @@ public class CredentialDiscoveryRequestDecoder extends ClientDecoder {
         }
     }
 
-    LinkedHashMap<String, LookupSpecifier> lookup_specifiers = new LinkedHashMap<String, LookupSpecifier>();
+    LinkedHashMap<String, LookupSpecifier> lookupSpecifiers = new LinkedHashMap<String, LookupSpecifier>();
 
     String clientSessionId;
 
@@ -151,7 +151,7 @@ public class CredentialDiscoveryRequestDecoder extends ClientDecoder {
 
 
     public LookupSpecifier[] getLookupSpecifiers() {
-        return lookup_specifiers.values().toArray(new LookupSpecifier[0]);
+        return lookupSpecifiers.values().toArray(new LookupSpecifier[0]);
     }
 
 
@@ -179,7 +179,7 @@ public class CredentialDiscoveryRequestDecoder extends ClientDecoder {
         /////////////////////////////////////////////////////////////////////////////////////////
         for (JSONObjectReader spec : getObjectArray(rd, LOOKUP_SPECIFIERS_JSON)) {
             LookupSpecifier ls = new LookupSpecifier(spec);
-            if (lookup_specifiers.put(ls.id, ls) != null) {
+            if (lookupSpecifiers.put(ls.id, ls) != null) {
                 throw new IOException("Duplicate id: " + ls.id);
             }
         }

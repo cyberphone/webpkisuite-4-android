@@ -82,7 +82,7 @@ public class CredentialDiscoveryResponseEncoder extends JSONEncoder {
     public CredentialDiscoveryResponseEncoder(CredentialDiscoveryRequestDecoder credentialDiscoveryRequestDecoder) {
         serverSessionId = credentialDiscoveryRequestDecoder.serverSessionId;
         clientSessionId = credentialDiscoveryRequestDecoder.clientSessionId;
-        this.ref = credentialDiscoveryRequestDecoder.lookup_specifiers;
+        this.ref = credentialDiscoveryRequestDecoder.lookupSpecifiers;
     }
 
 
