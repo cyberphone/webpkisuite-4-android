@@ -43,11 +43,9 @@ import org.webpki.asn1.ParseUtil;
 
 import org.webpki.asn1.cert.SubjectAltNameTypes;
 
-
 public class CertificateUtil {
 
     private CertificateUtil() {}  // No instantiation please
-
 
     public static final String AIA_CA_ISSUERS     = "1.3.6.1.5.5.7.48.2";
     public static final String AIA_OCSP_RESPONDER = "1.3.6.1.5.5.7.48.1";
@@ -111,41 +109,41 @@ public class CertificateUtil {
     }
 
 
-    public static X509Certificate[] getSortedPath(X509Certificate[] inpath) throws IOException {
+    public static X509Certificate[] getSortedPath(X509Certificate[] certificatePath) throws IOException {
         try {
             // Build/check path
             int n = 0;
-            int[] idx = new int[inpath.length];
-            int[] jidx = new int[inpath.length];
-            boolean[] done = new boolean[inpath.length];
-            for (int i = 0; i < inpath.length; i++) {
-                X500Principal p = inpath[i].getIssuerX500Principal();
+            int[] idx = new int[certificatePath.length];
+            int[] jidx = new int[certificatePath.length];
+            boolean[] done = new boolean[certificatePath.length];
+            for (int i = 0; i < certificatePath.length; i++) {
+                X500Principal p = certificatePath[i].getIssuerX500Principal();
                 idx[i] = -1;
-                for (int j = 0; j < inpath.length; j++) {
+                for (int j = 0; j < certificatePath.length; j++) {
                     if (j == i || done[j]) continue;
-                    if (p.equals(inpath[j].getSubjectX500Principal()))  // J is certifying I
+                    if (p.equals(certificatePath[j].getSubjectX500Principal()))  // J is certifying I
                     {
                         n++;
                         idx[i] = j;
                         jidx[j] = i;
                         done[j] = true;
-                        inpath[i].verify(inpath[j].getPublicKey());
+                        certificatePath[i].verify(certificatePath[j].getPublicKey());
                         break;
                     }
                 }
             }
-            if (n != (inpath.length - 1)) {
+            if (n != (certificatePath.length - 1)) {
                 throw new IOException("X509Certificate elements contain multiple or broken cert paths");
             }
 
             // Path OK, now sort it
-            X509Certificate[] certpath = new X509Certificate[inpath.length];
-            for (int i = 0; i < inpath.length; i++) {
+            X509Certificate[] certpath = new X509Certificate[certificatePath.length];
+            for (int i = 0; i < certificatePath.length; i++) {
                 if (idx[i] < 0) // Must be the highest
                 {
-                    certpath[n] = inpath[i];
+                    certpath[n] = certificatePath[i];
                     while (--n >= 0) {
-                        certpath[n] = inpath[i = jidx[i]];
+                        certpath[n] = certificatePath[i = jidx[i]];
                     }
                     break;
                 }
@@ -157,12 +155,12 @@ public class CertificateUtil {
     }
 
 
-    public static X509Certificate[] getSortedPathFromBlobs(List<byte[]> blobvector) throws IOException {
-        X509Certificate[] inpath = new X509Certificate[blobvector.size()];
-        for (int i = 0; i < inpath.length; i++) {
-            inpath[i] = getCertificateFromBlob(blobvector.get(i));
+    public static X509Certificate[] getSortedPathFromBlobs(List<byte[]> blobVector) throws IOException {
+        X509Certificate[] certificatePath = new X509Certificate[blobVector.size()];
+        for (int i = 0; i < certificatePath.length; i++) {
+            certificatePath[i] = getCertificateFromBlob(blobVector.get(i));
         }
-        return getSortedPath(inpath);
+        return getSortedPath(certificatePath);
     }
 
 
@@ -200,7 +198,7 @@ public class CertificateUtil {
     }
 
 
-    private static String[] getAIAURIs(X509Certificate certificate, String sub_oid) throws IOException {
+    private static String[] getAIAURIs(X509Certificate certificate, String subOid) throws IOException {
         ASN1Sequence outer = getExtension(certificate, CertificateExtensions.AUTHORITY_INFO_ACCESS);
         if (outer == null) {
             return null;
@@ -211,7 +209,7 @@ public class CertificateUtil {
             if (inner.size() != 2) {
                 throw new IOException("AIA extension size error");
             }
-            if (ParseUtil.oid(inner.get(0)).oid().equals(sub_oid)) {
+            if (ParseUtil.oid(inner.get(0)).oid().equals(subOid)) {
                 if (ParseUtil.isSimpleContext(inner.get(1), 6)) {
                     String uri = new String(ParseUtil.simpleContext(inner.get(1), 6).value(), "UTF-8");
                     if (uri.startsWith("http")) {

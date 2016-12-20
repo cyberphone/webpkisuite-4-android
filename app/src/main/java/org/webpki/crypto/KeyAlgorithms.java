@@ -398,14 +398,14 @@ public enum KeyAlgorithms implements CryptoAlgorithms {
     }
 
 
-    public static KeyAlgorithms getECKeyAlgorithm(ECParameterSpec ec_parameters) throws IOException {
-        EllipticCurve ec_curve = ec_parameters.getCurve();
+    public static KeyAlgorithms getECKeyAlgorithm(ECParameterSpec ecParameters) throws IOException {
+        EllipticCurve ecCurve = ecParameters.getCurve();
         for (KeyAlgorithms alg : values()) {
-            if (alg.isECKey() && alg.ecParmSpec.getCurve().equals(ec_curve)) {
+            if (alg.isECKey() && alg.ecParmSpec.getCurve().equals(ecCurve)) {
                 return alg;
             }
         }
-        throw new IOException("Unknown EC curve: " + ec_curve.toString());
+        throw new IOException("Unknown EC curve: " + ecCurve.toString());
     }
 
 
