@@ -612,15 +612,15 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
             }
         }
 
-        boolean verifyKeyManagementKeyAuthorization(byte[] kmk_kdf,
+        boolean verifyKeyManagementKeyAuthorization(byte[] kmkKdf,
                                                     byte[] argument,
                                                     byte[] authorization) throws GeneralSecurityException {
             return new SignatureWrapper(keyManagementKey instanceof RSAPublicKey ?
-                    "SHA256WithRSA" : "SHA256WithECDSA",
-                    keyManagementKey)
-                    .update(kmk_kdf)
-                    .update(argument)
-                    .verify(authorization);
+                                            "SHA256WithRSA" : "SHA256WithECDSA",
+                                        keyManagementKey)
+                .update(kmkKdf)
+                .update(argument)
+                .verify(authorization);
         }
     }
 
@@ -686,7 +686,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         AttestationSignatureGenerator() throws GeneralSecurityException {
             PrivateKey attester = getAttestationKey();
             signer = new SignatureWrapper(attester instanceof RSAPrivateKey ? "SHA256withRSA" : "SHA256withECDSA",
-                    attester);
+                                          attester);
         }
 
         private byte[] short2bytes(int s) {
@@ -765,12 +765,12 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
             }
         }
 
-        public SignatureWrapper(String algorithm, PrivateKey private_key) throws GeneralSecurityException {
+        public SignatureWrapper(String algorithm, PrivateKey privateKey) throws GeneralSecurityException {
             instance = Signature.getInstance(algorithm);
-            instance.initSign(private_key);
-            rsaFlag = private_key instanceof RSAPrivateKey;
+            instance.initSign(privateKey);
+            rsaFlag = privateKey instanceof RSAPrivateKey;
             if (!rsaFlag) {
-                extendTo = getEcPointLength((ECKey) private_key);
+                extendTo = getEcPointLength((ECKey) privateKey);
             }
         }
 
@@ -1941,8 +1941,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         // Check that the key agreement algorithm is known and applicable
         ///////////////////////////////////////////////////////////////////////////////////
         Algorithm alg = checkKeyAndAlgorithm(keyEntry, algorithm, ALG_ASYM_KA);
-        if (parameters != null)  // Only support external KDFs yet...
-        {
+        if (parameters != null) { // Only support external KDFs yet...
             abort("\"" + VAR_PARAMETERS + "\" for key #" + keyHandle + " do not match algorithm");
         }
 
@@ -1955,10 +1954,10 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         // Finally, perform operation
         ///////////////////////////////////////////////////////////////////////////////////
         try {
-            KeyAgreement key_agreement = KeyAgreement.getInstance(alg.jceName);
-            key_agreement.init(keyEntry.privateKey);
-            key_agreement.doPhase(publicKey, true);
-            return key_agreement.generateSecret();
+            KeyAgreement keyAgreement = KeyAgreement.getInstance(alg.jceName);
+            keyAgreement.init(keyEntry.privateKey);
+            keyAgreement.doPhase(publicKey, true);
+            return keyAgreement.generateSecret();
         } catch (Exception e) {
             throw new SKSException(e, SKSException.ERROR_CRYPTO);
         }
@@ -2156,7 +2155,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         ///////////////////////////////////////////////////////////////////////////////////
         // Find the protection data objects that are not stored in the key entry
         ///////////////////////////////////////////////////////////////////////////////////
-        byte protection_status = KeyProtectionInfo.PROTSTAT_NO_PIN;
+        byte protectionStatus = KeyProtectionInfo.PROTSTAT_NO_PIN;
         byte pukFormat = 0;
         short pukRetryLimit = 0;
         short pukErrorCount = 0;
@@ -2170,20 +2169,20 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         short maxLength = 0;
         byte inputMethod = 0;
         if (keyEntry.devicePinProtection) {
-            protection_status = KeyProtectionInfo.PROTSTAT_DEVICE_PIN;
+            protectionStatus = KeyProtectionInfo.PROTSTAT_DEVICE_PIN;
         } else if (keyEntry.pinPolicy != null) {
-            protection_status = KeyProtectionInfo.PROTSTAT_PIN_PROTECTED;
+            protectionStatus = KeyProtectionInfo.PROTSTAT_PIN_PROTECTED;
             if (keyEntry.errorCount >= keyEntry.pinPolicy.retryLimit) {
-                protection_status |= KeyProtectionInfo.PROTSTAT_PIN_BLOCKED;
+                protectionStatus |= KeyProtectionInfo.PROTSTAT_PIN_BLOCKED;
             }
             if (keyEntry.pinPolicy.pukPolicy != null) {
                 pukFormat = keyEntry.pinPolicy.pukPolicy.format;
                 pukRetryLimit = keyEntry.pinPolicy.pukPolicy.retryLimit;
                 pukErrorCount = keyEntry.pinPolicy.pukPolicy.errorCount;
-                protection_status |= KeyProtectionInfo.PROTSTAT_PUK_PROTECTED;
+                protectionStatus |= KeyProtectionInfo.PROTSTAT_PUK_PROTECTED;
                 if (keyEntry.pinPolicy.pukPolicy.errorCount >= keyEntry.pinPolicy.pukPolicy.retryLimit &&
                         keyEntry.pinPolicy.pukPolicy.retryLimit > 0) {
-                    protection_status |= KeyProtectionInfo.PROTSTAT_PUK_BLOCKED;
+                    protectionStatus |= KeyProtectionInfo.PROTSTAT_PUK_BLOCKED;
                 }
             }
             userDefined = keyEntry.pinPolicy.userDefined;
@@ -2196,25 +2195,25 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
             maxLength = keyEntry.pinPolicy.maxLength;
             inputMethod = keyEntry.pinPolicy.inputMethod;
         }
-        return new KeyProtectionInfo(protection_status,
-                pukFormat,
-                pukRetryLimit,
-                pukErrorCount,
-                userDefined,
-                userModifiable,
-                format,
-                retryLimit,
-                grouping,
-                patternRestrictions,
-                minLength,
-                maxLength,
-                inputMethod,
-                keyEntry.errorCount,
-                keyEntry.enablePinCaching,
-                keyEntry.biometricProtection,
-                keyEntry.exportProtection,
-                keyEntry.deleteProtection,
-                keyEntry.keyBackup);
+        return new KeyProtectionInfo(protectionStatus,
+                                     pukFormat,
+                                     pukRetryLimit,
+                                     pukErrorCount,
+                                     userDefined,
+                                     userModifiable,
+                                     format,
+                                     retryLimit,
+                                     grouping,
+                                     patternRestrictions,
+                                     minLength,
+                                     maxLength,
+                                     inputMethod,
+                                     keyEntry.errorCount,
+                                     keyEntry.enablePinCaching,
+                                     keyEntry.biometricProtection,
+                                     keyEntry.exportProtection,
+                                     keyEntry.deleteProtection,
+                                     keyEntry.keyBackup);
     }
 
 
