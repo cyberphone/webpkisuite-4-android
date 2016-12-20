@@ -39,7 +39,7 @@ public class CertificateInfo {
 
     private String issuer_dn;
 
-    private String serial_number;
+    private String serialNumber;
 
     private String subject_dn;
 
@@ -59,7 +59,7 @@ public class CertificateInfo {
         this.trusted = trusted;
         trust_mode_set = true;
         issuer_dn = CertificateUtil.convertRFC2253ToLegacy(certificate.getIssuerX500Principal().getName());
-        serial_number = certificate.getSerialNumber().toString();
+        serialNumber = certificate.getSerialNumber().toString();
         subject_dn = CertificateUtil.convertRFC2253ToLegacy(certificate.getSubjectX500Principal().getName());
         not_valid_before = certificate.getNotBefore();
         not_valid_after = certificate.getNotAfter();
@@ -228,7 +228,7 @@ public class CertificateInfo {
      * Returns the serial number of this certificate
      */
     public String getSerialNumber() {
-        return getItem(serial_number);
+        return getItem(serialNumber);
     }
 
 

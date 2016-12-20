@@ -53,11 +53,11 @@ public class CertificateUtil {
     public static final String AIA_OCSP_RESPONDER = "1.3.6.1.5.5.7.48.1";
 
     private static ASN1Sequence getExtension(X509Certificate certificate, CertificateExtensions extension) throws IOException {
-        byte[] extension_bytes = certificate.getExtensionValue(extension.getOID());
-        if (extension_bytes == null) {
+        byte[] extensionBytes = certificate.getExtensionValue(extension.getOID());
+        if (extensionBytes == null) {
             return null;
         }
-        return ParseUtil.sequence(DerDecoder.decode(ParseUtil.octet(DerDecoder.decode(extension_bytes))));
+        return ParseUtil.sequence(DerDecoder.decode(ParseUtil.octet(DerDecoder.decode(extensionBytes))));
     }
 
 
@@ -94,20 +94,20 @@ public class CertificateUtil {
 
 
     public static String[] getKeyUsages(X509Certificate certificate) throws IOException {
-        boolean[] key_usage = certificate.getKeyUsage();
-        if (key_usage == null) {
+        boolean[] keyUsage = certificate.getKeyUsage();
+        if (keyUsage == null) {
             return null;
         }
-        Vector<String> key_usage_set = new Vector<String>();
+        Vector<String> keyUsageSet = new Vector<String>();
         int i = 0;
         for (KeyUsageBits kub : KeyUsageBits.values()) {
-            if (i < key_usage.length) {
-                if (key_usage[i++]) {
-                    key_usage_set.add(kub.getX509Name());
+            if (i < keyUsage.length) {
+                if (keyUsage[i++]) {
+                    keyUsageSet.add(kub.getX509Name());
                 }
             }
         }
-        return key_usage_set.toArray(new String[0]);
+        return keyUsageSet.toArray(new String[0]);
     }
 
 
@@ -180,23 +180,23 @@ public class CertificateUtil {
 
 
     public static String[] getSubjectEmailAddresses(X509Certificate certificate) throws IOException {
-        HashSet<String> email_addresses = new HashSet<String>();
+        HashSet<String> emailAddresses = new HashSet<String>();
 
         Pattern pattern = Pattern.compile("(^|,)(1\\.2\\.840\\.113549\\.1\\.9\\.1=#)([a-f0-9]+)(,.*|$)");
         Matcher matcher = pattern.matcher(certificate.getSubjectX500Principal().getName());
         if (matcher.find()) {
-            email_addresses.add(getHexASN1String(matcher.group(3)));
+            emailAddresses.add(getHexASN1String(matcher.group(3)));
         }
 
         ASN1Sequence outer = getExtension(certificate, CertificateExtensions.SUBJECT_ALT_NAME);
         if (outer != null) {
             for (int q = 0; q < outer.size(); q++) {
                 if (ParseUtil.isSimpleContext(outer.get(q), SubjectAltNameTypes.RFC822_NAME)) {
-                    email_addresses.add(new String(ParseUtil.simpleContext(outer.get(q), SubjectAltNameTypes.RFC822_NAME).value(), "UTF-8"));
+                    emailAddresses.add(new String(ParseUtil.simpleContext(outer.get(q), SubjectAltNameTypes.RFC822_NAME).value(), "UTF-8"));
                 }
             }
         }
-        return email_addresses.isEmpty() ? null : email_addresses.toArray(new String[0]);
+        return emailAddresses.isEmpty() ? null : emailAddresses.toArray(new String[0]);
     }
 
 
@@ -248,8 +248,8 @@ public class CertificateUtil {
     }
 
 
-    private static String getHexASN1String(String ascii_hex) throws IOException {
-        return ParseUtil.string(DerDecoder.decode(DebugFormatter.getByteArrayFromHex(ascii_hex))).value();
+    private static String getHexASN1String(String asciiHex) throws IOException {
+        return ParseUtil.string(DerDecoder.decode(DebugFormatter.getByteArrayFromHex(asciiHex))).value();
     }
 
 
@@ -330,8 +330,8 @@ public class CertificateUtil {
 
 
     public static boolean isTrustAnchor(X509Certificate certificate) throws IOException {
-        boolean trust_anchor = certificate.getSubjectX500Principal().equals(certificate.getIssuerX500Principal()) && certificate.getBasicConstraints() >= 0;
-        if (trust_anchor) {
+        boolean trustAnchor = certificate.getSubjectX500Principal().equals(certificate.getIssuerX500Principal()) && certificate.getBasicConstraints() >= 0;
+        if (trustAnchor) {
             try {
                 certificate.verify(certificate.getPublicKey());
             } catch (Exception e) {
@@ -347,11 +347,11 @@ public class CertificateUtil {
             System.out.println("\nCheck path for:\n   {certificate-in-der-format}...");
         } else {
             try {
-                Vector<byte[]> cert_path = new Vector<byte[]>();
+                Vector<byte[]> certPath = new Vector<byte[]>();
                 for (String file : args) {
-                    cert_path.add(ArrayUtil.readFile(file));
+                    certPath.add(ArrayUtil.readFile(file));
                 }
-                for (X509Certificate cert : getSortedPathFromBlobs(cert_path)) {
+                for (X509Certificate cert : getSortedPathFromBlobs(certPath)) {
                     System.out.println("\nCertificate:\n" + new CertificateInfo(cert));
                 }
             } catch (Exception e) {
