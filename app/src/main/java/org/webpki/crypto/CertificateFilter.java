@@ -386,16 +386,16 @@ public class CertificateFilter {
     }
 
 
-    private static boolean matchDistinguishedName(String specifier, X509Certificate[] certificate_path, boolean issuer) {
+    private static boolean matchDistinguishedName(String specifier, X509Certificate[] certificatePath, boolean issuer) {
         if (specifier == null) {
             return true;
         }
         Pattern pattern = Pattern.compile(specifier);
-        int path_len = issuer ? certificate_path.length : 1;
+        int path_len = issuer ? certificatePath.length : 1;
         for (int q = 0; q < path_len; q++) {
-            String dn = issuer ? certificate_path[q].getIssuerX500Principal().getName(X500Principal.RFC2253)
+            String dn = issuer ? certificatePath[q].getIssuerX500Principal().getName(X500Principal.RFC2253)
                     :
-                    certificate_path[q].getSubjectX500Principal().getName(X500Principal.RFC2253);
+                    certificatePath[q].getSubjectX500Principal().getName(X500Principal.RFC2253);
             if (pattern.matcher(dn).matches()) {
                 return true;
             }
@@ -404,11 +404,11 @@ public class CertificateFilter {
     }
 
 
-    private static boolean matchFingerPrint(byte[] specifier, X509Certificate[] certificate_path) throws GeneralSecurityException {
+    private static boolean matchFingerPrint(byte[] specifier, X509Certificate[] certificatePath) throws GeneralSecurityException {
         if (specifier == null) {
             return true;
         }
-        for (X509Certificate certificate : certificate_path) {
+        for (X509Certificate certificate : certificatePath) {
             if (ArrayUtil.compare(specifier, MessageDigest.getInstance("SHA256").digest(certificate.getEncoded()))) {
                 return true;
             }
@@ -425,16 +425,16 @@ public class CertificateFilter {
     }
 
 
-    public boolean matches(X509Certificate[] certificate_path) throws IOException {
+    public boolean matches(X509Certificate[] certificatePath) throws IOException {
         try {
-            return matchSerial(serial_number, certificate_path[0]) &&
-                   matchFingerPrint(finger_print, certificate_path) &&
-                   matchKeyUsage(key_usage_rules, certificate_path[0]) &&
-                   matchExtendedKeyUsage(extended_key_usage_rules, certificate_path[0]) &&
-                   matchPolicy(policy_rules, certificate_path[0]) &&
-                   matchEmailAddress(email_reg_ex, certificate_path[0]) &&
-                   matchDistinguishedName(issuer_reg_ex, certificate_path, true) &&
-                   matchDistinguishedName(subject_reg_ex, certificate_path, false);
+            return matchSerial(serial_number, certificatePath[0]) &&
+                   matchFingerPrint(finger_print, certificatePath) &&
+                   matchKeyUsage(key_usage_rules, certificatePath[0]) &&
+                   matchExtendedKeyUsage(extended_key_usage_rules, certificatePath[0]) &&
+                   matchPolicy(policy_rules, certificatePath[0]) &&
+                   matchEmailAddress(email_reg_ex, certificatePath[0]) &&
+                   matchDistinguishedName(issuer_reg_ex, certificatePath, true) &&
+                   matchDistinguishedName(subject_reg_ex, certificatePath, false);
         } catch (GeneralSecurityException e) {
             throw new IOException(e);
         }

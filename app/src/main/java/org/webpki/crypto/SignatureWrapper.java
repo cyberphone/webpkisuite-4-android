@@ -147,27 +147,27 @@ public class SignatureWrapper {
     }
 
     public SignatureWrapper(AsymSignatureAlgorithms algorithm, 
-                            PublicKey public_key,
+                            PublicKey publicKey,
                             String provider) throws GeneralSecurityException, IOException {
-        this(algorithm, provider, public_key);
-        instance.initVerify(public_key);
+        this(algorithm, provider, publicKey);
+        instance.initVerify(publicKey);
     }
 
     public SignatureWrapper(AsymSignatureAlgorithms algorithm,
-                            PublicKey public_key) throws GeneralSecurityException, IOException {
-        this(algorithm, public_key, null);
+                            PublicKey publicKey) throws GeneralSecurityException, IOException {
+        this(algorithm, publicKey, null);
     }
 
     public SignatureWrapper(AsymSignatureAlgorithms algorithm,
-                            PrivateKey private_key,
+                            PrivateKey privateKey,
                             String provider) throws GeneralSecurityException, IOException {
-        this(algorithm, provider, private_key);
-        instance.initSign(private_key);
+        this(algorithm, provider, privateKey);
+        instance.initSign(privateKey);
     }
 
     public SignatureWrapper(AsymSignatureAlgorithms algorithm,
-                            PrivateKey private_key) throws GeneralSecurityException, IOException {
-        this(algorithm, private_key, null);
+                            PrivateKey privateKey) throws GeneralSecurityException, IOException {
+        this(algorithm, privateKey, null);
     }
 
     public SignatureWrapper setECDSASignatureEncoding(boolean der_encoded) {

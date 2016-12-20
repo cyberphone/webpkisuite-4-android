@@ -409,11 +409,11 @@ public enum KeyAlgorithms implements CryptoAlgorithms {
     }
 
 
-    public static KeyAlgorithms getKeyAlgorithm(PublicKey public_key, Boolean key_parameters) throws IOException {
-        if (public_key instanceof ECPublicKey) {
-            return getECKeyAlgorithm(((ECPublicKey) public_key).getParams());
+    public static KeyAlgorithms getKeyAlgorithm(PublicKey publicKey, Boolean key_parameters) throws IOException {
+        if (publicKey instanceof ECPublicKey) {
+            return getECKeyAlgorithm(((ECPublicKey) publicKey).getParams());
         }
-        byte[] modblob = ((RSAPublicKey) public_key).getModulus().toByteArray();
+        byte[] modblob = ((RSAPublicKey) publicKey).getModulus().toByteArray();
         int length_in_bits = (modblob[0] == 0 ? modblob.length - 1 : modblob.length) * 8;
         for (KeyAlgorithms alg : values()) {
             if (alg.ec_domain_oid == null && length_in_bits == alg.length_in_bits &&
@@ -425,8 +425,8 @@ public enum KeyAlgorithms implements CryptoAlgorithms {
     }
 
 
-    public static KeyAlgorithms getKeyAlgorithm(PublicKey public_key) throws IOException {
-        return getKeyAlgorithm(public_key, null);
+    public static KeyAlgorithms getKeyAlgorithm(PublicKey publicKey) throws IOException {
+        return getKeyAlgorithm(publicKey, null);
     }
 
 

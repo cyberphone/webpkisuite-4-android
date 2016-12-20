@@ -112,11 +112,11 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
             } else {
                 KeyCreationRequestDecoder.PINPolicy pin_policy = upd.getPINPolicy();
                 String error = "PIN syntax error";
-                if (res.length_error) {
+                if (res.lengthError) {
                     int multiplier = pin_policy.getFormat() == PassphraseFormat.BINARY ? 2 : 1;
                     error = "PINs must be " + (pin_policy.getMinLength() * multiplier) + "-" + (pin_policy.getMaxLength() * multiplier) +
                             (pin_policy.getFormat() == PassphraseFormat.NUMERIC ? " digits" : " characters");
-                } else if (res.syntax_error) {
+                } else if (res.syntaxError) {
                     switch (pin_policy.getFormat()) {
                         case NUMERIC:
                             error = "PINs must only contain 0-9";
@@ -133,8 +133,8 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
                         default:
                             break;
                     }
-                } else if (res.pattern_error != null) {
-                    switch (res.pattern_error) {
+                } else if (res.patternError != null) {
+                    switch (res.patternError) {
                         case SEQUENCE:
                             error = "PINs must not be a sequence";
                             break;
@@ -156,8 +156,8 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
                                     "0-9" : "a-z 0-9\nand control characters");
                             break;
                     }
-                } else if (res.unique_error) {
-                    error = "PINs for " + upd.getAppUsage().getProtocolName() + " and " + res.unique_error_app_usage.getProtocolName() + " must not be equal";
+                } else if (res.uniqueError) {
+                    error = "PINs for " + upd.getAppUsage().getProtocolName() + " and " + res.uniqueErrorAppUsage.getProtocolName() + " must not be equal";
                 }
                 pin_err.setText(error);
             }
