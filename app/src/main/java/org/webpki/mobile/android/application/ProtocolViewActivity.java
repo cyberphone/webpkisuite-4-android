@@ -62,7 +62,7 @@ public class ProtocolViewActivity extends Activity {
                         .append("&nbsp;</td></tr></table>");
                 received = !received;
                 JSONObjectWriter json = new JSONObjectWriter(JSONParser.parse(part));
-                log_message.append(new String(json.serializeJSONObject(JSONOutputFormats.PRETTY_HTML), "UTF-8"));
+                log_message.append(json.serializeToString(JSONOutputFormats.PRETTY_HTML));
             }
         } catch (Exception e) {
             log_message.append("No log data available");

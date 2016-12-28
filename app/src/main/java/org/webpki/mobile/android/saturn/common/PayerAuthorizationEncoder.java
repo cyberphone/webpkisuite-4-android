@@ -46,11 +46,11 @@ public class PayerAuthorizationEncoder extends JSONEncoder implements BaseProper
                                      KeyEncryptionAlgorithms keyEncryptionAlgorithm) throws GeneralSecurityException, IOException {
         this.providerAuthorityUrl = providerAuthorityUrl;
         this.accountType = accountType;
-        this.encryptedData = new JSONObjectWriter()
-            .setEncryptionObject(unencryptedAuthorizationData.serializeJSONObject(JSONOutputFormats.NORMALIZED),
-                                 dataEncryptionAlgorithm,
-                                 keyEncryptionKey,
-                                 keyEncryptionAlgorithm);
+        this.encryptedData =
+            JSONObjectWriter.createEncryptionObject(unencryptedAuthorizationData.serializeToBytes(JSONOutputFormats.NORMALIZED),
+                                                                                                  dataEncryptionAlgorithm,
+                                                                                                  keyEncryptionKey,
+                                                                                                  keyEncryptionAlgorithm);
     }
 
     @Override

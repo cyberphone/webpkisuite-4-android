@@ -19,6 +19,7 @@ package org.webpki.mobile.android.saturn.common;
 import java.io.IOException;
 
 import org.webpki.crypto.HashAlgorithms;
+
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
@@ -34,7 +35,7 @@ public class RequestHash implements BaseProperties {
     }
 
     public static byte[] getRequestHash(JSONObjectWriter request) throws IOException {
-        return getRequestHash(request.serializeJSONObject(JSONOutputFormats.NORMALIZED));
+        return getRequestHash(request.serializeToBytes(JSONOutputFormats.NORMALIZED));
     }
 
     public static byte[] parse(JSONObjectReader rd) throws IOException {
