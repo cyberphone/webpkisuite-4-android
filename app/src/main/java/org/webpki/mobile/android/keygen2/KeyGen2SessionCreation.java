@@ -20,7 +20,7 @@ import java.io.IOException;
 
 import java.security.cert.X509Certificate;
 
-import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 
 import android.content.Context;
@@ -285,7 +285,7 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
             keygen2_activity.postJSONData(keygen2_activity.invocation_request.getSubmitUrl(), invocation_response, false);
 
             keygen2_activity.prov_init_request = (ProvisioningInitializationRequestDecoder) keygen2_activity.parseJSONResponse();
-            Date client_time = new Date();
+            GregorianCalendar client_time = new GregorianCalendar();
             ProvisioningSession session =
                     keygen2_activity.sks.createProvisioningSession(keygen2_activity.prov_init_request.getSessionKeyAlgorithm(),
                                                                    keygen2_activity.invocation_request.getPrivacyEnabledFlag(),
@@ -293,7 +293,7 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
                                                                    keygen2_activity.prov_init_request.getServerEphemeralKey(),
                                                                    keygen2_activity.invocation_request.getSubmitUrl(), // IssuerURI
                                                                    keygen2_activity.prov_init_request.getKeyManagementKey(),
-                                                                   (int) (client_time.getTime() / 1000),
+                                                                   (int) (client_time.getTimeInMillis() / 1000),
                                                                    keygen2_activity.prov_init_request.getSessionLifeTime(),
                                                                    keygen2_activity.prov_init_request.getSessionKeyLimit());
 

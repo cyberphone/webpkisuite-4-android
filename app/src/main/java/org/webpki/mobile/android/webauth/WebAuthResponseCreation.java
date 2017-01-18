@@ -20,7 +20,7 @@ import java.io.IOException;
 
 import java.security.cert.X509Certificate;
 
-import java.util.Date;
+import java.util.GregorianCalendar;
 
 import android.os.AsyncTask;
 
@@ -84,7 +84,7 @@ public class WebAuthResponseCreation extends AsyncTask<Void, String, String> {
                     new AuthenticationResponseEncoder(signer.setSignatureCertificateAttributes(true),
                                                       webauth_activity.authentication_request,
                                                       webauth_activity.getInitializationURL(),
-                                                      new Date(),
+                                                      new GregorianCalendar(),
                                                       webauth_activity.getServerCertificate());
             webauth_activity.postJSONData(webauth_activity.authentication_request.getSubmitUrl(), authentication_response, true);
             return webauth_activity.getRedirectURL();

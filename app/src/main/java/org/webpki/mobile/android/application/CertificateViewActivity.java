@@ -20,7 +20,8 @@ import java.io.IOException;
 
 import java.text.SimpleDateFormat;
 
-import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Locale;
 import java.util.TimeZone;
 
 import android.os.Bundle;
@@ -44,10 +45,10 @@ import org.webpki.mobile.android.R;
 public class CertificateViewActivity extends Activity {
     public static final String CERTIFICATE_BLOB = "cert_blob";
 
-    private String niceDate(Date date) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+    private String niceDate(GregorianCalendar dateTime) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z", Locale.US);
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-        return sdf.format(date);
+        return sdf.format(dateTime.getTime());
     }
 
 
