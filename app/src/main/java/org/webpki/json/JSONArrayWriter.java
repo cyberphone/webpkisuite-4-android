@@ -76,6 +76,10 @@ public class JSONArrayWriter implements Serializable {
         return add(JSONTypes.NUMBER, JSONObjectWriter.es6Long2NumberConversion(value));
     }
 
+    public JSONArrayWriter setLong(long value) throws IOException {
+        return setBigInteger(BigInteger.valueOf(value));
+    }
+
     public JSONArrayWriter setBigDecimal(BigDecimal value) throws IOException {
         return setString(JSONObjectWriter.bigDecimalToString(value, null));
     }
@@ -112,7 +116,7 @@ public class JSONArrayWriter implements Serializable {
      * Create nested array.<p>
      * This method creates a new array writer at the current position.</p>
      * @return Array writer
-     * @throws IOException
+     * @throws IOException &nbsp;
      */
     public JSONArrayWriter setArray() throws IOException {
         JSONArrayWriter writer = new JSONArrayWriter();
@@ -123,8 +127,9 @@ public class JSONArrayWriter implements Serializable {
     /**
      * Create nested array.<p>
      * This method inserts an existing array writer at the current position.</p>
+     * @param writer Instance of array writer
      * @return Array writer
-     * @throws IOException
+     * @throws IOException &nbsp;
      */
     public JSONArrayWriter setArray(JSONArrayWriter writer) throws IOException {
         add(JSONTypes.ARRAY, writer.array);
