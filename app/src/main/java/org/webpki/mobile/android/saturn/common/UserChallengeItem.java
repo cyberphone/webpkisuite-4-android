@@ -5,7 +5,7 @@
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,14 +21,14 @@ import java.io.IOException;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 
-public class ChallengeField implements BaseProperties {
+public class UserChallengeItem implements BaseProperties {
 
     public static enum TYPE {NUMERIC, ALPHANUMERIC, NUMERIC_SECRET, ALPHANUMERIC_SECRET, GPS_COORDINATES, SMS_CALLBACK};
 
-    public ChallengeField(String id,
-                      TYPE type,
-                      int length,
-                      String optionalLabel) {
+    public UserChallengeItem(String id,
+                          TYPE type,
+                          int length,
+                          String optionalLabel) {
         this.id = id;
         this.type = type;
         this.length = length;
@@ -66,7 +66,7 @@ public class ChallengeField implements BaseProperties {
         return optionalLabel;
     }
 
-    public ChallengeField(JSONObjectReader rd) throws IOException {
+    public UserChallengeItem(JSONObjectReader rd) throws IOException {
         id = rd.getString(ID_JSON);
         type = TYPE.valueOf(rd.getString(TYPE_JSON));
         length = rd.getInt(LENGTH_JSON);

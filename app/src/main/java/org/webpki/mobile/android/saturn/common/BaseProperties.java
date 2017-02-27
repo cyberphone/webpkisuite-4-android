@@ -5,7 +5,7 @@
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
@@ -33,15 +33,16 @@ public interface BaseProperties {
     String COMMON_NAME_JSON                 = "commonName";                 // Common name of providers to be used in UIs
     String NAME_JSON                        = "name";
 
+    String REQUESTER_JSON                   = "requester";                  // ProviderUserResponse
     String TEXT_JSON                        = "text";                       // ProviderUserResponse
-    String CHALLENGE_FIELDS_JSON            = "challengeFields";            // ProviderUserResponse
+    String USER_CHALLENGE_ITEMS_JSON        = "userChallengeItems";         // ProviderUserResponse
     String LABEL_JSON                       = "label";                      // ProviderUserResponse
     String LENGTH_JSON                      = "length";                     // ProviderUserResponse
     String ENCRYPTED_MESSAGE_JSON           = "encryptedMessage";           // ProviderUserResponse
 
     String KEY_JSON                         = "key";                        // Wallet-originated encryption key
 
-    String RESPONSE_TO_CHALLENGE_JSON       = "responseToChallenge";        // Result of ProviderUserResponse 
+    String USER_RESPONSE_ITEMS_JSON         = "userResponseItems";          // Result of ProviderUserResponse 
 
     String PAYMENT_NETWORKS_JSON            = "paymentNetworks";
     String PAYMENT_REQUEST_JSON             = "paymentRequest";
@@ -49,6 +50,7 @@ public interface BaseProperties {
     String ACQUIRER_AUTHORITY_URL_JSON      = "acquirerAuthorityUrl";       // For CreditCard payments
     String PAYEE_ACCOUNT_JSON               = "payeeAccount";               // Selected payee Account2Account
     String EXPIRES_JSON                     = "expires";                    // Object expiration time
+    String RECEPIENT_URL_JSON               = "recepientUrl";               // Where we are sending (target address)
     String AUTHORITY_URL_JSON               = "authorityUrl";               // Double use self in *Authority objects and initiator
     String SERVICE_URL_JSON                 = "serviceUrl";                 // Saturn "lite" (standard)
     String EXTENDED_SERVICE_URL_JSON        = "extendedServiceUrl";         // Native Saturn payment system
@@ -59,12 +61,15 @@ public interface BaseProperties {
     String TRANSACTION_ID_JSON              = "transactionId";
     String CLIENT_IP_ADDRESS_JSON           = "clientIpAddress";            // Security data for the payment provider
     String CLIENT_GEO_LOCATION_JSON         = "clientGeoLocation";          // Optional security data that client devices may supply
+    String LOG_DATA_JSON                    = "logData";                    // Insertion of external log data
     String REFERENCE_ID_JSON                = "referenceId";
     String PAYEE_JSON                       = "payee";                      // Payee object
+    String TEST_MODE_JSON                   = "testMode";                   // Test mode = no real money involved
     String ENCRYPTED_AUTHORIZATION_JSON     = "encryptedAuthorization";     // Payer authorization data
     String PROVIDER_AUTHORITY_URL_JSON      = "providerAuthorityUrl";       // URL to payment provider
     String PROVIDER_ACCOUNT_TYPES_JSON      = "providerAccountTypes";       // List of Account2Account types "understood" by provider
     String ACCEPTED_ACCOUNT_TYPES_JSON      = "acceptedAccountTypes";       // List of ACCOUNT_TYPE_JSON
+    String EXTENSIONS_JSON                  = "extensions";                 // Optional provider authority data
     String ACCOUNT_JSON                     = "account";                    // Payer Account2Account or Card
     String ACCOUNT_REFERENCE_JSON           = "accountReference";           // Account/Card number for payee (like ************5678)
     String ACCOUNT_TYPE_JSON                = "accountType";                // Account/Card type in the form of a URI
@@ -81,9 +86,6 @@ public interface BaseProperties {
     String SOFTWARE_JSON                    = "software";
     String ID_JSON                          = "id";
     String TYPE_JSON                        = "type";
-    String FIELD1_JSON                      = "field1";                     // Used for "additional" account data 
-    String FIELD2_JSON                      = "field2";
-    String FIELD3_JSON                      = "field3";
     String VERSION_JSON                     = "version";
     
     String SATURN_WEB_PAY_CONTEXT_URI       = "http://webpki.org/saturn/v3";

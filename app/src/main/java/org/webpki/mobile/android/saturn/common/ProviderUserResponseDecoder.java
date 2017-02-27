@@ -20,10 +20,6 @@ import java.io.IOException;
 
 import java.security.GeneralSecurityException;
 
-import java.util.GregorianCalendar;
-import java.util.LinkedHashMap;
-
-import org.webpki.json.JSONArrayReader;
 import org.webpki.json.JSONDecoder;
 import org.webpki.json.JSONDecryptionDecoder;
 import org.webpki.json.JSONObjectReader;
@@ -35,61 +31,15 @@ public class ProviderUserResponseDecoder extends JSONDecoder implements BaseProp
 
     private static final long serialVersionUID = 1L;
 
-    public class PrivateMessage {
-        
-        private PrivateMessage(JSONObjectReader rd) {
-            this.root = rd;
-        }
-
-        GregorianCalendar dateTime;
-
-        JSONObjectReader root;
-        public JSONObjectReader getRoot() {
-            return root;
-        }
-
-        String commonName;
-        public String getCommonName() {
-            return commonName;
-        }
-
-        String text;
-        public String getText() {
-            return text;
-        }
-
-        ChallengeField[] optionalChallengeFields;
-        public ChallengeField[] getOptionalChallengeFields() {
-            return optionalChallengeFields;
-        }
-    }
-
     JSONDecryptionDecoder encryptedData;
     
-    public PrivateMessage getPrivateMessage(byte[] dataEncryptionKey,
-                                            DataEncryptionAlgorithms dataEncryptionAlgorithm)
+    public EncryptedMessage getEncryptedMessage(byte[] dataEncryptionKey,
+                                                DataEncryptionAlgorithms dataEncryptionAlgorithm)
     throws IOException, GeneralSecurityException {
         if (encryptedData.getDataEncryptionAlgorithm() != dataEncryptionAlgorithm) {
             throw new IOException("Unexpected data encryption algorithm:" + encryptedData.getDataEncryptionAlgorithm().toString());
         }
-        JSONObjectReader rd = JSONParser.parse(encryptedData.getDecryptedData(dataEncryptionKey)); 
-        PrivateMessage privateMessage = new PrivateMessage(rd);
-        privateMessage.commonName = rd.getString(COMMON_NAME_JSON);
-        privateMessage.text = rd.getString(TEXT_JSON);
-        if (rd.hasProperty(CHALLENGE_FIELDS_JSON)) {
-            LinkedHashMap<String,ChallengeField> fields = new LinkedHashMap<String,ChallengeField>();
-            JSONArrayReader ar = rd.getArray(CHALLENGE_FIELDS_JSON);
-             do {
-                ChallengeField challengeField = new ChallengeField(ar.getObject());
-                if (fields.put(challengeField.getId(), challengeField) != null) {
-                    throw new IOException("Duplicate: " + challengeField.getId());
-                }
-            } while (ar.hasMore());
-             privateMessage.optionalChallengeFields = fields.values().toArray(new ChallengeField[0]);
-        }
-        privateMessage.dateTime = rd.getDateTime(TIME_STAMP_JSON);
-        rd.checkForUnread();
-        return privateMessage;
+        return new EncryptedMessage(JSONParser.parse(encryptedData.getDecryptedData(dataEncryptionKey)));
     }
 
     @Override

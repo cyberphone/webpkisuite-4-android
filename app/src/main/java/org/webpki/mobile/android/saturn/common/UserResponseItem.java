@@ -5,7 +5,7 @@
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,9 +21,9 @@ import java.io.IOException;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 
-public class ResponseToChallenge implements BaseProperties {
+public class UserResponseItem implements BaseProperties {
 
-    public ResponseToChallenge(String id, String text) {
+    public UserResponseItem(String id, String text) {
         this.id = id;
         this.text = text;
     }
@@ -44,7 +44,7 @@ public class ResponseToChallenge implements BaseProperties {
         return text;
     }
 
-    public ResponseToChallenge(JSONObjectReader rd) throws IOException {
+    public UserResponseItem(JSONObjectReader rd) throws IOException {
         id = rd.getString(ID_JSON);
         text = rd.getStringConditional(TEXT_JSON);
     }

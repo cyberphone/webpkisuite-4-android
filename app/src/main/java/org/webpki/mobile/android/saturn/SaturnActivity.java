@@ -63,7 +63,7 @@ import org.webpki.mobile.android.proxy.BaseProxyActivity;
 
 import org.webpki.mobile.android.saturn.common.AccountDescriptor;
 import org.webpki.mobile.android.saturn.common.AuthorizationData;
-import org.webpki.mobile.android.saturn.common.ResponseToChallenge;
+import org.webpki.mobile.android.saturn.common.UserResponseItem;
 import org.webpki.mobile.android.saturn.common.NonDirectPayments;
 import org.webpki.mobile.android.saturn.common.PaymentRequest;
 import org.webpki.mobile.android.saturn.common.WalletRequestDecoder;
@@ -117,7 +117,7 @@ public class SaturnActivity extends BaseProxyActivity {
 
     String pin = "";
 
-    ResponseToChallenge[] challengeResults;
+    UserResponseItem[] challengeResults;
 
     byte[] dataEncryptionKey;
 
@@ -276,9 +276,9 @@ public class SaturnActivity extends BaseProxyActivity {
 
     static String formatAccountId(Account card) {
         return card.cardFormatAccountId ?
-            AuthorizationData.formatCardNumber(card.accountDescriptor.getAccountId())
+            AuthorizationData.formatCardNumber(card.accountDescriptor.getId())
                                         :
-            card.accountDescriptor.getAccountId();
+            card.accountDescriptor.getId();
     }
 
     String htmlOneCard(Account account, int width, String card, String clickOption) {
@@ -512,14 +512,14 @@ public class SaturnActivity extends BaseProxyActivity {
     @JavascriptInterface
     public boolean getChallengeJSON(String json) {
         try {
-            Vector<ResponseToChallenge> temp = new Vector<ResponseToChallenge>();
+            Vector<UserResponseItem> temp = new Vector<UserResponseItem>();
             JSONArrayReader challengeArray = JSONParser.parse(json).getJSONArrayReader();
              do {
                  JSONObjectReader challengeObject = challengeArray.getObject();
                  String id = challengeObject.getProperties()[0];
-                 temp.add(new ResponseToChallenge(id, challengeObject.getString(id)));
+                 temp.add(new UserResponseItem(id, challengeObject.getString(id)));
             } while (challengeArray.hasMore());
-            challengeResults = temp.toArray(new ResponseToChallenge[0]);
+            challengeResults = temp.toArray(new UserResponseItem[0]);
             hideSoftKeyBoard();
             ShowPaymentRequest();
             paymentEvent();
@@ -545,7 +545,7 @@ public class SaturnActivity extends BaseProxyActivity {
             try {
                 // User authorizations are always signed by a key that only needs to be
                 // understood by the issuing Payment Provider (bank).
-                ResponseToChallenge[] tempChallenge = challengeResults;
+                UserResponseItem[] tempChallenge = challengeResults;
                 challengeResults = null;
                 authorizationData = AuthorizationData.encode(
                     selectedCard.paymentRequest,

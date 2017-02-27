@@ -19,17 +19,12 @@ package org.webpki.mobile.android.saturn.common;
 import java.io.IOException;
 
 import java.util.GregorianCalendar;
-import java.util.LinkedHashMap;
-
-import java.security.PublicKey;
 
 import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.AsymKeySignerInterface;
 
-import org.webpki.json.JSONArrayReader;
 import org.webpki.json.JSONArrayWriter;
-import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONAsymKeySigner;
 import org.webpki.json.JSONSignatureDecoder;
@@ -38,57 +33,56 @@ import org.webpki.json.encryption.DataEncryptionAlgorithms;
 
 public class AuthorizationData implements BaseProperties {
 
-    public static final String SOFTWARE_ID      = "WebPKI.org - Wallet";
+    public static final String SOFTWARE_ID      = "WebPKI.org - Android Wallet";
     public static final String SOFTWARE_VERSION = "1.00";
 
     public static JSONObjectWriter encode(PaymentRequest paymentRequest,
                                           String domainName,
-                                          AccountDescriptor accountDescriptor,
+                                          AccountDescriptor account,
                                           byte[] dataEncryptionKey,
                                           DataEncryptionAlgorithms dataEncryptionAlgorithm,
-                                          ResponseToChallenge[] optionalChallengeResults,
+                                          UserResponseItem[] optionalUserResponseItems,
                                           GregorianCalendar timeStamp,
                                           JSONAsymKeySigner signer) throws IOException {
         JSONObjectWriter wr = new JSONObjectWriter()
-            .setObject(REQUEST_HASH_JSON, new JSONObjectWriter()
-                .setString(JSONSignatureDecoder.ALGORITHM_JSON, RequestHash.JOSE_SHA_256_ALG_ID)
-                .setBinary(JSONSignatureDecoder.VALUE_JSON, paymentRequest.getRequestHash()))
-            .setString(DOMAIN_NAME_JSON, domainName)
-            .setObject(ACCOUNT_JSON, accountDescriptor.writeObject())
-            .setObject(ENCRYPTION_PARAMETERS_JSON, 
-                       new JSONObjectWriter()
-                .setString(JSONSignatureDecoder.ALGORITHM_JSON, dataEncryptionAlgorithm.toString())
-                .setBinary(KEY_JSON, dataEncryptionKey));
-        if (optionalChallengeResults != null && optionalChallengeResults.length > 0) {
-            JSONArrayWriter aw = wr.setArray(RESPONSE_TO_CHALLENGE_JSON);
-            for (ResponseToChallenge challengeResult : optionalChallengeResults) {
+                .setObject(REQUEST_HASH_JSON, new JSONObjectWriter()
+                        .setString(JSONSignatureDecoder.ALGORITHM_JSON, RequestHash.JOSE_SHA_256_ALG_ID)
+                        .setBinary(JSONSignatureDecoder.VALUE_JSON, paymentRequest.getRequestHash()))
+                .setString(DOMAIN_NAME_JSON, domainName)
+                .setObject(ACCOUNT_JSON, account.writeObject())
+                .setObject(ENCRYPTION_PARAMETERS_JSON,
+                        new JSONObjectWriter()
+                                .setString(JSONSignatureDecoder.ALGORITHM_JSON, dataEncryptionAlgorithm.toString())
+                                .setBinary(KEY_JSON, dataEncryptionKey));
+        if (optionalUserResponseItems != null && optionalUserResponseItems.length > 0) {
+            JSONArrayWriter aw = wr.setArray(USER_RESPONSE_ITEMS_JSON);
+            for (UserResponseItem challengeResult : optionalUserResponseItems) {
                 aw.setObject(challengeResult.writeObject());
             }
-            
         }
         return wr.setDateTime(TIME_STAMP_JSON, timeStamp, false)
-                 .setObject(SOFTWARE_JSON, Software.encode(SOFTWARE_ID, SOFTWARE_VERSION))
-                 .setSignature (signer);
+                .setObject(SOFTWARE_JSON, Software.encode(SOFTWARE_ID, SOFTWARE_VERSION))
+                .setSignature (signer);
     }
 
     public static JSONObjectWriter encode(PaymentRequest paymentRequest,
                                           String domainName,
-                                          AccountDescriptor accountDescriptor,
+                                          AccountDescriptor account,
                                           byte[] dataEncryptionKey,
                                           DataEncryptionAlgorithms dataEncryptionAlgorithm,
-                                          ResponseToChallenge[] optionalChallengeResults,
+                                          UserResponseItem[] optionalUserResponseItems,
                                           AsymSignatureAlgorithms signatureAlgorithm,
                                           AsymKeySignerInterface signer) throws IOException {
         return encode(paymentRequest,
-                      domainName,
-                      accountDescriptor,
-                      dataEncryptionKey,
-                      dataEncryptionAlgorithm,
-                      optionalChallengeResults,
-                      new GregorianCalendar(),
-                      new JSONAsymKeySigner(signer)
-                          .setSignatureAlgorithm(signatureAlgorithm)
-                          .setAlgorithmPreferences(AlgorithmPreferences.JOSE));
+                domainName,
+                account,
+                dataEncryptionKey,
+                dataEncryptionAlgorithm,
+                optionalUserResponseItems,
+                new GregorianCalendar(),
+                new JSONAsymKeySigner(signer)
+                        .setSignatureAlgorithm(signatureAlgorithm)
+                        .setAlgorithmPreferences(AlgorithmPreferences.JOSE));
     }
 
     public static String formatCardNumber(String accountId) {
@@ -103,75 +97,4 @@ public class AuthorizationData implements BaseProperties {
         }
         return s.toString();
     }
-
-    public AuthorizationData(JSONObjectReader rd) throws IOException {
-        requestHash = RequestHash.parse(rd);
-        domainName = rd.getString(DOMAIN_NAME_JSON);
-        accountDescriptor = new AccountDescriptor(rd.getObject(ACCOUNT_JSON));
-        JSONObjectReader encryptionParameters = rd.getObject(ENCRYPTION_PARAMETERS_JSON);
-        dataEncryptionAlgorithm = DataEncryptionAlgorithms
-            .getAlgorithmFromString(encryptionParameters.getString(JSONSignatureDecoder.ALGORITHM_JSON));
-        dataEncryptionKey = encryptionParameters.getBinary(KEY_JSON);
-        if (rd.hasProperty(RESPONSE_TO_CHALLENGE_JSON)) {
-            LinkedHashMap<String,ResponseToChallenge> results = new LinkedHashMap<String,ResponseToChallenge>();
-            JSONArrayReader ar = rd.getArray(RESPONSE_TO_CHALLENGE_JSON);
-             do {
-                 ResponseToChallenge challengeResult = new ResponseToChallenge(ar.getObject());
-                if (results.put(challengeResult.getId(), challengeResult) != null) {
-                    throw new IOException("Duplicate: " + challengeResult.getId());
-                }
-            } while (ar.hasMore());
-            optionalChallengeResults = results.values().toArray(new ResponseToChallenge[0]);
-        }
-        
-        timeStamp = rd.getDateTime(TIME_STAMP_JSON);
-        software = new Software(rd);
-        publicKey = rd.getSignature(AlgorithmPreferences.JOSE).getPublicKey();
-        rd.checkForUnread();
-    }
-
-    DataEncryptionAlgorithms dataEncryptionAlgorithm;
-    public DataEncryptionAlgorithms getDataEncryptionAlgorithm() {
-        return dataEncryptionAlgorithm;
-    }
-
-    byte[] dataEncryptionKey;
-    public byte[] getDataEncryptionKey() {
-        return dataEncryptionKey;
-    }
-
-    ResponseToChallenge[] optionalChallengeResults;
-    public ResponseToChallenge[] getOptionalChallengeResults() {
-        return optionalChallengeResults;
-    }
-
-    byte[] requestHash;
-    public byte[] getRequestHash() {
-        return requestHash;
-    }
-
-    String domainName;
-    public String getDomainName() {
-        return domainName;
-    }
-
-    AccountDescriptor accountDescriptor;
-    public AccountDescriptor getAccountDescriptor() {
-        return accountDescriptor;
-    }
-
-    GregorianCalendar timeStamp;
-    public GregorianCalendar getTimeStamp() {
-        return timeStamp;
-    }
-
-    Software software;
-    public Software getSoftware() {
-        return software;
-    }
-
-    PublicKey publicKey;
-    public PublicKey getPublicKey() {
-        return publicKey;
-    }
-}
+ }

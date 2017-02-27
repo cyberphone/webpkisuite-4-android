@@ -140,7 +140,7 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
         AccountDescriptor cardAccount = new AccountDescriptor(cardProperties.getObject(BaseProperties.ACCOUNT_JSON));
         for (WalletRequestDecoder.PaymentNetwork paymentNetwork : wrd.getPaymentNetworks()) {
             for (String accountType : paymentNetwork.getAccountTypes()) {
-                if (cardAccount.getAccountType().equals(accountType)) {
+                if (cardAccount.getType().equals(accountType)) {
                     Account card =
                         new Account(paymentNetwork.getPaymentRequest(),
                                     cardAccount,
@@ -157,7 +157,7 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                         .getAlgorithmFromString(encryptionParameters.getString(BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON));
                     if (!EncryptionCore.permittedKeyEncryptionAlgorithm(card.keyEncryptionAlgorithm)) {
                         Log.w(SaturnActivity.SATURN,
-                              "Account " + cardAccount.getAccountId() + " contained an unknown \"" +
+                              "Account " + cardAccount.getId() + " contained an unknown \"" +
                                   BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON + "\": " + card.keyEncryptionAlgorithm);
                         break;
                     }
@@ -165,7 +165,7 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                         .getAlgorithmFromString(encryptionParameters.getString (BaseProperties.DATA_ENCRYPTION_ALGORITHM_JSON));
                     if (!EncryptionCore.permittedDataEncryptionAlgorithm (card.dataEncryptionAlgorithm)) {
                         Log.w(SaturnActivity.SATURN,
-                              "Account " + cardAccount.getAccountId () + " contained an unknown \"" +
+                              "Account " + cardAccount.getId () + " contained an unknown \"" +
                                   BaseProperties.DATA_ENCRYPTION_ALGORITHM_JSON + "\": " + card.dataEncryptionAlgorithm);
                         break;
                     }

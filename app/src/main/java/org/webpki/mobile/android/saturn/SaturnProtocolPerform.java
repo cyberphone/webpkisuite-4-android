@@ -22,7 +22,8 @@ import org.webpki.json.JSONDecoder;
 
 import org.webpki.json.encryption.DataEncryptionAlgorithms;
 
-import org.webpki.mobile.android.saturn.common.ChallengeField;
+import org.webpki.mobile.android.saturn.common.EncryptedMessage;
+import org.webpki.mobile.android.saturn.common.UserChallengeItem;
 import org.webpki.mobile.android.saturn.common.PayerAuthorizationEncoder;
 import org.webpki.mobile.android.saturn.common.ProviderUserResponseDecoder;
 import org.webpki.mobile.android.saturn.common.WalletAlertDecoder;
@@ -35,8 +36,8 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
     public SaturnProtocolPerform (SaturnActivity saturnActivity) {
         this.saturnActivity = saturnActivity;
     }
-    
-    ProviderUserResponseDecoder.PrivateMessage privateMessage;
+
+    EncryptedMessage encryptedMessage;
     
     String merchantHtmlAlert;
 
@@ -50,17 +51,17 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
                 saturnActivity.walletRequest.getAndroidTransactionUrl(),
                 new PayerAuthorizationEncoder(saturnActivity.authorizationData,
                                               saturnActivity.selectedCard.authorityUrl,
-                                              saturnActivity.selectedCard.accountDescriptor.getAccountType(),
+                                              saturnActivity.selectedCard.accountDescriptor.getType(),
                                               saturnActivity.selectedCard.dataEncryptionAlgorithm,
                                               saturnActivity.selectedCard.keyEncryptionKey,
                                               saturnActivity.selectedCard.keyEncryptionAlgorithm),
                 false);
             JSONDecoder returnMessage = saturnActivity.parseJSONResponse();
             if (returnMessage instanceof ProviderUserResponseDecoder) {
-                privateMessage =
+                encryptedMessage =
                     ((ProviderUserResponseDecoder)returnMessage)
-                        .getPrivateMessage(saturnActivity.dataEncryptionKey, 
-                                           DataEncryptionAlgorithms.JOSE_A128CBC_HS256_ALG_ID);
+                        .getEncryptedMessage(saturnActivity.dataEncryptionKey, 
+                                             DataEncryptionAlgorithms.JOSE_A128CBC_HS256_ALG_ID);
                 return true;
             } else if (returnMessage instanceof WalletAlertDecoder) {
                 merchantHtmlAlert = ((WalletAlertDecoder)returnMessage).getText();
@@ -98,12 +99,12 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
                                  "msg.style.visibility='visible';\n");
 
             if (merchantHtmlAlert == null) {
-                html.append(header(privateMessage.getCommonName(), privateMessage.getText()));
-                if (privateMessage.getOptionalChallengeFields() != null) {
+                html.append(header(encryptedMessage.getRequester(), encryptedMessage.getText()));
+                if (encryptedMessage.getOptionalUserChallengeItems() != null) {
                     js.append("}\n" +
                               "function getChallengeData() {\n" +
                               "  var data = [];\n");
-                    for (ChallengeField challengeField : privateMessage.getOptionalChallengeFields()) {
+                    for (UserChallengeItem challengeField : encryptedMessage.getOptionalUserChallengeItems()) {
                         js.append("  data.push({'")
                           .append(challengeField.getId())
                           .append("': document.getElementById('")
@@ -113,7 +114,7 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
                     js.append("  return JSON.stringify(data);\n");
                     html.append("<form onsubmit=\"return Saturn.getChallengeJSON(getChallengeData())\">");
                     String autofocus = "autofocus ";
-                    for (ChallengeField challengeField : privateMessage.getOptionalChallengeFields()) {
+                    for (UserChallengeItem challengeField : encryptedMessage.getOptionalUserChallengeItems()) {
                         html.append("<tr><td style='padding:10pt 20pt 0 20pt'>");
                         if (challengeField.getOptionalLabel() != null) {
                             html.append(challengeField.getOptionalLabel())
@@ -122,8 +123,8 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
                         html.append("<input style='font-size:inherit' ")
                             .append(autofocus)
                             .append("type='")
-                            .append(challengeField.getType() == ChallengeField.TYPE.ALPHANUMERIC_SECRET ||
-                                    challengeField.getType() == ChallengeField.TYPE.NUMERIC_SECRET ?
+                            .append(challengeField.getType() == UserChallengeItem.TYPE.ALPHANUMERIC_SECRET ||
+                                    challengeField.getType() == UserChallengeItem.TYPE.NUMERIC_SECRET ?
                                 "password" : "text")
                             .append("' id='")
                             .append(challengeField.getId())
