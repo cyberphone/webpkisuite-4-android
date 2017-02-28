@@ -34,6 +34,7 @@ import java.security.spec.ECPoint;
 
 import java.util.GregorianCalendar;
 import java.util.Vector;
+
 import java.util.regex.Pattern;
 
 import org.webpki.crypto.AlgorithmPreferences;
@@ -65,7 +66,7 @@ public class JSONObjectWriter implements Serializable {
     static final int STANDARD_INDENT = 2;
 
     /**
-     * Integers outside of this range are not natively supported by JSON
+     * Integers outside of this range are not natively supported by JSON.
      */
     public static final long MAX_SAFE_INTEGER = 9007199254740991L; // 2^53 - 1 ("53-bit precision")
 
@@ -92,6 +93,14 @@ public class JSONObjectWriter implements Serializable {
 
     static int htmlIndent = 4;
 
+    /**
+     * Support interface for dynamic JSON generation.
+     */
+    public interface JSONSetDynamic {
+
+        public JSONObjectWriter set(JSONObjectWriter wr) throws IOException;
+
+    }
 
     /**
      * For updating already read JSON objects.
@@ -179,7 +188,7 @@ public class JSONObjectWriter implements Serializable {
             throw new IOException("NaN/Infinity are not permitted in JSON");
         }
 
-        // 2.Deal with zero separately
+        // 2.Deal with zero separately.  Note that this test takes "-0.0" as well
         if (value == 0.0) {
             return "0";
         }
@@ -496,6 +505,20 @@ public class JSONObjectWriter implements Serializable {
         return setStringArray(name, values, JSONTypes.STRING);
     }
 
+    /**
+     * Set JSON data using an external (dynamic) interface.<p>
+     * Sample using a construct suitable for chained writing:
+     * <pre>
+     *    setDynamic((wr) -&gt; optionalString == null ? wr : wr.setString("opt", optionalString)); 
+     * </pre>
+     * @param jsonSetDynamic Interface (usually Lambda)
+     * @return An instance of {@link org.webpki.json.JSONObjectWriter}
+     * @throws IOException &nbsp;
+     */
+    public JSONObjectWriter setDynamic(JSONSetDynamic jsonSetDynamic) throws IOException {
+        return jsonSetDynamic.set(this);
+    }
+
     void setCurvePoint(BigInteger value, String name, KeyAlgorithms ec) throws IOException {
         byte[] curvePoint = value.toByteArray();
         if (curvePoint.length > (ec.getPublicKeySizeInBits() + 7) / 8) {
@@ -575,8 +598,8 @@ import org.webpki.json.JSONSignatureDecoder;
         // Serialize document
         String json = writer.toString();
     
-        // Print document on the console
-        System.out.println("Signed doc: " + json);
+        // Print signed document on the console
+        System.out.println(json);
 </pre>
 <div id="verify" style="display:inline-block;background:#F8F8F8;border-width:1px;border-style:solid;border-color:grey;padding:10pt;box-shadow:3pt 3pt 3pt #D0D0D0"><pre>{
   "<span style="color:#C00000">myProperty</span>": "<span style="color:#0000C0">Some data</span>",
