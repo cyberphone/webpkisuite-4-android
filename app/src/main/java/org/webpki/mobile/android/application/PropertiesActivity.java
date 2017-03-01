@@ -31,11 +31,14 @@ import org.webpki.mobile.android.saturn.SaturnActivity;
 import org.webpki.mobile.android.sks.SKSImplementation;
 import org.webpki.mobile.android.sks.SKSStore;
 
+import android.net.Uri;
+
 import android.os.Bundle;
 
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.View;
+
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -51,11 +54,13 @@ import android.content.Intent;
 public class PropertiesActivity extends ListActivity {
 
     static final int SETTINGS_ABOUT            = 0;
-    static final int SETTINGS_DEVICE_ID        = 1;
-    static final int SETTINGS_USER_CREDENTIALS = 2;
-    static final int SETTINGS_DEVICE_CERT      = 3;
-    static final int SETTINGS_PROTOCOL_LOG     = 4;
+    static final int SETTINGS_PRIVACY_POLICY   = 1;
+    static final int SETTINGS_DEVICE_ID        = 2;
+    static final int SETTINGS_USER_CREDENTIALS = 3;
+    static final int SETTINGS_DEVICE_CERT      = 4;
+    static final int SETTINGS_PROTOCOL_LOG     = 5;
     String[] items = {"About",
+                      "Privacy Policy",
                       "Device ID",
                       "User Credentials",
                       "Device Certificate",
@@ -82,6 +87,9 @@ public class PropertiesActivity extends ListActivity {
             } catch (Exception e) {
                 intent.putExtra(CertificateViewActivity.CERTIFICATE_BLOB, new byte[]{});
             }
+            startActivity(intent);
+        } else if (id == SETTINGS_PRIVACY_POLICY) {
+            Intent intent = new Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://cyberphone.github.io/doc/webpki-android-privacy-policy.html"));
             startActivity(intent);
         } else if (id == SETTINGS_USER_CREDENTIALS) {
             try {
