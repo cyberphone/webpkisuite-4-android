@@ -129,7 +129,7 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
                             .append("' id='")
                             .append(challengeField.getId())
                             .append("' size='")
-                            .append(challengeField.getLength())
+                            .append((int)challengeField.getOptionalLength())
                             .append("'></td></tr>");
                         autofocus = "";
                     }
