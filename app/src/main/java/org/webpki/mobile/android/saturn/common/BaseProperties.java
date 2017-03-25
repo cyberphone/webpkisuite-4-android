@@ -5,7 +5,7 @@
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,14 +18,12 @@ package org.webpki.mobile.android.saturn.common;
 
 public interface BaseProperties {
 
-    String EMBEDDED_JSON                    = "@embedded";
-
-     // For the Web2Native Bridge wallet 
+    // For the Web2Native Bridge wallet 
     String WINDOW_JSON                      = "window";
     String HEIGHT_JSON                      = "height";
     String WIDTH_JSON                       = "width";
 
-     // For the Android/QR wallet
+    // For the Android/QR wallet
     String ANDROID_CANCEL_URL_JSON          = "androidCancelUrl";
     String ANDROID_SUCCESS_URL_JSON         = "androidSuccessUrl";
     String ANDROID_TRANSACTION_URL_JSON     = "androidTransactionUrl";
@@ -52,19 +50,19 @@ public interface BaseProperties {
     String EXPIRES_JSON                     = "expires";                    // Object expiration time
     String RECEPIENT_URL_JSON               = "recepientUrl";               // Where we are sending (target address)
     String AUTHORITY_URL_JSON               = "authorityUrl";               // Double use self in *Authority objects and initiator
-    String SERVICE_URL_JSON                 = "serviceUrl";                 // Saturn "lite" (standard)
-    String EXTENDED_SERVICE_URL_JSON        = "extendedServiceUrl";         // Native Saturn payment system
+    String SERVICE_URL_JSON                 = "serviceUrl";                 // Saturn core
     String AMOUNT_JSON                      = "amount";
     String CURRENCY_JSON                    = "currency";
     String NON_DIRECT_PAYMENT_JSON          = "nonDirectPayment";           // Deposit, automated gas station, booking
     String TIME_STAMP_JSON                  = "timeStamp";
-    String TRANSACTION_ID_JSON              = "transactionId";
+    String TRANSACTION_ERROR_JSON           = "transactionError";
     String CLIENT_IP_ADDRESS_JSON           = "clientIpAddress";            // Security data for the payment provider
     String CLIENT_GEO_LOCATION_JSON         = "clientGeoLocation";          // Optional security data that client devices may supply
     String LOG_DATA_JSON                    = "logData";                    // Insertion of external log data
     String REFERENCE_ID_JSON                = "referenceId";
     String PAYEE_JSON                       = "payee";                      // Payee object
     String TEST_MODE_JSON                   = "testMode";                   // Test mode = no real money involved
+    String ADDITIONAL_PAYEE_DATA_JSON       = "additionalPayeeData";        // Optional object in an AuthorizationRequest
     String ENCRYPTED_AUTHORIZATION_JSON     = "encryptedAuthorization";     // Payer authorization data
     String PROVIDER_AUTHORITY_URL_JSON      = "providerAuthorityUrl";       // URL to payment provider
     String PROVIDER_ACCOUNT_TYPES_JSON      = "providerAccountTypes";       // List of Account2Account types "understood" by provider
@@ -80,15 +78,21 @@ public interface BaseProperties {
     String REQUEST_HASH_JSON                = "requestHash";
     String DOMAIN_NAME_JSON                 = "domainName";
     String SIGNATURE_ALGORITHM_JSON         = "signatureAlgorithm";
+    String SIGNATURE_PROFILES_JSON          = "signatureProfiles";          // For "ProviderAuthority".  Accepts these
     String KEY_ENCRYPTION_ALGORITHM_JSON    = "keyEncryptionAlgorithm";     // For "ProviderAuthority" encryption key
     String DATA_ENCRYPTION_ALGORITHM_JSON   = "dataEncryptionAlgorithm";    //    -"-
     String ENCRYPTION_PARAMETERS_JSON       = "encryptionParameters";       //    -"-
+    String SIGNATURE_PARAMETERS_JSON        = "signatureParameters";        // For "PayeeAuthority" signature key(s)
     String SOFTWARE_JSON                    = "software";
     String ID_JSON                          = "id";
     String TYPE_JSON                        = "type";
     String VERSION_JSON                     = "version";
-    
+
     String SATURN_WEB_PAY_CONTEXT_URI       = "http://webpki.org/saturn/v3";
 
     String JSON_CONTENT_TYPE                = "application/json";
+    String HTML_CONTENT_TYPE                = "text/html";
+
+    String HTTP_ACCEPT_HEADER               = "Accept";
+    String HTTP_CONTENT_TYPE_HEADER         = "Content-Type";
 }

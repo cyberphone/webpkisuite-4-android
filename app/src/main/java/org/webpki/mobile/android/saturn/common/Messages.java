@@ -30,64 +30,18 @@ public enum Messages {
     PAYMENT_CLIENT_SUCCESS        ("PaymentClientSuccess"),          // Payee to PaymentClient message
     PAYER_AUTHORIZATION           ("PayerAuthorization"),            // Created by the PaymentClient
     
-    PROVIDER_USER_RESPONSE        ("ProviderUserResponse"),          // May replace any RESPONSE message
-    
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Saturn core
+    ///////////////////////////////////////////////////////////////////////////////////////////////
+    AUTHORIZATION_REQUEST         ("AuthorizationRequest"),          // Payee to Payer provider
+    AUTHORIZATION_RESPONSE        ("AuthorizationResponse"),         // Response to the former
+    PROVIDER_USER_RESPONSE        ("ProviderUserResponse"),          // May replace the former
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    // Saturn basic mode
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    AUTHORIZATION_REQUEST         ("AuthorizationRequest"),            // Payee provider to Payer provider
-    AUTHORIZATION_RESPONSE        ("AuthorizationResponse"),           // Response to the former
-    CARD_PAYMENT_REQUEST          ("CardPaymentRequest"),              // Payee provider to Acquirer
-    CARD_PAYMENT_RESPONSE         ("CardPaymentResponse"),             // Response to the former
+    TRANSACTION_REQUEST           ("TransactionRequest"),            // Payee to Acquirer or Payer provider
+    TRANSACTION_RESPONSE          ("TransactionResponse"),           // Response to the former
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    // One-step payment operation in "Native" Account2Account mode
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    BASIC_CREDIT_REQUEST          ("BasicCreditRequest",             // Payee request to Payee provider
-                                   false, true),
-    TRANSACTION_REQUEST           ("TransactionRequest"),            // Payee provider to Payer provider
-    TRANSACTION_RESPONSE          ("TransactionResponse"),           // Payer provider response
-    BASIC_CREDIT_RESPONSE         ("BasicCreditResponse",            // Payee provider response
-                                   false, true),
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    // Two-step payment operation in "Native" Account2Account mode
-    //
-    // First step - Payee to Payee provider
-    RESERVE_CREDIT_REQUEST        ("ReserveCreditRequest",           // Reserve debit funds at provider
-                                   false, false),
-    // TRANSACTION_REQUEST/TRANSACTION_RESPONSE pair like in the one-step mode
-    RESERVE_CREDIT_RESPONSE       ("ReserveCreditResponse",          // Provider response to request
-                                   false, false),
-    //
-    // Second step - Payee to Payee provider
-    FINALIZE_CREDIT_REQUEST       ("FinalizeCreditRequest",          // Perform the actual payment operation
-                                   false, false),
-    FINALIZE_TRANSACTION_REQUEST  ("FinalizeTransactionRequest",     // Payee provider to Payer provider
-                                   false, false),
-    FINALIZE_TRANSACTION_RESPONSE ("FinalizeTransactionResponse",    // Payer provider response
-                                   false, false),
-    FINALIZE_CREDIT_RESPONSE      ("FinalizeCreditResponse",         // Provider response
-                                   false, false),
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////
-    // Two-step payment operation in "Native" Card payment mode
-    //
-    // First step - Payee to Payee provider.  Note that Payee provider may be = Acquirer
-    RESERVE_CARDPAY_REQUEST       ("ReserveCardpayRequest",          // Reserve funds at provider
-                                   true, false),
-    // TRANSACTION_REQUEST/TRANSACTION_RESPONSE pair like in the one-step mode
-    RESERVE_CARDPAY_RESPONSE      ("ReserveCardpayResponse",         // Provider response to request
-                                   true, false),
-    //
-    // Second step - Payee to Acquirer
-    FINALIZE_CARDPAY_REQUEST      ("FinalizeCardpayRequest",         // Perform the actual payment operation
-                                   true, false),
-    FINALIZE_CARDPAY_RESPONSE     ("FinalizeCardpayResponse",        // Acquirer response
-                                   true, false),
+    REFUND_REQUEST                ("RefundRequest"),                 // Payee to Acquirer or Payee provider
+    REFUND_RESPONSE               ("RefundResponse"),                // Response to the former
     ///////////////////////////////////////////////////////////////////////////////////////////////
 
     PROVIDER_AUTHORITY            ("ProviderAuthority"),             // Published provider entity data
@@ -122,28 +76,30 @@ public enum Messages {
         return cardPayment;
     }
 
-    public static JSONObjectWriter createBaseMessage(Messages message) throws IOException {
+    public JSONObjectWriter createBaseMessage() throws IOException {
         return new JSONObjectWriter()
           .setString(JSONDecoderCache.CONTEXT_JSON, BaseProperties.SATURN_WEB_PAY_CONTEXT_URI)  
-          .setString(JSONDecoderCache.QUALIFIER_JSON, message.toString());
+          .setString(JSONDecoderCache.QUALIFIER_JSON, qualifier);
     }
 
-    public static Messages parseBaseMessage(Messages expectedMessage,
-                                            JSONObjectReader requestObject) throws IOException {
-        return parseBaseMessage(new Messages[]{expectedMessage}, requestObject);
-    }
-
-    public static Messages parseBaseMessage(Messages[] expectedMessages,
-                                            JSONObjectReader requestObject) throws IOException {
+    public JSONObjectReader parseBaseMessage(JSONObjectReader requestObject) throws IOException {
         if (!requestObject.getString(JSONDecoderCache.CONTEXT_JSON).equals(BaseProperties.SATURN_WEB_PAY_CONTEXT_URI)) {
             throw new IOException("Unknown context: " + requestObject.getString(JSONDecoderCache.CONTEXT_JSON));
         }
         String qualifier = requestObject.getString(JSONDecoderCache.QUALIFIER_JSON);
-        for (Messages message : expectedMessages) {
-            if (qualifier.equals(message.toString())) {
-                return message;
-            }
+        if (!qualifier.equals(this.qualifier)) {
+            throw new IOException("Unexpected qualifier: " + qualifier);
         }
-        throw new IOException("Unexpected qualifier: " + qualifier);
+        return requestObject;
+    }
+
+    public String getlowerCamelCase() {
+        char[] lowerCamelCasedMessage = qualifier.toCharArray();
+        lowerCamelCasedMessage[0] = Character.toLowerCase(lowerCamelCasedMessage[0]);
+        return String.valueOf(lowerCamelCasedMessage);
+    }
+
+    public JSONObjectReader getEmbeddedMessage(JSONObjectReader reader) throws IOException {
+        return reader.getObject(getlowerCamelCase());
     }
 }
