@@ -19,36 +19,67 @@ package org.webpki.json.encryption;
 import java.io.IOException;
 
 /**
- * JEF (JSON Encryption Format) data encryption algorithms
+ * JEF (JSON Encryption Format) data encryption algorithms.
  */
 public enum DataEncryptionAlgorithms {
 
-    JOSE_A128CBC_HS256_ALG_ID ("A128CBC-HS256", 32),
-    JOSE_A256CBC_HS512_ALG_ID ("A256CBC-HS512", 64);
+    JOSE_A128CBC_HS256_ALG_ID ("A128CBC-HS256", 32, EncryptionCore.AES_CBC_IV_LENGTH, 
+                               16,                                     "HMACSHA256", false),
+    JOSE_A192CBC_HS384_ALG_ID ("A192CBC-HS384", 48, EncryptionCore.AES_CBC_IV_LENGTH, 
+                               24,                                     "HMACSHA384", false),
+    JOSE_A256CBC_HS512_ALG_ID ("A256CBC-HS512", 64, EncryptionCore.AES_CBC_IV_LENGTH,
+                               32,                                     "HMACSHA512", false),
+    JOSE_A128GCM_ALG_ID       ("A128GCM",       16, EncryptionCore.AES_GCM_IV_LENGTH,
+                               EncryptionCore.AES_GCM_TAG_LENGTH, null,         true),
+    JOSE_A192GCM_ALG_ID       ("A192GCM",       24, EncryptionCore.AES_GCM_IV_LENGTH,
+                               EncryptionCore.AES_GCM_TAG_LENGTH, null,         true),
+    JOSE_A256GCM_ALG_ID       ("A256GCM",       32, EncryptionCore.AES_GCM_IV_LENGTH,
+                               EncryptionCore.AES_GCM_TAG_LENGTH, null,         true);
 
-    String JsonName;
+    String JoseName;
     int keyLength;
+    int ivLength;
+    int tagLength;
+    String jceNameOfTagHmac;
+    boolean gcm;
 
-    DataEncryptionAlgorithms(String JsonName, int keyLength) {
-        this.JsonName = JsonName;
+    DataEncryptionAlgorithms(String JoseName,
+                             int keyLength,
+                             int ivLength,
+                             int tagLength,
+                             String jceNameOfTagHmac, 
+                             boolean gcm) {
+        this.JoseName = JoseName;
         this.keyLength = keyLength;
+        this.ivLength = ivLength;
+        this.tagLength = tagLength;
+        this.jceNameOfTagHmac = jceNameOfTagHmac;
+        this.gcm = gcm;
+    }
+
+    @Override
+    public String toString() {
+        return JoseName;
     }
 
     public int getKeyLength() {
         return keyLength;
     }
 
-    @Override
-    public String toString() {
-        return JsonName;
+    public int getIvLength() {
+        return ivLength;
     }
 
-    public static DataEncryptionAlgorithms getAlgorithmFromString(String string) throws IOException {
+    public int getTagLength() {
+        return tagLength;
+    }
+    
+    public static DataEncryptionAlgorithms getAlgorithmFromId(String algorithmId) throws IOException {
         for (DataEncryptionAlgorithms algorithm : DataEncryptionAlgorithms.values()) {
-            if (string.equals(algorithm.JsonName)) {
+            if (algorithmId.equals(algorithm.JoseName)) {
                 return algorithm;
             }
         }
-        throw new IOException("No such algorithm: " + string);
+        throw new IOException("No such algorithm: " + algorithmId);
     }
 }

@@ -7,8 +7,8 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion project.androidTargetSdk
-        versionCode 16
-        versionName "1.16"
+        versionCode 18
+        versionName "1.18"
     }
 
     Properties properties = new Properties()

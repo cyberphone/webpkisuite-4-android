@@ -14,23 +14,31 @@
  *  limitations under the License.
  *
  */
-package org.webpki.crypto;
-
-import java.io.IOException;
+package org.webpki.json.encryption;
 
 /**
- * Crypto algorithm base interface
+ * Return object for symmetric key encryptions.
  */
-public interface CryptoAlgorithms {
+public class SymmetricEncryptionResult {
+    private byte[] iv;
+    byte[] tag;
+    byte[] cipherText;
 
-    public boolean isMandatorySksAlgorithm();
+    SymmetricEncryptionResult(byte[] iv, byte[] tag, byte[] cipherText) {
+        this.iv = iv;
+        this.tag = tag;
+        this.cipherText = cipherText;
+    }
 
-    public String getAlgorithmId(AlgorithmPreferences algorithmPreferences) throws IOException;
+    public byte[] getTag() {
+        return tag;
+    }
 
-    public String getOid();
+    public byte[] getIv() {
+        return iv;
+    }
 
-    public String getJceName();
-
-    public boolean isSymmetric();
-
+    public byte[] getCipherText() {
+        return cipherText;
+    }
 }

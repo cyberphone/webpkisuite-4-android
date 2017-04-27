@@ -92,7 +92,7 @@ import android.util.Log;
  *  Author: Anders Rundgren
  */
 public class SKSImplementation implements SKSError, SecureKeyStore, Serializable, GrantInterface {
-    private static final long serialVersionUID = 8L;
+    private static final long serialVersionUID = 9L;
 
     /////////////////////////////////////////////////////////////////////////////////////////////
     // SKS version and configuration data
@@ -1273,7 +1273,9 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
     Algorithm getEcType(ECKey ecKey) {
         for (String uri : supportedAlgorithms.keySet()) {
             ECParameterSpec ecParameterSpec = supportedAlgorithms.get(uri).ecParameterSpec;
-            if (ecParameterSpec != null && ecKey.getParams().getCurve().equals(ecParameterSpec.getCurve())) {
+            if (ecParameterSpec != null &&
+                    ecKey.getParams().getCurve().equals(ecParameterSpec.getCurve()) &&
+                    ecKey.getParams().getGenerator().equals(ecParameterSpec.getGenerator())) {
                 return supportedAlgorithms.get(uri);
             }
         }

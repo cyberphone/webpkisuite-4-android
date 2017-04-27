@@ -105,7 +105,7 @@ public class WebAuthProtocolInit extends AsyncTask<Void, String, Boolean> {
                 boolean rsa_flag = cert_path[0].getPublicKey() instanceof RSAPublicKey;
                 AsymSignatureAlgorithms signature_algorithm = null;
                 for (AsymSignatureAlgorithms sig_alg : webauth_activity.authentication_request.getSignatureAlgorithms()) {
-                    if (rsa_flag == sig_alg.isRSA() && SKSStore.isSupported(sig_alg.getAlgorithmId(AlgorithmPreferences.SKS))) {
+                    if (rsa_flag == sig_alg.isRsa() && SKSStore.isSupported(sig_alg.getAlgorithmId(AlgorithmPreferences.SKS))) {
                         signature_algorithm = sig_alg;
                         did_it = true;
                         break;

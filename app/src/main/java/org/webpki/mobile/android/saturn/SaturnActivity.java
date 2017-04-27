@@ -39,6 +39,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.Toast;
 
+import org.webpki.json.encryption.EncryptionCore;
 import org.webpki.mobile.android.R;
 
 import java.io.IOException;
@@ -139,6 +140,7 @@ public class SaturnActivity extends BaseProxyActivity {
         AsymSignatureAlgorithms signatureAlgorithm;
         String authorityUrl;
         int keyHandle;
+        String optionalKeyId;
         DataEncryptionAlgorithms dataEncryptionAlgorithm;
         KeyEncryptionAlgorithms keyEncryptionAlgorithm;
         PublicKey keyEncryptionKey;
@@ -547,12 +549,15 @@ public class SaturnActivity extends BaseProxyActivity {
                 // understood by the issuing Payment Provider (bank).
                 UserResponseItem[] tempChallenge = challengeResults;
                 challengeResults = null;
+                // The key we use for decrypting private information from our bank
+                dataEncryptionKey = EncryptionCore.generateRandom(selectedCard.dataEncryptionAlgorithm.getKeyLength());
+                // The response
                 authorizationData = AuthorizationData.encode(
                     selectedCard.paymentRequest,
                     getRequestingHost(),
                     selectedCard.accountDescriptor,
                     dataEncryptionKey,
-                    DataEncryptionAlgorithms.JOSE_A128CBC_HS256_ALG_ID,
+                    selectedCard.dataEncryptionAlgorithm,
                     tempChallenge,
                     selectedCard.signatureAlgorithm,
                     new AsymKeySignerInterface () {

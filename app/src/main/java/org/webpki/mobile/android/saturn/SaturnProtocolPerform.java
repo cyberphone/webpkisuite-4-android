@@ -54,14 +54,15 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
                                               saturnActivity.selectedCard.accountDescriptor.getType(),
                                               saturnActivity.selectedCard.dataEncryptionAlgorithm,
                                               saturnActivity.selectedCard.keyEncryptionKey,
+                                              saturnActivity.selectedCard.optionalKeyId,
                                               saturnActivity.selectedCard.keyEncryptionAlgorithm),
                 false);
             JSONDecoder returnMessage = saturnActivity.parseJSONResponse();
             if (returnMessage instanceof ProviderUserResponseDecoder) {
                 encryptedMessage =
                     ((ProviderUserResponseDecoder)returnMessage)
-                        .getEncryptedMessage(saturnActivity.dataEncryptionKey, 
-                                             DataEncryptionAlgorithms.JOSE_A128CBC_HS256_ALG_ID);
+                        .getEncryptedMessage(saturnActivity.dataEncryptionKey,
+                                             saturnActivity.selectedCard.dataEncryptionAlgorithm);
                 return true;
             } else if (returnMessage instanceof WalletAlertDecoder) {
                 merchantHtmlAlert = ((WalletAlertDecoder)returnMessage).getText();

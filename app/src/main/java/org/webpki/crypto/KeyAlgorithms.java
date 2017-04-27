@@ -346,19 +346,19 @@ public enum KeyAlgorithms implements CryptoAlgorithms {
 
 
     @Override
-    public boolean isMandatorySKSAlgorithm() {
+    public boolean isMandatorySksAlgorithm() {
         return sksMandatory;
     }
 
 
     @Override
-    public String getJCEName() {
+    public String getJceName() {
         return jceName;
     }
 
 
     @Override
-    public String getOID() {
+    public String getOid() {
         return null;
     }
 
@@ -399,13 +399,14 @@ public enum KeyAlgorithms implements CryptoAlgorithms {
 
 
     public static KeyAlgorithms getECKeyAlgorithm(ECParameterSpec ecParameters) throws IOException {
-        EllipticCurve ecCurve = ecParameters.getCurve();
         for (KeyAlgorithms alg : values()) {
-            if (alg.isECKey() && alg.ecParmSpec.getCurve().equals(ecCurve)) {
+            if (alg.isECKey() &&
+                    alg.ecParmSpec.getCurve().equals(ecParameters.getCurve()) &&
+                    alg.ecParmSpec.getGenerator().equals(ecParameters.getGenerator())) {
                 return alg;
             }
         }
-        throw new IOException("Unknown EC curve: " + ecCurve.toString());
+        throw new IOException("Unknown EC type: " + ecParameters.toString());
     }
 
 
@@ -430,7 +431,7 @@ public enum KeyAlgorithms implements CryptoAlgorithms {
     }
 
 
-    public static KeyAlgorithms getKeyAlgorithmFromID(String algorithmId, 
+    public static KeyAlgorithms getKeyAlgorithmFromId(String algorithmId, 
                                                       AlgorithmPreferences algorithmPreferences) throws IOException {
         for (KeyAlgorithms alg : values()) {
             if (algorithmId.equals(alg.sksName)) {

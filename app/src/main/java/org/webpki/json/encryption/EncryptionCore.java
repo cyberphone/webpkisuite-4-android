@@ -16,6 +16,7 @@
  */
 package org.webpki.json.encryption;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import java.security.GeneralSecurityException;
@@ -35,6 +36,7 @@ import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
 import javax.crypto.Mac;
 
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -42,148 +44,245 @@ import org.webpki.crypto.KeyAlgorithms;
 
 import org.webpki.util.ArrayUtil;
 
-// Core encryption class
+/**
+ * Core JEF (JSON Encryption Format) class.
+ * Implements a subset of the RFC7516 (JWE) algorithms
+ */
 
 public final class EncryptionCore {
 
     private EncryptionCore() {} // Static and final class
+    
+    // AES CBC static
+    static final int    AES_CBC_IV_LENGTH        = 16; 
+    static final String AES_CBC_JCENAME          = "AES/CBC/PKCS5Padding";
+
+    // AES GCM static
+    static final int    AES_GCM_IV_LENGTH        = 12;
+    static final int    AES_GCM_TAG_LENGTH       = 16;
+    static final String AES_GCM_JCENAME          = "AES/GCM/NoPadding";
+
+    // AES Key Wrap static
+    static final String AES_KEY_WRAP_JCENAME      = "AESWrap";
+
+    // NIST Concat KDF static
+    static final String CONCAT_KDF_DIGEST_JCENAME = "SHA-256";
+    static final int    CONCAT_KDF_DIGEST_LENGTH  = 32;
+    
+    // RSA OAEP 256 static
+    static final String RSA_OAEP_256_JCENAME      = "RSA/ECB/OAEPWithSHA256AndMGF1Padding";
+    
+    private static String aesProviderName;
+
+    /**
+     * Explicitly set provider for AES operations.
+     * @param providerName Name of provider
+     */
+    public static void setAesProvider(String providerName) {
+        aesProviderName = providerName;
+    }
+    
+    private static String ecProviderName;
+    
+    /**
+     * Explicitly set provider for EC operations.
+     * @param providerName Name of provider
+     */
+    public static void setEcProvider(String providerName) {
+        ecProviderName = providerName;
+    }
+
+    private static String rsaProviderName;
+    
+    /**
+     * Explicitly set provider for RSA operations.
+     * @param providerName Name of provider
+     */
+    public static void setRsaProvider(String providerName) {
+        rsaProviderName = providerName;
+    }
+
+    private static Cipher getAesCipher(String algorithm) throws GeneralSecurityException {
+        return aesProviderName == null ? 
+            Cipher.getInstance(algorithm) 
+                                       : 
+            Cipher.getInstance(algorithm, aesProviderName);
+    }
 
     private static byte[] getTag(byte[] key,
                                  byte[] cipherText,
                                  byte[] iv,
-                                 byte[] authenticatedData) throws GeneralSecurityException {
+                                 byte[] authData,
+                                 DataEncryptionAlgorithms dataEncryptionAlgorithm) throws GeneralSecurityException {
+        int tagLength = dataEncryptionAlgorithm.tagLength;
         byte[] al = new byte[8];
-        int value = authenticatedData.length * 8;
+        int value = authData.length * 8;
         for (int q = 24, i = 4; q >= 0; q -= 8, i++) {
             al[i] = (byte) (value >>> q);
         }
-        Mac mac = Mac.getInstance("HmacSHA256");
-        mac.init(new SecretKeySpec(key, 0, 16, "RAW"));
-        mac.update(authenticatedData);
+        Mac mac = Mac.getInstance(dataEncryptionAlgorithm.jceNameOfTagHmac);
+        mac.init(new SecretKeySpec(key, 0, tagLength, "RAW"));
+        mac.update(authData);
         mac.update(iv);
         mac.update(cipherText);
         mac.update(al);
-        byte[] tag = new byte[16];
-        System.arraycopy(mac.doFinal(), 0, tag, 0, 16);
+        byte[] tag = new byte[tagLength];
+        System.arraycopy(mac.doFinal(), 0, tag, 0, tagLength);
         return tag;
     }
-
-    private static byte[] aesCore(int mode, byte[] key, byte[] iv, byte[] data, DataEncryptionAlgorithms dataEncryptionAlgorithm)
+    
+    private static byte[] aesCbcCore(int mode, byte[] key, byte[] iv, byte[] data, DataEncryptionAlgorithms dataEncryptionAlgorithm)
             throws GeneralSecurityException {
-        if (!permittedDataEncryptionAlgorithm(dataEncryptionAlgorithm)) {
-            throw new GeneralSecurityException("Unsupported AES algorithm: " + dataEncryptionAlgorithm);
-        }
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(mode, new SecretKeySpec(key, 16, 16, "AES"), new IvParameterSpec(iv));
+        Cipher cipher = getAesCipher(AES_CBC_JCENAME);
+        int aesKeyLength = dataEncryptionAlgorithm.keyLength / 2;
+        cipher.init(mode, new SecretKeySpec(key, aesKeyLength, aesKeyLength, "AES"), new IvParameterSpec(iv));
+        return cipher.doFinal(data);
+    }
+
+    private static byte[] aesGcmCore(int mode, byte[] key, byte[] iv, byte[] authData, byte[] data)
+            throws GeneralSecurityException {
+        Cipher cipher = getAesCipher(AES_GCM_JCENAME);
+        GCMParameterSpec gcmSpec = new GCMParameterSpec(AES_GCM_TAG_LENGTH * 8, iv);
+        cipher.init(mode, new SecretKeySpec(key, "AES"), gcmSpec);
+        cipher.updateAAD(authData);
         return cipher.doFinal(data);
     }
 
     private static byte[] rsaCore(int mode,
                                   Key key,
                                   byte[] data,
-                                  KeyEncryptionAlgorithms keyEncryptionAlgorithm,
-                                  String providerName)
+                                  KeyEncryptionAlgorithms keyEncryptionAlgorithm)
             throws GeneralSecurityException {
-        if (keyEncryptionAlgorithm != KeyEncryptionAlgorithms.JOSE_RSA_OAEP_256_ALG_ID) {
+        if (!keyEncryptionAlgorithm.rsa) {
             throw new GeneralSecurityException("Unsupported RSA algorithm: " + keyEncryptionAlgorithm);
         }
-        Cipher cipher = providerName == null ?
-            Cipher.getInstance("RSA/ECB/OAEPWithSHA256AndMGF1Padding")
-                                             :
-            Cipher.getInstance("RSA/ECB/OAEPWithSHA256AndMGF1Padding", providerName);
+        Cipher cipher = rsaProviderName == null ?
+            Cipher.getInstance(RSA_OAEP_256_JCENAME)
+                                                :
+            Cipher.getInstance(RSA_OAEP_256_JCENAME, rsaProviderName);
         cipher.init(mode, key);
         return cipher.doFinal(data);
     }
 
-    public static class AuthEncResult {
-        private byte[] iv;
-        byte[] tag;
-        byte[] cipherText;
-
-        private AuthEncResult(byte[] iv, byte[] tag, byte[] cipherText) {
-            this.iv = iv;
-            this.tag = tag;
-            this.cipherText = cipherText;
-        }
-
-        public byte[] getTag() {
-            return tag;
-        }
-
-        public byte[] getIv() {
-            return iv;
-        }
-
-        public byte[] getCipherText() {
-            return cipherText;
-        }
+    /**
+     * Generate byte[] with random data.
+     * @param length Number of bytes
+     * @return byte[]
+     */
+    public static byte[] generateRandom(int length) {
+        byte[] random = new byte[length];
+        new SecureRandom().nextBytes(random);
+        return random;
     }
 
-    public static class EcdhSenderResult {
-        private byte[] sharedSecret;
-        private ECPublicKey ephemeralKey;
-
-        private EcdhSenderResult(byte[] sharedSecret, ECPublicKey ephemeralKey) {
-            this.sharedSecret = sharedSecret;
-            this.ephemeralKey = ephemeralKey;
+    private static void check(byte[] parameter,
+                              String parameterName,
+                              int expectedLength,
+                              DataEncryptionAlgorithms dataEncryptionAlgorithm)
+            throws GeneralSecurityException {
+        if (parameter == null) {
+            throw new GeneralSecurityException("Parameter \"" + parameterName +
+                                               "\"=null for " +
+                                               dataEncryptionAlgorithm);
         }
-
-        public byte[] getSharedSecret() {
-            return sharedSecret;
-        }
-
-        public ECPublicKey getEphemeralKey() {
-            return ephemeralKey;
+        if (parameter.length != expectedLength) {
+            throw new GeneralSecurityException("Incorrect parameter \"" + parameterName +
+                                               "\" length (" + parameter.length + ") for " +
+                                               dataEncryptionAlgorithm);
         }
     }
-
-    public static AuthEncResult contentEncryption(DataEncryptionAlgorithms dataEncryptionAlgorithm,
-                                                  byte[] key,
-                                                  byte[] plainText,
-                                                  byte[] authenticatedData) throws GeneralSecurityException {
-        byte[] iv = new byte[16];
-        new SecureRandom().nextBytes(iv);
-        byte[] cipherText = aesCore(Cipher.ENCRYPT_MODE, key, iv, plainText, dataEncryptionAlgorithm);
-        return new AuthEncResult(iv, getTag(key, cipherText, iv, authenticatedData), cipherText);
+    
+    /**
+     * Perform a symmetric key encryption.
+     * @param dataEncryptionAlgorithm Algorithm to use
+     * @param key Encryption key
+     * @param plainText The data to be encrypted
+     * @param authData Additional input factor for authentication
+     * @return A composite object including encrypted data
+     * @throws GeneralSecurityException &nbsp;
+     */
+    public static SymmetricEncryptionResult contentEncryption(DataEncryptionAlgorithms dataEncryptionAlgorithm,
+                                                              byte[] key,
+                                                              byte[] plainText,
+                                                              byte[] authData) throws GeneralSecurityException {
+        check(key, "key", dataEncryptionAlgorithm.keyLength, dataEncryptionAlgorithm);
+        byte[] iv = generateRandom(dataEncryptionAlgorithm.ivLength);
+         if (dataEncryptionAlgorithm.gcm) {
+            byte[] cipherOutput = aesGcmCore(Cipher.ENCRYPT_MODE, key, iv, authData, plainText);
+            int tagPos = cipherOutput.length - AES_GCM_TAG_LENGTH;
+            byte[] cipherText = ArrayUtil.copy(cipherOutput, tagPos);
+            byte[] tag = new byte[AES_GCM_TAG_LENGTH];
+            System.arraycopy(cipherOutput, tagPos, tag, 0, AES_GCM_TAG_LENGTH);
+            return new SymmetricEncryptionResult(iv, tag, cipherText);
+        }
+        byte[] cipherText = aesCbcCore(Cipher.ENCRYPT_MODE, key, iv, plainText, dataEncryptionAlgorithm);
+        return new SymmetricEncryptionResult(iv, getTag(key, cipherText, iv, authData, dataEncryptionAlgorithm), cipherText);
     }
 
-    public static byte[] generateDataEncryptionKey(DataEncryptionAlgorithms dataEncryptionAlgorithm) {
-        byte[] dataEncryptionKey = new byte[dataEncryptionAlgorithm.getKeyLength()];
-        new SecureRandom().nextBytes(dataEncryptionKey);
-        return dataEncryptionKey;
-    }
-
+    /**
+     * Decrypt using a symmetric key.
+     * @param dataEncryptionAlgorithm Algorithm to use
+     * @param key The encryption key
+     * @param cipherText The data to be decrypted
+     * @param iv Initialization Vector
+     * @param authData Additional input used for authentication puposes
+     * @param tag Authentication tag
+     * @return The data in clear
+     * @throws GeneralSecurityException &nbsp;
+     */
     public static byte[] contentDecryption(DataEncryptionAlgorithms dataEncryptionAlgorithm,
                                            byte[] key,
                                            byte[] cipherText,
                                            byte[] iv,
-                                           byte[] authenticatedData,
+                                           byte[] authData,
                                            byte[] tag) throws GeneralSecurityException {
-        if (!ArrayUtil.compare(tag, getTag(key, cipherText, iv, authenticatedData))) {
+        check(key, "key", dataEncryptionAlgorithm.keyLength, dataEncryptionAlgorithm);
+        check(iv, "iv", dataEncryptionAlgorithm.ivLength, dataEncryptionAlgorithm);
+        check(tag, "tag", dataEncryptionAlgorithm.tagLength, dataEncryptionAlgorithm);
+        if (dataEncryptionAlgorithm.gcm) {
+            return aesGcmCore(Cipher.DECRYPT_MODE, key, iv, authData, ArrayUtil.add(cipherText, tag));
+        }
+        if (!ArrayUtil.compare(tag, getTag(key, cipherText, iv, authData, dataEncryptionAlgorithm))) {
             throw new GeneralSecurityException("Authentication error on algorithm: " + dataEncryptionAlgorithm);
         }
-        return aesCore(Cipher.DECRYPT_MODE, key, iv, cipherText, dataEncryptionAlgorithm);
+        return aesCbcCore(Cipher.DECRYPT_MODE, key, iv, cipherText, dataEncryptionAlgorithm);
     }
 
-    public static byte[] rsaEncryptKey(KeyEncryptionAlgorithms keyEncryptionAlgorithm,
-                                       byte[] rawKey,
-                                       PublicKey publicKey) throws GeneralSecurityException {
-        return rsaCore(Cipher.ENCRYPT_MODE,
-                       publicKey,
-                       rawKey,
-                       keyEncryptionAlgorithm,
-                       null);
+    /**
+     * Generate a random key and encrypt it using an RSA cipher.
+     * @param keyEncryptionAlgorithm Algorithm to use
+     * @param dataEncryptionAlgorithm The designated content encryption algorithm
+     * @param publicKey The RSA key
+     * @return A composite object including the data encryption key
+     * @throws GeneralSecurityException &nbsp;
+     */
+    public static AsymmetricEncryptionResult rsaEncryptKey(KeyEncryptionAlgorithms keyEncryptionAlgorithm,
+                                                           DataEncryptionAlgorithms dataEncryptionAlgorithm,
+                                                           PublicKey publicKey) throws GeneralSecurityException {
+        byte[] dataEncryptionKey = generateRandom(dataEncryptionAlgorithm.keyLength);
+        return new AsymmetricEncryptionResult(dataEncryptionKey,
+                                              rsaCore(Cipher.ENCRYPT_MODE,
+                                                      publicKey,
+                                                      dataEncryptionKey,
+                                                      keyEncryptionAlgorithm),
+                                              null);
     }
 
+    /**
+     * Decrypt a symmetric key using an RSA cipher.
+     * @param keyEncryptionAlgorithm The algorithm to use
+     * @param encryptedKey Contains a symmetric key used for encrypting the data
+     * @param privateKey The RSA private key
+     * @return The key in plain text
+     * @throws GeneralSecurityException &nbsp;
+     */
     public static byte[] rsaDecryptKey(KeyEncryptionAlgorithms keyEncryptionAlgorithm,
                                        byte[] encryptedKey,
-                                       PrivateKey privateKey,
-                                       String providerName) throws GeneralSecurityException {
+                                       PrivateKey privateKey) throws GeneralSecurityException {
         return rsaCore(Cipher.DECRYPT_MODE,
                        privateKey,
                        encryptedKey,
-                       keyEncryptionAlgorithm,
-                       providerName);
+                       keyEncryptionAlgorithm);
     }
 
     private static void addInt4(MessageDigest messageDigest, int value) {
@@ -192,61 +291,121 @@ public final class EncryptionCore {
         }
     }
 
+    private static byte[] coreKeyAgreement(KeyEncryptionAlgorithms keyEncryptionAlgorithm,
+                                           DataEncryptionAlgorithms dataEncryptionAlgorithm,
+                                           ECPublicKey receivedPublicKey,
+                                           PrivateKey privateKey) throws GeneralSecurityException, IOException {
+        // Begin by calculating Z (do the DH)
+        KeyAgreement keyAgreement = ecProviderName == null ?
+                KeyAgreement.getInstance("ECDH") : KeyAgreement.getInstance("ECDH", ecProviderName);
+        keyAgreement.init(privateKey);
+        keyAgreement.doPhase(receivedPublicKey, true);
+        byte[] Z = keyAgreement.generateSecret();
+
+        // NIST Concat KDF
+        final MessageDigest messageDigest = MessageDigest.getInstance(CONCAT_KDF_DIGEST_JCENAME);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        byte[] algorithmId = (keyEncryptionAlgorithm.keyWrap ?
+                keyEncryptionAlgorithm : dataEncryptionAlgorithm).toString().getBytes("UTF-8");
+
+        int keyLength = keyEncryptionAlgorithm.keyWrap ?
+                keyEncryptionAlgorithm.keyEncryptionKeyLength : dataEncryptionAlgorithm.keyLength;
+
+        int reps = (keyLength + CONCAT_KDF_DIGEST_LENGTH - 1) / CONCAT_KDF_DIGEST_LENGTH;
+
+        // KDFing...
+        for (int i = 1; i <= reps; i++) {
+            // Round indicator
+            addInt4(messageDigest, i);
+            // Z
+            messageDigest.update(Z);
+            // AlgorithmID = Content encryption algorithm
+            addInt4(messageDigest, algorithmId.length);
+            messageDigest.update(algorithmId);
+            // PartyUInfo = Empty
+            addInt4(messageDigest, 0);
+            // PartyVInfo = Empty
+            addInt4(messageDigest, 0);
+            // SuppPubInfo = Key length in bits
+            addInt4(messageDigest, keyLength * 8);
+            baos.write(messageDigest.digest());
+        }
+
+        // Only use a much of the digest that is asked for
+        byte[] result = new byte[keyLength];
+        System.arraycopy(baos.toByteArray(), 0, result, 0, keyLength);
+        return result;
+    }
+
+    /**
+     * Perform a receiver side ECDH operation.
+     * @param keyEncryptionAlgorithm The ECDH algorithm
+     * @param dataEncryptionAlgorithm The designated content encryption algorithm
+     * @param receivedPublicKey The sender's (usually ephemeral) public key
+     * @param privateKey The receiver's private key
+     * @param encryptedKeyData For ECDH+KW based operations only
+     * @return Shared secret
+     * @throws GeneralSecurityException &nbsp;
+     * @throws IOException &nbsp;
+     */
     public static byte[] receiverKeyAgreement(KeyEncryptionAlgorithms keyEncryptionAlgorithm,
                                               DataEncryptionAlgorithms dataEncryptionAlgorithm,
                                               ECPublicKey receivedPublicKey,
                                               PrivateKey privateKey,
-                                              String providerName) throws GeneralSecurityException, IOException {
-        if (keyEncryptionAlgorithm != KeyEncryptionAlgorithms.JOSE_ECDH_ES_ALG_ID) {
-            throw new GeneralSecurityException("Unsupported ECDH algorithm: " + keyEncryptionAlgorithm);
+                                              byte[] encryptedKeyData)
+    throws GeneralSecurityException, IOException {
+        // Sanity check
+        if (keyEncryptionAlgorithm.keyWrap ^ (encryptedKeyData != null)) {
+            throw new GeneralSecurityException("\"encryptedKeyData\" must " + 
+                    (encryptedKeyData == null ? "not be null" : "be null") + " for algoritm: " +
+                    keyEncryptionAlgorithm);
         }
-        if (dataEncryptionAlgorithm != DataEncryptionAlgorithms.JOSE_A128CBC_HS256_ALG_ID) {
-            throw new GeneralSecurityException("Unsupported data encryption algorithm: " + dataEncryptionAlgorithm);
+        byte[] derivedKey = coreKeyAgreement(keyEncryptionAlgorithm,
+                                             dataEncryptionAlgorithm,
+                                             receivedPublicKey,
+                                             privateKey);
+        if (keyEncryptionAlgorithm.keyWrap) {
+            Cipher cipher = getAesCipher(AES_KEY_WRAP_JCENAME);
+            cipher.init(Cipher.UNWRAP_MODE, new SecretKeySpec(derivedKey, "AES"));
+            derivedKey = cipher.unwrap(encryptedKeyData, "AES", Cipher.SECRET_KEY).getEncoded();
         }
-        byte[] algorithmId = dataEncryptionAlgorithm.toString().getBytes("UTF-8");
-        KeyAgreement keyAgreement = providerName == null ? 
-                        KeyAgreement.getInstance("ECDH") : KeyAgreement.getInstance("ECDH", providerName);
-        keyAgreement.init(privateKey);
-        keyAgreement.doPhase(receivedPublicKey, true);
-        // NIST Concat KDF
-        MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
-        // Round 1 indicator
-        addInt4(messageDigest, 1);
-        // Z
-        messageDigest.update(keyAgreement.generateSecret());
-        // AlgorithmID = Content encryption algorithm
-        addInt4(messageDigest, algorithmId.length);
-        messageDigest.update(algorithmId);
-        // PartyUInfo = Empty
-        addInt4(messageDigest, 0);
-        // PartyVInfo = Empty
-        addInt4(messageDigest, 0);
-        // SuppPubInfo = Key length in bits
-        addInt4(messageDigest, 256);
-        return messageDigest.digest();
+        return derivedKey;
     }
 
-    public static EcdhSenderResult senderKeyAgreement(KeyEncryptionAlgorithms keyEncryptionAlgorithm,
-                                                      DataEncryptionAlgorithms dataEncryptionAlgorithm,
-                                                      PublicKey staticKey) throws GeneralSecurityException, IOException {
-        KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
-        ECGenParameterSpec eccgen = new ECGenParameterSpec(KeyAlgorithms.getKeyAlgorithm(staticKey).getJCEName());
+    /**
+     * Perform a sender side ECDH operation.
+     * @param keyEncryptionAlgorithm The ECDH algorithm
+     * @param dataEncryptionAlgorithm The designated content encryption algorithm
+     * @param staticKey The receiver's (usually static) public key
+     * @return A composite object including the (plain text) data encryption key
+     * @throws GeneralSecurityException &nbsp;
+     * @throws IOException &nbsp;
+     */
+    public static AsymmetricEncryptionResult senderKeyAgreement(KeyEncryptionAlgorithms keyEncryptionAlgorithm,
+                                                                DataEncryptionAlgorithms dataEncryptionAlgorithm,
+                                                                PublicKey staticKey) 
+    throws GeneralSecurityException, IOException {
+        KeyPairGenerator generator = ecProviderName == null ?
+                         KeyPairGenerator.getInstance("EC") : KeyPairGenerator.getInstance("EC", ecProviderName);
+        ECGenParameterSpec eccgen = new ECGenParameterSpec(KeyAlgorithms.getKeyAlgorithm(staticKey).getJceName());
         generator.initialize(eccgen, new SecureRandom());
         KeyPair keyPair = generator.generateKeyPair();
-        return new EcdhSenderResult(receiverKeyAgreement(keyEncryptionAlgorithm,
-                                                         dataEncryptionAlgorithm,
-                                                         (ECPublicKey) staticKey,
-                                                         keyPair.getPrivate(),
-                                                         null),
-                                                         (ECPublicKey) keyPair.getPublic());
-    }
-
-    public static boolean permittedKeyEncryptionAlgorithm(KeyEncryptionAlgorithms algorithm) {
-        return algorithm == KeyEncryptionAlgorithms.JOSE_ECDH_ES_ALG_ID ||
-               algorithm == KeyEncryptionAlgorithms.JOSE_RSA_OAEP_256_ALG_ID;
-    }
-
-    public static boolean permittedDataEncryptionAlgorithm(DataEncryptionAlgorithms algorithm) {
-        return algorithm == DataEncryptionAlgorithms.JOSE_A128CBC_HS256_ALG_ID;
+        byte[] derivedKey = coreKeyAgreement(keyEncryptionAlgorithm,
+                                             dataEncryptionAlgorithm,
+                                             (ECPublicKey) staticKey,
+                                             keyPair.getPrivate());
+        byte[] encryptedKeyData = null;
+        if (keyEncryptionAlgorithm.keyWrap) {
+            byte[] contentEncryptionKey = generateRandom(dataEncryptionAlgorithm.keyLength);
+            Cipher cipher = getAesCipher(AES_KEY_WRAP_JCENAME);
+            cipher.init(Cipher.WRAP_MODE, new SecretKeySpec(derivedKey, "AES"));
+            encryptedKeyData = cipher.wrap(new SecretKeySpec(contentEncryptionKey, "AES"));
+            derivedKey = contentEncryptionKey;
+        }
+        return new AsymmetricEncryptionResult(derivedKey, 
+                                              encryptedKeyData,
+                                              (ECPublicKey) keyPair.getPublic());
     }
 }

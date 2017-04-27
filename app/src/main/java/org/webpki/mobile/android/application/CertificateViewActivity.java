@@ -118,7 +118,7 @@ public class CertificateViewActivity extends Activity {
             String[] ext_key_usages = cert_info.getExtendedKeyUsage();
             if (ext_key_usages != null) {
                 for (int i = 0; i < ext_key_usages.length; i++) {
-                    ext_key_usages[i] = ExtendedKeyUsages.getOptionallyTranslatedEKU(ext_key_usages[i]);
+                    ext_key_usages[i] = ExtendedKeyUsages.getOptionallyTranslatedEku(ext_key_usages[i]);
                 }
                 printURIs(cert_text, "Extended&nbsp;key&nbsp;usage", ext_key_usages);
             }
