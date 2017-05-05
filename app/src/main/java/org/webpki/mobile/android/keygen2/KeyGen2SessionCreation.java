@@ -314,7 +314,7 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
 
             prov_sess_response.setResponseSigner(new SymKeySignerInterface() {
                 @Override
-                public byte[] signData(byte[] data) throws IOException {
+                public byte[] signData(byte[] data, MACAlgorithms algorithm) throws IOException {
                     return keygen2_activity.sks.signProvisioningSessionData(keygen2_activity.provisioning_handle, data);
                 }
 
