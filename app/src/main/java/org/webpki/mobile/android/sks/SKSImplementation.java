@@ -916,7 +916,6 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
     static final int ALG_RSA_KEY  = 0x00004000;
     static final int ALG_RSA_GMSK = 0x00003FFF;
     static final int ALG_RSA_EXP  = 0x00008000;
-    static final int ALG_HASH_160 = 0x00140000;
     static final int ALG_HASH_256 = 0x00200000;
     static final int ALG_HASH_384 = 0x00300000;
     static final int ALG_HASH_512 = 0x00400000;
@@ -993,12 +992,6 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         //////////////////////////////////////////////////////////////////////////////////////
         //  Asymmetric Key Signatures
         //////////////////////////////////////////////////////////////////////////////////////
-        addAlgorithm("http://www.w3.org/2000/09/xmldsig#rsa-sha1",
-                     "NONEwithRSA",
-                     ALG_ASYM_SGN | ALG_RSA_KEY | ALG_HASH_160).pkcs1DigestInfo =
-                         new byte[]{0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 0x0e, 0x03, 0x02,
-                                    0x1a, 0x05, 0x00, 0x04, 0x14};
-
         addAlgorithm("http://www.w3.org/2001/04/xmldsig-more#rsa-sha256",
                      "NONEwithRSA",
                      ALG_ASYM_SGN | ALG_RSA_KEY | ALG_HASH_256).pkcs1DigestInfo =
