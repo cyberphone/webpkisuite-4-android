@@ -28,6 +28,7 @@ import org.webpki.crypto.AlgorithmPreferences;
 
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
+import org.webpki.json.JSONSignatureDecoder;
 
 public class PaymentRequest implements BaseProperties {
 
@@ -43,7 +44,7 @@ public class PaymentRequest implements BaseProperties {
         dateTime = rd.getDateTime(TIME_STAMP_JSON);
         expires = rd.getDateTime(EXPIRES_JSON);
         software = new Software(rd);
-        publicKey = rd.getSignature(AlgorithmPreferences.JOSE).getPublicKey();
+        publicKey = rd.getSignature(new JSONSignatureDecoder.Options()).getPublicKey();
         rd.checkForUnread();
     }
 
