@@ -26,7 +26,10 @@ import java.util.regex.Pattern;
 public enum Currencies implements Serializable {
 
     USD ("$\u200a",       true,  2), 
-    EUR ("\u2009\u20ac",  false, 2),
+/*
+    EUR ("\u2009\u20ac",  false, 2), // French
+*/
+    EUR ("\u20ac\u200a",  true,  2), // English
     GBP ("\u00a3\u200a",  true,  2);
 
     public String symbol;
