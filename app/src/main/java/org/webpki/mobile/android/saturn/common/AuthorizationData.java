@@ -38,7 +38,8 @@ public class AuthorizationData implements BaseProperties {
 
     public static JSONObjectWriter encode(PaymentRequest paymentRequest,
                                           String domainName,
-                                          AccountDescriptor account,
+                                          String paymentMethod,
+                                          String accountId,
                                           byte[] dataEncryptionKey,
                                           DataEncryptionAlgorithms dataEncryptionAlgorithm,
                                           UserResponseItem[] optionalUserResponseItems,
@@ -49,7 +50,8 @@ public class AuthorizationData implements BaseProperties {
                         .setString(JSONSignatureDecoder.ALGORITHM_JSON, RequestHash.JOSE_SHA_256_ALG_ID)
                         .setBinary(JSONSignatureDecoder.VALUE_JSON, paymentRequest.getRequestHash()))
                 .setString(DOMAIN_NAME_JSON, domainName)
-                .setObject(ACCOUNT_JSON, account.writeObject())
+                .setString(PAYMENT_METHOD_JSON, paymentMethod)
+                .setString(ACCOUNT_ID_JSON, accountId)
                 .setObject(ENCRYPTION_PARAMETERS_JSON,
                         new JSONObjectWriter()
                                 .setString(JSONSignatureDecoder.ALGORITHM_JSON, dataEncryptionAlgorithm.toString())
@@ -67,7 +69,8 @@ public class AuthorizationData implements BaseProperties {
 
     public static JSONObjectWriter encode(PaymentRequest paymentRequest,
                                           String domainName,
-                                          AccountDescriptor account,
+                                          String paymentMethod,
+                                          String accountId,
                                           byte[] dataEncryptionKey,
                                           DataEncryptionAlgorithms dataEncryptionAlgorithm,
                                           UserResponseItem[] optionalUserResponseItems,
@@ -75,7 +78,8 @@ public class AuthorizationData implements BaseProperties {
                                           AsymKeySignerInterface signer) throws IOException {
         return encode(paymentRequest,
                 domainName,
-                account,
+                paymentMethod,
+                accountId,
                 dataEncryptionKey,
                 dataEncryptionAlgorithm,
                 optionalUserResponseItems,

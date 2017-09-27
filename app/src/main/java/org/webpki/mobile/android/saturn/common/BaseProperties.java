@@ -45,8 +45,6 @@ public interface BaseProperties {
     String PAYMENT_NETWORKS_JSON            = "paymentNetworks";
     String PAYMENT_REQUEST_JSON             = "paymentRequest";
     String HTTP_VERSION_JSON                = "httpVersion";                // For per partner being able to use HTTP/2 and further
-    String ACQUIRER_AUTHORITY_URL_JSON      = "acquirerAuthorityUrl";       // For CreditCard payments
-    String PAYEE_ACCOUNT_JSON               = "payeeAccount";               // Selected payee Account2Account
     String EXPIRES_JSON                     = "expires";                    // Object expiration time
     String RECEPIENT_URL_JSON               = "recepientUrl";               // Where we are sending (target address)
     String AUTHORITY_URL_JSON               = "authorityUrl";               // Double use self in *Authority objects and initiator
@@ -62,17 +60,16 @@ public interface BaseProperties {
     String REFERENCE_ID_JSON                = "referenceId";
     String PAYEE_JSON                       = "payee";                      // Payee object
     String TEST_MODE_JSON                   = "testMode";                   // Test mode = no real money involved
-    String ADDITIONAL_PAYEE_DATA_JSON       = "additionalPayeeData";        // Optional object in an AuthorizationRequest
-    String ENCRYPTED_AUTHORIZATION_JSON     = "encryptedAuthorization";     // Payer authorization data
-    String PROVIDER_AUTHORITY_URL_JSON      = "providerAuthorityUrl";       // URL to payment provider
-    String PROVIDER_ACCOUNT_TYPES_JSON      = "providerAccountTypes";       // List of Account2Account types "understood" by provider
-    String ACCEPTED_ACCOUNT_TYPES_JSON      = "acceptedAccountTypes";       // List of ACCOUNT_TYPE_JSON
+    String ENCRYPTED_AUTHORIZATION_JSON     = "encryptedAuthorization";     // Encrypted Payer authorization data
+    String PROVIDER_AUTHORITY_URL_JSON      = "providerAuthorityUrl";       // URL to payment provider authority object
+    String HOSTING_PROVIDER_JSON            = "hostingProvider";            // Optional object in ProviderAuthority
+    String HOME_PAGE_JSON                   = "homePage";                   // URL to the public Web of the entity
+    String PAYMENT_METHOD_SPECIFIC_JSON     = "paymentMethodSpecific";      // Holding a payment method specific object
+    String PAYMENT_METHODS_JSON             = "paymentMethods";             // List of accepted payment methods (URIs)
+    String PAYMENT_METHOD_JSON              = "paymentMethod";              // Payment method (URI)
     String EXTENSIONS_JSON                  = "extensions";                 // Optional provider authority data
-    String ACCOUNT_JSON                     = "account";                    // Payer Account2Account or Card
+    String ACCOUNT_ID_JSON                  = "accountId";                  // Account identifier or PAN
     String ACCOUNT_REFERENCE_JSON           = "accountReference";           // Account/Card number for payee (like ************5678)
-    String ACCOUNT_TYPE_JSON                = "accountType";                // Account/Card type in the form of a URI
-    String ACCOUNT_HOLDER_JSON              = "accountHolder";              // Card holder
-    String ACCOUNT_SECURITY_CODE_JSON       = "accountSecurityCode";        // CCV
     String CARD_FORMAT_ACCOUNT_ID_JSON      = "cardFormatAccountId";        // Display formatting like cards or not
     String ENCRYPTED_ACCOUNT_DATA_JSON      = "encryptedAccountData";       // Account data that (only) an acquirer needs
     String REQUEST_HASH_JSON                = "requestHash";
@@ -91,8 +88,4 @@ public interface BaseProperties {
     String SATURN_WEB_PAY_CONTEXT_URI       = "http://webpki.org/saturn/v3";
 
     String JSON_CONTENT_TYPE                = "application/json";
-    String HTML_CONTENT_TYPE                = "text/html";
-
-    String HTTP_ACCEPT_HEADER               = "Accept";
-    String HTTP_CONTENT_TYPE_HEADER         = "Content-Type";
 }

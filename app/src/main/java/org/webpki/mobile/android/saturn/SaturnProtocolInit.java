@@ -22,8 +22,6 @@ import java.net.URL;
 
 import android.os.AsyncTask;
 
-import android.util.Log;
-
 import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.AsymSignatureAlgorithms;
 
@@ -39,7 +37,6 @@ import org.webpki.keygen2.KeyGen2URIs;
 
 import org.webpki.mobile.android.saturn.SaturnActivity.Account;
 
-import org.webpki.mobile.android.saturn.common.AccountDescriptor;
 import org.webpki.mobile.android.saturn.common.BaseProperties;
 import org.webpki.mobile.android.saturn.common.ProviderUserResponseDecoder;
 import org.webpki.mobile.android.saturn.common.WalletAlertDecoder;
@@ -134,13 +131,14 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
     }
 
     void collectPotentialCard(int keyHandle, JSONObjectReader cardProperties, WalletRequestDecoder wrd) throws IOException {
-        AccountDescriptor cardAccount = new AccountDescriptor(cardProperties.getObject(BaseProperties.ACCOUNT_JSON));
+        String paymentMethod = cardProperties.getString(BaseProperties.PAYMENT_METHOD_JSON);
         for (WalletRequestDecoder.PaymentNetwork paymentNetwork : wrd.getPaymentNetworks()) {
-            for (String accountType : paymentNetwork.getAccountTypes()) {
-                if (cardAccount.getType().equals(accountType)) {
+            for (String acceptedPaymentMethod : paymentNetwork.getPaymentMethods()) {
+                if (paymentMethod.equals(acceptedPaymentMethod)) {
                     Account card =
                         new Account(paymentNetwork.getPaymentRequest(),
-                                    cardAccount,
+                                    paymentMethod,
+                                    cardProperties.getString(BaseProperties.ACCOUNT_ID_JSON),
                                     cardProperties.getBoolean(BaseProperties.CARD_FORMAT_ACCOUNT_ID_JSON),
                                     saturnActivity.sks.getExtension(keyHandle, KeyGen2URIs.LOGOTYPES.CARD)
                                         .getExtensionData(SecureKeyStore.SUB_TYPE_LOGOTYPE),

@@ -62,7 +62,6 @@ import org.webpki.json.encryption.KeyEncryptionAlgorithms;
 
 import org.webpki.mobile.android.proxy.BaseProxyActivity;
 
-import org.webpki.mobile.android.saturn.common.AccountDescriptor;
 import org.webpki.mobile.android.saturn.common.AuthorizationData;
 import org.webpki.mobile.android.saturn.common.UserResponseItem;
 import org.webpki.mobile.android.saturn.common.NonDirectPayments;
@@ -134,7 +133,8 @@ public class SaturnActivity extends BaseProxyActivity {
 
     static class Account {
         PaymentRequest paymentRequest;
-        AccountDescriptor accountDescriptor;
+        String paymentMethod;
+        String accountId;
         boolean cardFormatAccountId;
         byte[] cardSvgIcon;
         AsymSignatureAlgorithms signatureAlgorithm;
@@ -146,14 +146,16 @@ public class SaturnActivity extends BaseProxyActivity {
         PublicKey keyEncryptionKey;
 
         Account(PaymentRequest paymentRequest,
-                AccountDescriptor accountDescriptor,
+                String paymentMethod,
+                String accountId,
                 boolean cardFormatAccountId,
                 byte[] cardSvgIcon,
                 int keyHandle,
                 AsymSignatureAlgorithms signatureAlgorithm,
                 String authorityUrl) {
             this.paymentRequest = paymentRequest;
-            this.accountDescriptor = accountDescriptor;
+            this.paymentMethod = paymentMethod;
+            this.accountId = accountId;
             this.cardFormatAccountId = cardFormatAccountId;
             this.cardSvgIcon = cardSvgIcon;
             this.keyHandle = keyHandle;
@@ -278,9 +280,9 @@ public class SaturnActivity extends BaseProxyActivity {
 
     static String formatAccountId(Account card) {
         return card.cardFormatAccountId ?
-            AuthorizationData.formatCardNumber(card.accountDescriptor.getId())
+            AuthorizationData.formatCardNumber(card.accountId)
                                         :
-            card.accountDescriptor.getId();
+            card.accountId;
     }
 
     String htmlOneCard(Account account, int width, String card, String clickOption) {
@@ -555,7 +557,8 @@ public class SaturnActivity extends BaseProxyActivity {
                 authorizationData = AuthorizationData.encode(
                     selectedCard.paymentRequest,
                     getRequestingHost(),
-                    selectedCard.accountDescriptor,
+                    selectedCard.paymentMethod,
+                    selectedCard.accountId,
                     dataEncryptionKey,
                     selectedCard.dataEncryptionAlgorithm,
                     tempChallenge,

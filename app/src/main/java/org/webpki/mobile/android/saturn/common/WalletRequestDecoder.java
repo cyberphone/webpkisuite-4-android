@@ -30,19 +30,19 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
 
     public class PaymentNetwork {
         PaymentRequest paymentRequest;
-        String[] accountTypes;
+        String[] paymentMethods;
 
-        private PaymentNetwork(PaymentRequest paymentRequest, String[] accountTypes) {
+        private PaymentNetwork(PaymentRequest paymentRequest, String[] paymentMethods) {
             this.paymentRequest = paymentRequest;
-            this.accountTypes = accountTypes;
+            this.paymentMethods = paymentMethods;
         }
 
         public PaymentRequest getPaymentRequest() {
             return paymentRequest;
         }
 
-        public String[] getAccountTypes() {
-            return accountTypes;
+        public String[] getPaymentMethods() {
+            return paymentMethods;
         }
     }
 
@@ -73,13 +73,13 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
         PaymentRequest previous = null;
         do {
             JSONObjectReader paymentNetwork = ar.getObject();
-            String[] accountTypes = paymentNetwork.getStringArray(ACCEPTED_ACCOUNT_TYPES_JSON);
+            String[] paymentMethods = paymentNetwork.getStringArray(PAYMENT_METHODS_JSON);
             PaymentRequest paymentRequest = new PaymentRequest(paymentNetwork.getObject(PAYMENT_REQUEST_JSON));
             if (previous != null) {
                 previous.consistencyCheck(paymentRequest);
             }
             previous = paymentRequest;
-            paymentNetworks.add(new PaymentNetwork(paymentRequest, accountTypes));
+            paymentNetworks.add(new PaymentNetwork(paymentRequest, paymentMethods));
         } while (ar.hasMore());
         androidCancelUrl = rd.getString(ANDROID_CANCEL_URL_JSON);
         androidSuccessUrl = rd.getString(ANDROID_SUCCESS_URL_JSON);
