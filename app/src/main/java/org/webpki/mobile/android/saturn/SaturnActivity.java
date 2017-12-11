@@ -166,19 +166,20 @@ public class SaturnActivity extends BaseProxyActivity {
 
     Vector<Account> cardCollection = new Vector<Account>();
 
-    void loadHtml(String positionScript, String body) {
-        final String positionScriptArgument = positionScript;
-        final String bodyArgument = body;
+    void loadHtml(final String positionScript, final String body) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 saturnView.loadUrl("about:blank");
-                String html = new StringBuffer(HTML_HEADER)
-                    .append(positionScriptArgument)
-                    .append(htmlBodyPrefix)
-                    .append(bodyArgument)
-                    .append("</body></html>").toString();
-                saturnView.loadData(html, "text/html; charset=utf-8", null);
+                try {
+                    String html = Base64.encodeToString(new StringBuffer(HTML_HEADER)
+                            .append(positionScript)
+                            .append(htmlBodyPrefix)
+                            .append(body)
+                            .append("</body></html>").toString().getBytes("utf-8"), Base64.NO_WRAP);
+                    saturnView.loadData(html, "text/html; charset=utf-8", "base64");
+                } catch (Exception e) {
+                }
             }
         });
     }
