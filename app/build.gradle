@@ -11,7 +11,7 @@ android {
     }
     compileSdkVersion 23
     defaultConfig {
-        minSdkVersion 19
+        minSdkVersion 23
         targetSdkVersion project.androidTargetSdk
         versionCode 21
         versionName "1.21"
