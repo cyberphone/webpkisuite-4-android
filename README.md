@@ -2,7 +2,7 @@
 Android Proof of Concept Implementation of
 - SKS - Secure Key Store
 - KeyGen2 - SKS Enrollment/Management Protocol
-- WebAuth - PKI-based Client Authentication
+- Mobile ID - PKI-based Client Authentication
 - Saturn - Personal Payment Terminal
 
 Pre-built APKs can be found under "releases" which can be downloaded to Android devices and emulators.
