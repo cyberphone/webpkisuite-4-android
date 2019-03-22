@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2018 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public abstract class Simple extends BaseASN1Object {
 
     public abstract Object objValue();
 
-    public boolean diff(BaseASN1Object o, StringBuffer s, String prefix) {
+    public boolean diff(BaseASN1Object o, StringBuilder s, String prefix) {
         if (!sameType(o) || !objValue().equals(((Simple) o).objValue())) {
             s.append(prefix).append("<-------    ");//.append('\n');
             toString(s, prefix);

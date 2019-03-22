@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2018 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -47,6 +47,9 @@ public class DerDecoder implements ASN1Constants {
     }
 
     byte[] content() {
+        if (offset + length > source.length) {
+            throw new RuntimeException("Corrupted ASN.1");
+        }
         byte[] r = new byte[length];
         System.arraycopy(source, offset, r, 0, length);
         offset += length;

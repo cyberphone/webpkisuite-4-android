@@ -1,5 +1,6 @@
 package com.journeyapps.barcodescanner;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
@@ -24,6 +25,7 @@ import java.util.Map;
  *
  * @see CameraPreview for more details on the preview lifecycle.
  */
+@SuppressLint("NewApi")
 public class BarcodeView extends CameraPreview {
 
     private enum DecodeMode {
@@ -60,6 +62,7 @@ public class BarcodeView extends CameraPreview {
                 // Failed. Next preview is automatically tried.
                 return true;
             } else if (message.what == R.id.zxing_possible_result_points) {
+                @SuppressWarnings("unchecked")
                 List<ResultPoint> resultPoints = (List<ResultPoint>) message.obj;
                 if (callback != null && decodeMode != DecodeMode.NONE) {
                     callback.possibleResultPoints(resultPoints);

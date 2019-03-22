@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2015-2018 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -28,6 +28,8 @@ public interface BaseProperties {
     String ANDROID_SUCCESS_URL_JSON         = "androidSuccessUrl";
     String ANDROID_TRANSACTION_URL_JSON     = "androidTransactionUrl";
 
+    String ATTESTATION_JSON                 = "attestation";
+
     String COMMON_NAME_JSON                 = "commonName";                 // Common name of providers to be used in UIs
     String NAME_JSON                        = "name";
 
@@ -49,15 +51,15 @@ public interface BaseProperties {
     String RECEPIENT_URL_JSON               = "recepientUrl";               // Where we are sending (target address)
     String AUTHORITY_URL_JSON               = "authorityUrl";               // Double use self in *Authority objects and initiator
     String SERVICE_URL_JSON                 = "serviceUrl";                 // Saturn core
-    String AMOUNT_JSON                      = "amount";
-    String CURRENCY_JSON                    = "currency";
+    String AMOUNT_JSON                      = "amount";                     // Money
+    String CURRENCY_JSON                    = "currency";                   // In this format
     String NON_DIRECT_PAYMENT_JSON          = "nonDirectPayment";           // Deposit, automated gas station, booking
-    String TIME_STAMP_JSON                  = "timeStamp";
+    String TIME_STAMP_JSON                  = "timeStamp";                  // Everywhere
     String TRANSACTION_ERROR_JSON           = "transactionError";
     String CLIENT_IP_ADDRESS_JSON           = "clientIpAddress";            // Security data for the payment provider
     String CLIENT_GEO_LOCATION_JSON         = "clientGeoLocation";          // Optional security data that client devices may supply
     String LOG_DATA_JSON                    = "logData";                    // Insertion of external log data
-    String REFERENCE_ID_JSON                = "referenceId";
+    String REFERENCE_ID_JSON                = "referenceId";                // Unique reference in a message
     String PAYEE_JSON                       = "payee";                      // Payee object
     String TEST_MODE_JSON                   = "testMode";                   // Test mode = no real money involved
     String ENCRYPTED_AUTHORIZATION_JSON     = "encryptedAuthorization";     // Encrypted Payer authorization data
@@ -72,8 +74,11 @@ public interface BaseProperties {
     String ACCOUNT_REFERENCE_JSON           = "accountReference";           // Account/Card number for payee (like ************5678)
     String CARD_FORMAT_ACCOUNT_ID_JSON      = "cardFormatAccountId";        // Display formatting like cards or not
     String ENCRYPTED_ACCOUNT_DATA_JSON      = "encryptedAccountData";       // Account data that (only) an acquirer needs
-    String REQUEST_HASH_JSON                = "requestHash";
+    String REQUEST_HASH_JSON                = "requestHash";                // Wallet authorization
     String DOMAIN_NAME_JSON                 = "domainName";
+    String ACCOUNT_VERIFIER_JSON            = "accountVerifier";            // Option for "PayeeAuthority"
+    String HASHED_PAYEE_ACCOUNTS_JSON       = "hashedPayeeAccounts";        //    -"-
+    String NONCE_JSON                       = "nonce";                      // For usage in methods together with the option above
     String SIGNATURE_ALGORITHM_JSON         = "signatureAlgorithm";
     String SIGNATURE_PROFILES_JSON          = "signatureProfiles";          // For "ProviderAuthority".  Accepts these
     String KEY_ENCRYPTION_ALGORITHM_JSON    = "keyEncryptionAlgorithm";     // For "ProviderAuthority" encryption key

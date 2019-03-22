@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2018 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ public class DebugFormatter {
 
     private DebugFormatter() {}
 
-    private StringBuffer res = new StringBuffer(1000);
+    private StringBuilder res = new StringBuilder(1000);
 
     private void put(char c) {
         res.append(c);
@@ -31,9 +31,9 @@ public class DebugFormatter {
 
     private void hex(int i) {
         if (i < 10) {
-            put((char) (i + 48));
+            put((char) (i + '0'));
         } else {
-            put((char) (i + 55));
+            put((char) (i + 'a' - 10));
         }
     }
 

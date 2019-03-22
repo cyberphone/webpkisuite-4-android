@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2018 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public final class CompositeContextSpecific extends Composite {
         return ASN1Util.deepCompare(cs.components, components);
     }
 
-    void toString(StringBuffer s, String prefix) {
+    void toString(StringBuilder s, String prefix) {
         s.append(getByteNumber()).append(prefix).append("[").append(tagNumber).append("]");
         compositeString(s, prefix);
     }

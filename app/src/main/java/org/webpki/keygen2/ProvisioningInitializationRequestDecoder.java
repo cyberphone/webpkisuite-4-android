@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2018 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import org.webpki.crypto.AlgorithmPreferences;
 
 import org.webpki.json.JSONArrayReader;
 import org.webpki.json.JSONObjectReader;
-import org.webpki.json.JSONSignatureDecoder;
 
 import org.webpki.util.ISODateTime;
 
@@ -82,11 +81,6 @@ public class ProvisioningInitializationRequestDecoder extends ClientDecoder {
     }
 
 
-    public String getSubmitUrl() {
-        return submitUrl;
-    }
-
-
     public ECPublicKey getServerEphemeralKey() {
         return serverEphemeralKey;
     }
@@ -114,11 +108,6 @@ public class ProvisioningInitializationRequestDecoder extends ClientDecoder {
     }
 
 
-    public String getVirtualEnvironmentFriendlyName() {
-        return virtualEnvironmentFriendlyName;
-    }
-
-
     private void scanForUpdateKeys(JSONObjectReader rd, KeyManagementKeyUpdateHolder kmk) throws IOException {
         if (rd.hasProperty(UPDATABLE_KEY_MANAGEMENT_KEYS_JSON)) {
             JSONArrayReader updArr = rd.getArray(UPDATABLE_KEY_MANAGEMENT_KEYS_JSON);
@@ -137,21 +126,11 @@ public class ProvisioningInitializationRequestDecoder extends ClientDecoder {
 
     String serverSessionId;
 
-    byte[] nonce;
-
     GregorianCalendar serverTime;
 
     String serverTimeVerbatim;
 
-    String submitUrl;
-
     ECPublicKey serverEphemeralKey;
-
-    byte[] virtualEnvironmentData;
-
-    String virtualEnvironmentType;
-
-    String virtualEnvironmentFriendlyName;  // Optional, defined => Virtual environment defined
 
     int sessionLifeTime;
 
@@ -169,9 +148,7 @@ public class ProvisioningInitializationRequestDecoder extends ClientDecoder {
 
         serverTimeVerbatim = rd.getString(SERVER_TIME_JSON);
 
-        serverTime = ISODateTime.parseDateTime(serverTimeVerbatim);
-
-        submitUrl = getURL(rd, SUBMIT_URL_JSON);
+        serverTime = ISODateTime.parseDateTime(serverTimeVerbatim, ISODateTime.UTC_NO_SUBSECONDS);
 
         sessionKeyLimit = (short) rd.getInt(SESSION_KEY_LIMIT_JSON);
 
@@ -181,30 +158,15 @@ public class ProvisioningInitializationRequestDecoder extends ClientDecoder {
         // Get the server key
         /////////////////////////////////////////////////////////////////////////////////////////
         serverEphemeralKey = (ECPublicKey) rd.getObject(SERVER_EPHEMERAL_KEY_JSON)
-                    .getPublicKey(AlgorithmPreferences.JOSE_ACCEPT_PREFER);
+                .getCorePublicKey(AlgorithmPreferences.JOSE_ACCEPT_PREFER);
 
         /////////////////////////////////////////////////////////////////////////////////////////
         // Get the optional key management key
         /////////////////////////////////////////////////////////////////////////////////////////
         if (rd.hasProperty(KEY_MANAGEMENT_KEY_JSON)) {
-            JSONObjectReader kmkrd = rd.getObject(KEY_MANAGEMENT_KEY_JSON);
-            keyManagementKey = kmkrd.getPublicKey(AlgorithmPreferences.JOSE_ACCEPT_PREFER);
-            scanForUpdateKeys(kmkrd, kmkRoot = new KeyManagementKeyUpdateHolder(keyManagementKey));
-        }
-
-        /////////////////////////////////////////////////////////////////////////////////////////
-        // Get the optional virtual environment
-        /////////////////////////////////////////////////////////////////////////////////////////
-        if (rd.hasProperty(VIRTUAL_ENVIRONMENT_JSON)) {
-            //TODO
-            rd.getBinaryConditional(NONCE_JSON);
-            if (!rd.hasProperty(JSONSignatureDecoder.SIGNATURE_JSON)) {
-                throw new IOException("Virtual Environment requests must be signed");
-            }
-            JSONObjectReader vmrd = rd.getObject(VIRTUAL_ENVIRONMENT_JSON);
-            virtualEnvironmentData = vmrd.getBinary(CONFIGURATION_JSON);
-            virtualEnvironmentType = vmrd.getString(TYPE_JSON);
-            virtualEnvironmentFriendlyName = vmrd.getString(FRIENDLY_NAME_JSON);
+            keyManagementKey = rd.getObject(KEY_MANAGEMENT_KEY_JSON)
+                    .getCorePublicKey(AlgorithmPreferences.JOSE_ACCEPT_PREFER);
+            scanForUpdateKeys(rd, kmkRoot = new KeyManagementKeyUpdateHolder(keyManagementKey));
         }
     }
 

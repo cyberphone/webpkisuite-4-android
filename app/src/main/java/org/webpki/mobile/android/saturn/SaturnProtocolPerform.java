@@ -20,7 +20,7 @@ import android.os.AsyncTask;
 
 import org.webpki.json.JSONDecoder;
 
-import org.webpki.json.encryption.DataEncryptionAlgorithms;
+import org.webpki.json.DataEncryptionAlgorithms;
 
 import org.webpki.mobile.android.saturn.common.EncryptedMessage;
 import org.webpki.mobile.android.saturn.common.UserChallengeItem;

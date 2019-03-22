@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2018 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.CertificateFilter;
 import org.webpki.crypto.HashAlgorithms;
 
+import org.webpki.json.JSONCryptoHelper;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONSignatureDecoder;
 
@@ -81,7 +82,7 @@ public class CredentialDiscoveryRequestDecoder extends ClientDecoder {
                     appUsage = AppUsage.getAppUsageFromString(search.getString(APP_USAGE_JSON));
                 }
             }
-            JSONSignatureDecoder signature = rd.getSignature(new JSONSignatureDecoder.Options());
+            JSONSignatureDecoder signature = rd.getSignature(new JSONCryptoHelper.Options());
             keyManagementKey = signature.getPublicKey();
             if (((AsymSignatureAlgorithms) signature.getAlgorithm()).getDigestAlgorithm() != HashAlgorithms.SHA256) {
                 throw new IOException("Lookup signature must use SHA256");
@@ -131,8 +132,6 @@ public class CredentialDiscoveryRequestDecoder extends ClientDecoder {
 
     String serverSessionId;
 
-    String submitUrl;
-
     byte[] nonce_reference;
 
     public String getServerSessionId() {
@@ -143,12 +142,6 @@ public class CredentialDiscoveryRequestDecoder extends ClientDecoder {
     public String getClientSessionId() {
         return clientSessionId;
     }
-
-
-    public String getSubmitUrl() {
-        return submitUrl;
-    }
-
 
     public LookupSpecifier[] getLookupSpecifiers() {
         return lookupSpecifiers.values().toArray(new LookupSpecifier[0]);
@@ -163,8 +156,6 @@ public class CredentialDiscoveryRequestDecoder extends ClientDecoder {
         serverSessionId = getID(rd, SERVER_SESSION_ID_JSON);
 
         clientSessionId = getID(rd, CLIENT_SESSION_ID_JSON);
-
-        submitUrl = getURL(rd, SUBMIT_URL_JSON);
 
         /////////////////////////////////////////////////////////////////////////////////////////
         // Calculate proper nonce

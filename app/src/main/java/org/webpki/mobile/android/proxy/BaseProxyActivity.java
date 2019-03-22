@@ -72,8 +72,6 @@ public abstract class BaseProxyActivity extends Activity {
 
     public static final String CONTINUE_EXECUTION      = "CONTINUE_EXECUTION";  // Return constant to AsyncTasks
 
-    private static final String VERSION_MACRO = "$VER$";
-
     private static final String JSON_CONTENT = "application/json";
 
     private JSONDecoderCache schema_cache;
@@ -86,15 +84,13 @@ public abstract class BaseProxyActivity extends Activity {
 
     public SKSImplementation sks;
 
-    private String initialization_url;
+    private String transaction_url;
 
     private String requesting_host;
 
     private X509Certificate server_certificate;
 
     private String redirect_url;
-
-    private String abort_url;
 
     private boolean user_aborted;
 
@@ -123,10 +119,10 @@ public abstract class BaseProxyActivity extends Activity {
                         dialog.cancel();
                         user_aborted = true;
                         abortTearDown();
-                        if (abort_url == null) {
+                        if (cancelUrl == null) {
                             instance.finish();
                         } else {
-                            launchBrowser(abort_url);
+                            launchBrowser(cancelUrl);
                         }
                     }
                 });
@@ -145,10 +141,10 @@ public abstract class BaseProxyActivity extends Activity {
                         dialog.cancel();
                         user_aborted = true;
                         abortTearDown();
-                        if (abort_url == null) {
+                        if (cancelUrl == null) {
                             instance.finish();
                         } else {
-                            launchBrowser(abort_url);
+                            launchBrowser(cancelUrl);
                         }
                     }
                 });
@@ -167,12 +163,8 @@ public abstract class BaseProxyActivity extends Activity {
         alert_dialog.create().show();
     }
 
-    public void setAbortURL(String abort_url) {
-        this.abort_url = abort_url;
-    }
-
     public String getInitializationURL() {
-        return initialization_url;
+        return transaction_url;
     }
 
     public String getRequestingHost() {
@@ -278,7 +270,7 @@ public abstract class BaseProxyActivity extends Activity {
     }
 
     private void checkContentType() throws IOException {
-        if (!https_wrapper.getContentType().startsWith(JSON_CONTENT)) {
+        if (!https_wrapper.getContentType().equals(JSON_CONTENT)) {
             throw new IOException("Unexpected content: " + https_wrapper.getContentType());
         }
     }
@@ -331,10 +323,20 @@ public abstract class BaseProxyActivity extends Activity {
         return server_certificate;
     }
 
-    public JSONDecoder getInitialReguest() throws IOException {
+    public JSONDecoder getInitialRequest() throws IOException {
         return parseJSON(initial_request_object);
     }
 
+    String cancelUrl;
+
+    private String getQueryParameter(Uri uri, String name) throws IOException {
+        String value = uri.getQueryParameter(name);
+        if (value == null) {
+            throw new IOException("Missing: " + name);
+        }
+        return value;
+    }
+    
     public void getProtocolInvocationData() throws Exception {
         logOK(getProtocolName() + " protocol run: " + new SimpleDateFormat("yyyy-MM-dd' 'HH:mm:ss").format(new Date()));
         protocol_log = new Vector<byte[]>();
@@ -346,27 +348,26 @@ public abstract class BaseProxyActivity extends Activity {
         if (uri == null) {
             throw new IOException("No URI");
         }
-        List<String> arg = uri.getQueryParameters("url");
-        if (arg.isEmpty()) {
-            throw new IOException("Missing initialization \"url\"");
-        }
-        requesting_host = new URL(initialization_url = arg.get(0)).getHost();
-        arg = uri.getQueryParameters("cookie");
+        transaction_url = getQueryParameter(uri, "url");
+        String boot_url = getQueryParameter(uri, "init");
+        requesting_host = new URL(boot_url).getHost();
+        List<String> arg = uri.getQueryParameters("cookie");
         if (!arg.isEmpty()) {
             cookies.add(arg.get(0));
         }
-        logOK("Invocation URL=" + initialization_url + ", Cookie: " + (arg.isEmpty() ? "N/A" : cookies.elementAt(0)));
-        addOptionalCookies(initialization_url);
-        int ver_index;
-        if ((ver_index = initialization_url.indexOf(VERSION_MACRO)) > 0) {
-            initialization_url = initialization_url.substring(0, ver_index) +
-                    getPackageManager().getPackageInfo(getPackageName(), 0).versionName +
-                    initialization_url.substring(ver_index + VERSION_MACRO.length());
+        logOK("Invocation URL=" + transaction_url + ", Cookie: " + (arg.isEmpty() ? "N/A" : cookies.elementAt(0)));
+        addOptionalCookies(transaction_url);
+        cancelUrl = uri.getQueryParameter("cncl");
+        String versionSpan = getQueryParameter(uri, "ver");
+        String version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
+        if (versionSpan.substring(0, versionSpan.indexOf('-')).compareTo(version) > 0 ||
+            versionSpan.substring(versionSpan.indexOf('-') + 1).compareTo(version) < 0) {
+            throw new IOException("App version:" + version + " required:" + versionSpan);
         }
-        https_wrapper.makeGetRequest(initialization_url);
+        https_wrapper.makeGetRequest(boot_url);
         if (https_wrapper.getResponseCode() == HttpURLConnection.HTTP_OK) {
             initial_request_object = https_wrapper.getData();
-            server_certificate = https_wrapper.getServerCertificate();
+            server_certificate = https_wrapper.getServerCertificates()[0];
             checkContentType();
         } else if (https_wrapper.getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP) {
             if ((redirect_url = https_wrapper.getHeaderValue("Location")) == null) {

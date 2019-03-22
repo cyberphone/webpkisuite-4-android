@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2015-2018 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -27,9 +27,9 @@ public enum Currencies implements Serializable {
 
     USD ("$\u200a",       true,  2), 
 /*
-    EUR ("\u2009\u20ac",  false, 2), // French
+    EUR ("\u2009\u20ac",  false, 2),  // French notation
 */
-    EUR ("\u20ac\u200a",  true,  2), // English
+    EUR ("\u20ac\u200a",  true,  2),  // English notation
     GBP ("\u00a3\u200a",  true,  2);
 
     public String symbol;
@@ -56,7 +56,7 @@ public enum Currencies implements Serializable {
         }
         String amountString = amount.setScale(decimals).toPlainString();
         int dp = amountString.indexOf('.');
-        StringBuffer amountString2 = new StringBuffer();
+        StringBuilder amountString2 = new StringBuilder();
         for (int i = 0; i < dp; i++) {
             amountString2.append(amountString.charAt(i));
             if (i < dp - 1 && (dp - i - 1) % 3 == 0) {

@@ -23,9 +23,10 @@ import java.security.GeneralSecurityException;
 import org.webpki.json.JSONDecoder;
 import org.webpki.json.JSONDecryptionDecoder;
 import org.webpki.json.JSONObjectReader;
+import org.webpki.json.JSONCryptoHelper;
 import org.webpki.json.JSONParser;
 
-import org.webpki.json.encryption.DataEncryptionAlgorithms;
+import org.webpki.json.DataEncryptionAlgorithms;
 
 public class ProviderUserResponseDecoder extends JSONDecoder implements BaseProperties {
 
@@ -44,7 +45,9 @@ public class ProviderUserResponseDecoder extends JSONDecoder implements BaseProp
 
     @Override
     protected void readJSONData(JSONObjectReader rd) throws IOException {
-        encryptedData = rd.getObject(ENCRYPTED_MESSAGE_JSON).getEncryptionObject().require(false);
+        encryptedData =
+                rd.getObject(ENCRYPTED_MESSAGE_JSON)
+                        .getEncryptionObject(new JSONCryptoHelper.Options()).require(false);
     }
 
     @Override

@@ -1,11 +1,11 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2015-2018 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
@@ -57,16 +57,11 @@ public class UserChallengeItem implements BaseProperties {
  
     public JSONObjectWriter writeObject() throws IOException {
         testLength();
-        JSONObjectWriter wr = new JSONObjectWriter()
+        return new JSONObjectWriter()
             .setString(ID_JSON, id)
-            .setString(TYPE_JSON, type.toString());
-        if (optionalLength != null) {
-            wr.setInt(LENGTH_JSON, optionalLength);
-        }
-        if (optionalLabel != null) {
-            wr.setString(LABEL_JSON, optionalLabel);
-        }
-        return wr;
+            .setString(TYPE_JSON, type.toString())
+            .setDynamic((wr) -> optionalLength == null ? wr : wr.setInt(LENGTH_JSON, optionalLength))
+            .setDynamic((wr) -> optionalLabel == null ? wr : wr.setString(LABEL_JSON, optionalLabel));
     }
 
     TYPE type;

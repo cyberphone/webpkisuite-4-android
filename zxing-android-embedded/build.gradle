@@ -4,11 +4,9 @@ ext.artifactId = 'zxing-android-embedded'
 
 dependencies {
     api project.zxingCore
-
     api 'com.android.support:appcompat-v7:23.4.0'
-
     testImplementation 'junit:junit:4.12'
-    testImplementation "org.mockito:mockito-core:1.9.5"
+    testImplementation 'org.mockito:mockito-core:1.9.5'
 }
 
 android {
@@ -32,14 +30,13 @@ android {
         disable 'LocaleFolder'
     }
 
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
-    }
-
     testOptions {
         // We test with primitives such as Rect, and rely on their default behaviour working.
         unitTests.returnDefaultValues = true
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 

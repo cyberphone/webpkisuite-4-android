@@ -81,7 +81,7 @@ public class WebAuthResponseCreation extends AsyncTask<Void, String, String> {
                     });
             signer.setSignatureAlgorithm(webauth_activity.matching_keys.get(key_handle));
             AuthenticationResponseEncoder authentication_response =
-                    new AuthenticationResponseEncoder(signer.setSignatureCertificateAttributes(true),
+                    new AuthenticationResponseEncoder(signer,
                                                       webauth_activity.authentication_request,
                                                       webauth_activity.getInitializationURL(),
                                                       new GregorianCalendar(),

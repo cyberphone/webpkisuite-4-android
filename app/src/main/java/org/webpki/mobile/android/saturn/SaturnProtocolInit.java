@@ -28,10 +28,10 @@ import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONParser;
 
-import org.webpki.json.JSONSignatureDecoder;
+import org.webpki.json.JSONCryptoHelper;
 
-import org.webpki.json.encryption.DataEncryptionAlgorithms;
-import org.webpki.json.encryption.KeyEncryptionAlgorithms;
+import org.webpki.json.DataEncryptionAlgorithms;
+import org.webpki.json.KeyEncryptionAlgorithms;
 
 import org.webpki.keygen2.KeyGen2URIs;
 
@@ -63,8 +63,7 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
             saturnActivity.addDecoder(WalletSuccessDecoder.class);
             saturnActivity.addDecoder(WalletAlertDecoder.class);
             saturnActivity.addDecoder(ProviderUserResponseDecoder.class);
-            saturnActivity.walletRequest = (WalletRequestDecoder) saturnActivity.getInitialReguest();
-            saturnActivity.setAbortURL(saturnActivity.walletRequest.getAndroidCancelUrl());
+            saturnActivity.walletRequest = (WalletRequestDecoder) saturnActivity.getInitialRequest();
 
             // Enumerate keys but only go for those who are intended for
             // Web Payments (according to our fictitious payment schemes...)
@@ -148,7 +147,7 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                                                             AlgorithmPreferences.JOSE),
                                     cardProperties.getString(BaseProperties.PROVIDER_AUTHORITY_URL_JSON));
                     JSONObjectReader encryptionParameters = cardProperties.getObject(BaseProperties.ENCRYPTION_PARAMETERS_JSON);
-                    card.optionalKeyId = encryptionParameters.getStringConditional(JSONSignatureDecoder.KEY_ID_JSON);
+                    card.optionalKeyId = encryptionParameters.getStringConditional(JSONCryptoHelper.KEY_ID_JSON);
                     card.keyEncryptionAlgorithm = KeyEncryptionAlgorithms
                         .getAlgorithmFromId(encryptionParameters.getString(BaseProperties.KEY_ENCRYPTION_ALGORITHM_JSON));
                     card.dataEncryptionAlgorithm = DataEncryptionAlgorithms

@@ -24,9 +24,10 @@ import java.security.PublicKey;
 import org.webpki.json.JSONEncoder;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
+import org.webpki.json.JSONAsymKeyEncrypter;
 
-import org.webpki.json.encryption.DataEncryptionAlgorithms;
-import org.webpki.json.encryption.KeyEncryptionAlgorithms;
+import org.webpki.json.DataEncryptionAlgorithms;
+import org.webpki.json.KeyEncryptionAlgorithms;
 
 public class PayerAuthorizationEncoder extends JSONEncoder implements BaseProperties {
     
@@ -48,11 +49,12 @@ public class PayerAuthorizationEncoder extends JSONEncoder implements BaseProper
         this.providerAuthorityUrl = providerAuthorityUrl;
         this.paymentMethod = paymentMethod;
         this.encryptedData =
-            JSONObjectWriter.createEncryptionObject(unencryptedAuthorizationData.serializeToBytes(JSONOutputFormats.NORMALIZED),
-                                                                                                  dataEncryptionAlgorithm,
-                                                                                                  keyEncryptionKey,
-                                                                                                  optionalKeyId,
-                                                                                                  keyEncryptionAlgorithm);
+            JSONObjectWriter.createEncryptionObject(
+                    unencryptedAuthorizationData.serializeToBytes(JSONOutputFormats.NORMALIZED),
+                                                                  dataEncryptionAlgorithm,
+                                                                  new JSONAsymKeyEncrypter(keyEncryptionKey,
+                                                                                           keyEncryptionAlgorithm)
+                                                                        .setKeyId(optionalKeyId));
     }
 
     @Override

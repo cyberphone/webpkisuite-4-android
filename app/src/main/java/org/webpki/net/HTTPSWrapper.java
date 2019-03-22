@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2018 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -51,6 +51,7 @@ import java.security.PrivateKey;
 import java.security.Provider;
 import java.security.Security;
 
+import java.security.cert.Certificate;
 import java.security.cert.CertPath;
 import java.security.cert.CertPathValidator;
 import java.security.cert.CertificateFactory;
@@ -142,6 +143,7 @@ public class HTTPSWrapper {
     private KeyStore key_store;
     private String keyAlias;
     private String key_store_password;
+    private String request_method;
 
     private LinkedHashMap<String, Vector<String>> request_headers = new LinkedHashMap<String, Vector<String>>();
 
@@ -149,7 +151,7 @@ public class HTTPSWrapper {
 
     private byte[] server_data;
 
-    private X509Certificate server_certificate;
+    private X509Certificate[] server_certificates;
 
     /* Variables related to sending data to server. */
     private int timeout = 0;
@@ -471,7 +473,14 @@ public class HTTPSWrapper {
         }
 
         ///////////////////////////////////////////////
-        // Set GET or POST mode
+        // Override GET or POST mode
+        ///////////////////////////////////////////////
+        if (request_method != null) {
+            conn.setRequestMethod(request_method);
+        }
+
+        ///////////////////////////////////////////////
+        // Set URI(GET) or Body(POST) mode
         ///////////////////////////////////////////////
         conn.setDoOutput(output);
 
@@ -501,7 +510,12 @@ public class HTTPSWrapper {
         conn.connect();
 
         if (https_flag) {
-            server_certificate = (X509Certificate) (((HttpsURLConnection) conn).getServerCertificates()[0]);
+            Certificate[] certs = (((HttpsURLConnection) conn).getServerCertificates());
+            server_certificates = new X509Certificate[certs.length];
+            int i = 0;
+            for (Certificate cert : certs) {
+                server_certificates[i++] = (X509Certificate)cert;
+            }
         }
     }
 
@@ -592,6 +606,18 @@ public class HTTPSWrapper {
      */
     public String getDataUTF8() throws IOException {
         return (server_data == null) ? null : new String(server_data, "UTF-8");
+    }
+
+
+    /**
+     * Override te default methods. <br><br>
+     * <p>
+     * This method affects all proceeding requests. <br><br>
+     *
+     * @param requestMethod method to use.
+     */
+    public void setRequestMethod(String requestMethod) {
+        request_method = requestMethod;
     }
 
 
@@ -849,12 +875,12 @@ public class HTTPSWrapper {
 
 
     /**
-     * Gets server certificate from HTTPS response.
+     * Gets server certificates from HTTPS response.
      *
-     * @return Server certificate.
+     * @return Server certificate path.
      */
-    public X509Certificate getServerCertificate() {
-        return server_certificate;
+    public X509Certificate[] getServerCertificates() {
+        return server_certificates;
     }
 
 
@@ -1172,6 +1198,11 @@ public class HTTPSWrapper {
                 "Perform HTTP POST operation",
                 CmdFrequency.SINGLE);
 
+        CmdLineArgument CMD_override_method = create(CmdLineArgumentGroup.GENERAL,
+                "override", "method",
+                "Override HTTP Method",
+                CmdFrequency.OPTIONAL);
+
         CmdLineArgument CMD_data_file = create(CmdLineArgumentGroup.POST_OPERATION,
                 "input", "file",
                 "POSTed data file",
@@ -1198,8 +1229,8 @@ public class HTTPSWrapper {
                 CmdFrequency.OPTIONAL);
 
         CmdLineArgument CMD_dump_certs = create(CmdLineArgumentGroup.GENERAL,
-                "certificate", null,
-                "Display TLS certificate",
+                "certificates", null,
+                "Display TLS certificate path",
                 CmdFrequency.OPTIONAL);
 
         CmdLineArgument CMD_user_id = create(CmdLineArgumentGroup.GENERAL,
@@ -1382,6 +1413,10 @@ public class HTTPSWrapper {
                 wrap.setProxy(CMD_proxyhost.getString(), CMD_proxyport.getInteger());
             }
 
+            if (CMD_override_method.found) {
+                wrap.setRequestMethod(CMD_override_method.getString());
+            }
+
             if (CMD_timeout.found) {
                 wrap.setTimeout(CMD_timeout.getInteger());
             }
@@ -1473,7 +1508,9 @@ public class HTTPSWrapper {
             }
 
             if (CMD_dump_certs.found) {
-                System.out.println("\nCertificate:\n" + new CertificateInfo(wrap.getServerCertificate()).toString());
+                for (X509Certificate certificate : wrap.server_certificates) {
+                    System.out.println("\nCertificate:\n" + new CertificateInfo(certificate).toString());
+                }
             }
 
             if (CMD_dump_headers.found) {

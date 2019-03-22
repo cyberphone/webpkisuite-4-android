@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2018 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -678,8 +678,6 @@ public class KeyCreationRequestDecoder extends ClientDecoder {
 
     private Vector<KeyObject> requestObjects = new Vector<KeyObject>();
 
-    private String submitUrl;
-
     private boolean deferredIssuance;
 
     private String serverSessionId;
@@ -693,11 +691,6 @@ public class KeyCreationRequestDecoder extends ClientDecoder {
 
     public String getServerSessionId() {
         return serverSessionId;
-    }
-
-
-    public String getSubmitUrl() {
-        return submitUrl;
     }
 
 
@@ -723,8 +716,6 @@ public class KeyCreationRequestDecoder extends ClientDecoder {
         serverSessionId = getID(rd, SERVER_SESSION_ID_JSON);
 
         clientSessionId = getID(rd, CLIENT_SESSION_ID_JSON);
-
-        submitUrl = getURL(rd, SUBMIT_URL_JSON);
 
         deferredIssuance = rd.getBooleanConditional(DEFERRED_ISSUANCE_JSON);
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2018 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.io.IOException;
 import org.webpki.crypto.VerifierInterface;
 
 /**
- * Initiatiator object for X.509 signature verifiers.
+ * Initiator object for X.509 signature verifiers.
  */
 public class JSONX509Verifier extends JSONVerifier {
 

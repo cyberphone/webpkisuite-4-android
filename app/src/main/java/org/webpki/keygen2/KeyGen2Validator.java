@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2018 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 
 import java.net.URI;
-
 import java.net.URISyntaxException;
 
 import java.util.GregorianCalendar;
@@ -32,6 +31,8 @@ import org.webpki.json.JSONDecoder;
 import org.webpki.json.JSONObjectReader;
 
 import org.webpki.sks.SecureKeyStore;
+
+import org.webpki.util.ISODateTime;
 
 abstract class KeyGen2Validator extends JSONDecoder {
 
@@ -142,7 +143,7 @@ abstract class KeyGen2Validator extends JSONDecoder {
     }
 
     static GregorianCalendar getDateTimeConditional(JSONObjectReader rd, String name) throws IOException {
-        return rd.hasProperty(name) ? rd.getDateTime(name) : null;
+        return rd.hasProperty(name) ? rd.getDateTime(name, ISODateTime.UTC_NO_SUBSECONDS) : null;
     }
 
     static Vector<JSONObjectReader> getObjectArrayConditional(JSONObjectReader rd, String name) throws IOException {

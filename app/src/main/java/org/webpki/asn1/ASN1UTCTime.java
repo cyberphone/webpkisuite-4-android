@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2018 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ public class ASN1UTCTime extends ASN1Time {
         return sameType(o) && ((ASN1UTCTime) o).value.equals(value);
     }
 
-    void toString(StringBuffer s, String prefix) {
+    void toString(StringBuilder s, String prefix) {
         s.append(getByteNumber()).append(prefix + "UTCTime ").append(dateFormat.format(value));
     }
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2018 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -393,8 +393,6 @@ public class ProvisioningFinalizationRequestDecoder extends ClientDecoder {
 
     private String serverSessionId;
 
-    private String submitUrl;
-
     private byte[] closeSessionMac;
 
     private byte[] closeSessionNonce;
@@ -407,11 +405,6 @@ public class ProvisioningFinalizationRequestDecoder extends ClientDecoder {
 
     public String getClientSessionId() {
         return clientSessionId;
-    }
-
-
-    public String getSubmitUrl() {
-        return submitUrl;
     }
 
 
@@ -448,8 +441,6 @@ public class ProvisioningFinalizationRequestDecoder extends ClientDecoder {
         serverSessionId = getID(rd, SERVER_SESSION_ID_JSON);
 
         clientSessionId = getID(rd, CLIENT_SESSION_ID_JSON);
-
-        submitUrl = getURL(rd, SUBMIT_URL_JSON);
 
         closeSessionNonce = rd.getBinary(NONCE_JSON);
 

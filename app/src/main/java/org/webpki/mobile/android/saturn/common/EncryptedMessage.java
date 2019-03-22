@@ -1,11 +1,11 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2015-2018 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,6 +24,8 @@ import java.util.LinkedHashMap;
 import org.webpki.json.JSONArrayReader;
 import org.webpki.json.JSONObjectReader;
 
+import org.webpki.util.ISODateTime;
+
 public class EncryptedMessage implements BaseProperties {
      
     public EncryptedMessage(JSONObjectReader rd) throws IOException {
@@ -41,7 +43,7 @@ public class EncryptedMessage implements BaseProperties {
             } while (ar.hasMore());
             optionalUserChallengeItems = items.values().toArray(new UserChallengeItem[0]);
         }
-        dateTime = rd.getDateTime(TIME_STAMP_JSON);
+        dateTime = rd.getDateTime(TIME_STAMP_JSON, ISODateTime.COMPLETE);
         rd.checkForUnread();
     }
 

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2018 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -132,7 +132,7 @@ public final class ASN1ObjectID extends Simple {
         nameToOID = no;
     }
 
-    void toString(StringBuffer s, String prefix) {
+    void toString(StringBuilder s, String prefix) {
         String name = oidName(id);
         s.append(getByteNumber()).append(prefix).append("OBJECT IDENTIFIER ");
         if (!name.equals(id)) {

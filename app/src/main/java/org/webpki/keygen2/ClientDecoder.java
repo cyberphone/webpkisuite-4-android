@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2018 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,7 +20,9 @@ import java.io.IOException;
 
 import org.webpki.crypto.VerifierInterface;
 
+import org.webpki.json.JSONCryptoHelper;
 import org.webpki.json.JSONObjectReader;
+import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONSignatureDecoder;
 import org.webpki.json.JSONX509Verifier;
 
@@ -47,8 +49,8 @@ abstract class ClientDecoder extends KeyGen2Validator {
         //////////////////////////////////////////////////////////////////
         // Must be a Signature otherwise something has gone wrong...
         //////////////////////////////////////////////////////////////////
-        if (rd.hasProperty(JSONSignatureDecoder.SIGNATURE_JSON)) {
-            signature = rd.getSignature(new JSONSignatureDecoder.Options());
+        if (rd.hasProperty(JSONObjectWriter.SIGNATURE_DEFAULT_LABEL_JSON)) {
+            signature = rd.getSignature(new JSONCryptoHelper.Options());
         }
     }
 }

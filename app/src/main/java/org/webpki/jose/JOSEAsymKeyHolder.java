@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2019 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,30 +14,21 @@
  *  limitations under the License.
  *
  */
-package org.webpki.mobile.android.saturn.common;
+package org.webpki.jose;
 
 import java.security.PrivateKey;
-import java.security.PublicKey;
 
-public class DecryptionKeyHolder {
-
-    PublicKey publicKey;
+public class JOSEAsymKeyHolder extends JOSESupport.CoreKeyHolder {
     
     PrivateKey privateKey;
-    
-    String keyEncryptionAlgorithm;
-
-    public PublicKey getPublicKey() {
-        return publicKey;
+     
+    public JOSEAsymKeyHolder(PrivateKey privateKey) {
+         super(privateKey);
     }
 
-    public String getKeyEncryptionAlgorithm() {
-        return keyEncryptionAlgorithm;
+    @Override
+    public boolean isSymmetric() {
+        return false;
     }
 
-    public DecryptionKeyHolder(PublicKey publicKey, PrivateKey privateKey, String keyEncryptionAlgorithm) {
-        this.publicKey = publicKey;
-        this.privateKey = privateKey;
-        this.keyEncryptionAlgorithm = keyEncryptionAlgorithm;
-    }
 }

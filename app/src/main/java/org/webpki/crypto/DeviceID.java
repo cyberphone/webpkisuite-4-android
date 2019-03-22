@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2018 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -99,7 +99,7 @@ public class DeviceID {
             hash = half(half(hash));
             baos.write(hash.length == 5 ? half(hash) : hash);
             byte[] data = baos.toByteArray();
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder buffer = new StringBuilder();
             for (int bit_position = 0; bit_position < totalBits; bit_position += 5) {
                 int bit_position_in_byte = bit_position % 8;
                 int index = bit_position / 8;

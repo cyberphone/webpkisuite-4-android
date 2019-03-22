@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2018 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -33,6 +33,8 @@ import org.webpki.crypto.SymKeySignerInterface;
 import org.webpki.json.JSONEncoder;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONSymKeySigner;
+
+import org.webpki.util.ISODateTime;
 
 import static org.webpki.keygen2.KeyGen2Constants.*;
 
@@ -102,13 +104,14 @@ public class ProvisioningInitializationResponseEncoder extends JSONEncoder {
 
         wr.setString(SERVER_TIME_JSON, serverTimeVerbatim);
 
-        wr.setDateTime(CLIENT_TIME_JSON, clientTime, false); // Client keeps local time
+        wr.setDateTime(CLIENT_TIME_JSON, clientTime, ISODateTime.LOCAL_NO_SUBSECONDS);
 
         ////////////////////////////////////////////////////////////////////////
         // Server ephemeral key
         ////////////////////////////////////////////////////////////////////////
-        wr.setObject(CLIENT_EPHEMERAL_KEY_JSON).setPublicKey(clientEphemeralKey,
-                                                             AlgorithmPreferences.JOSE_ACCEPT_PREFER);
+        wr.setObject(CLIENT_EPHEMERAL_KEY_JSON,
+                     JSONObjectWriter.createCorePublicKey(clientEphemeralKey,
+                                                          AlgorithmPreferences.JOSE_ACCEPT_PREFER));
 
         ////////////////////////////////////////////////////////////////////////
         // Optional device certificate path
