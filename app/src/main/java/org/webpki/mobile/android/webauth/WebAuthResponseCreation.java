@@ -83,10 +83,9 @@ public class WebAuthResponseCreation extends AsyncTask<Void, String, String> {
             AuthenticationResponseEncoder authentication_response =
                     new AuthenticationResponseEncoder(signer,
                                                       webauth_activity.authentication_request,
-                                                      webauth_activity.getInitializationURL(),
                                                       new GregorianCalendar(),
                                                       webauth_activity.getServerCertificate());
-            webauth_activity.postJSONData(webauth_activity.authentication_request.getSubmitUrl(), authentication_response, true);
+            webauth_activity.postJSONData(webauth_activity.getInitializationURL(), authentication_response, true);
             return webauth_activity.getRedirectURL();
         } catch (SKSException e) {
             webauth_activity.logException(e);
