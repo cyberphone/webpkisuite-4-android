@@ -11,8 +11,6 @@ dependencies {
 
 android {
     resourcePrefix 'zxing_'
-    compileSdkVersion project.androidTargetSdk
-
     sourceSets {
         main {
             manifest.srcFile 'AndroidManifest.xml'
@@ -22,22 +20,21 @@ android {
         }
         test.setRoot('test');
     }
-
     // This is bad practice - we should fix the warnings instead.
     lintOptions {
         // Android warns about the he and id locale folders. he -> iw is already handled with a
         // symlink. TODO: what about id?
         disable 'LocaleFolder'
     }
-
-    testOptions {
-        // We test with primitives such as Rect, and rely on their default behaviour working.
-        unitTests.returnDefaultValues = true
-    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    testOptions {
+        // We test with primitives such as Rect, and rely on their default behaviour working.
+        unitTests.returnDefaultValues = true
+    }
+    compileSdkVersion 24
 }
 
 task sourceJar(type: Jar) {
