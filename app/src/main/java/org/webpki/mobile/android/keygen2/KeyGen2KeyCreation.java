@@ -169,7 +169,7 @@ public class KeyGen2KeyCreation extends AsyncTask<Void, String, String> {
                 key_creation_response.addPublicKey(key_data.getPublicKey(), key_data.getAttestation(), key.getID());
             }
 
-            keygen2_activity.postJSONData(keygen2_activity.getInitializationURL(), key_creation_response, false);
+            keygen2_activity.postJSONData(keygen2_activity.getTransactionURL(), key_creation_response, false);
 
             publishProgress(BaseProxyActivity.PROGRESS_DEPLOY_CERTS);
 
@@ -263,7 +263,7 @@ public class KeyGen2KeyCreation extends AsyncTask<Void, String, String> {
             //////////////////////////////////////////////////////////////////////////
             // Create final and attested message
             //////////////////////////////////////////////////////////////////////////
-            keygen2_activity.postJSONData(keygen2_activity.getInitializationURL(),
+            keygen2_activity.postJSONData(keygen2_activity.getTransactionURL(),
                     new ProvisioningFinalizationResponseEncoder(prov_final_request,
                             keygen2_activity.sks.closeProvisioningSession(eps.getProvisioningHandle(),
                                                                           prov_final_request.getCloseSessionNonce(),

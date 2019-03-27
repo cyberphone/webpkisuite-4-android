@@ -20,8 +20,6 @@ import android.os.AsyncTask;
 
 import org.webpki.json.JSONDecoder;
 
-import org.webpki.json.DataEncryptionAlgorithms;
-
 import org.webpki.mobile.android.saturn.common.EncryptedMessage;
 import org.webpki.mobile.android.saturn.common.UserChallengeItem;
 import org.webpki.mobile.android.saturn.common.PayerAuthorizationEncoder;
@@ -48,7 +46,7 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
             // to not leak user information to Payees.  Only the proper Payment Provider can decrypt
             // and process user authorizations.
             saturnActivity.postJSONData(
-                saturnActivity.walletRequest.getAndroidTransactionUrl(),
+                saturnActivity.getTransactionURL(),
                 new PayerAuthorizationEncoder(saturnActivity.authorizationData,
                                               saturnActivity.selectedCard.authorityUrl,
                                               saturnActivity.selectedCard.paymentMethod,
@@ -146,7 +144,9 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
             saturnActivity.currentForm = SaturnActivity.FORM.SIMPLE;
             saturnActivity.loadHtml(js.toString(), html.append("</table>").toString());
        } else {
-            String url = saturnActivity.walletRequest.getAndroidSuccessUrl();
+            String url = "local";
+//TODO
+//            String url = saturnActivity.walletRequest.getAndroidSuccessUrl();
             if (url.equals("local")) {
                 saturnActivity.done = true;
                 saturnActivity.simpleDisplay("The operation was successful!");

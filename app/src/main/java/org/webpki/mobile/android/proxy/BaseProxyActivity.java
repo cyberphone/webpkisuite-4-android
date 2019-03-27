@@ -163,7 +163,7 @@ public abstract class BaseProxyActivity extends Activity {
         alert_dialog.create().show();
     }
 
-    public String getInitializationURL() {
+    public String getTransactionURL() {
         return transaction_url;
     }
 

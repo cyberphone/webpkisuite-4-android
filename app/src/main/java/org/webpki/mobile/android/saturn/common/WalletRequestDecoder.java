@@ -48,21 +48,6 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
 
     Vector<PaymentNetwork> paymentNetworks = new Vector<PaymentNetwork>();
 
-    String androidCancelUrl;
-    public String getAndroidCancelUrl() {
-        return androidCancelUrl;
-    }
-
-    String androidSuccessUrl;
-    public String getAndroidSuccessUrl() {
-        return androidSuccessUrl;
-    }
-
-    String androidTransactionUrl;
-    public String getAndroidTransactionUrl() {
-        return androidTransactionUrl;
-    }
-
     public PaymentNetwork[] getPaymentNetworks() {
         return paymentNetworks.toArray(new PaymentNetwork[0]);
     }
@@ -81,9 +66,6 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
             previous = paymentRequest;
             paymentNetworks.add(new PaymentNetwork(paymentRequest, paymentMethods));
         } while (ar.hasMore());
-        androidCancelUrl = rd.getString(ANDROID_CANCEL_URL_JSON);
-        androidSuccessUrl = rd.getString(ANDROID_SUCCESS_URL_JSON);
-        androidTransactionUrl = rd.getString(ANDROID_TRANSACTION_URL_JSON);
     }
 
     @Override

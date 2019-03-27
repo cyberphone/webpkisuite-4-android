@@ -104,7 +104,7 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
             saturnActivity.setTitle("Requester: " + saturnActivity.getRequestingHost());
             try {
                 if (saturnActivity.cardCollection.isEmpty()) {
-                    URL url = new URL(saturnActivity.getInitializationURL());
+                    URL url = new URL(saturnActivity.getTransactionURL());
                     String host = url.getHost();
                     if (host.equals("test.webpki.org")) {
                         host = "mobilepki.org";
