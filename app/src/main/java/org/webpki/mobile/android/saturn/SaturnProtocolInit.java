@@ -41,7 +41,6 @@ import org.webpki.mobile.android.saturn.common.BaseProperties;
 import org.webpki.mobile.android.saturn.common.ProviderUserResponseDecoder;
 import org.webpki.mobile.android.saturn.common.WalletAlertDecoder;
 import org.webpki.mobile.android.saturn.common.WalletRequestDecoder;
-import org.webpki.mobile.android.saturn.common.WalletSuccessDecoder;
 
 import org.webpki.sks.EnumeratedKey;
 import org.webpki.sks.Extension;
@@ -60,7 +59,6 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
         try {
             saturnActivity.getProtocolInvocationData();
             saturnActivity.addDecoder(WalletRequestDecoder.class);
-            saturnActivity.addDecoder(WalletSuccessDecoder.class);
             saturnActivity.addDecoder(WalletAlertDecoder.class);
             saturnActivity.addDecoder(ProviderUserResponseDecoder.class);
             saturnActivity.walletRequest = (WalletRequestDecoder) saturnActivity.getInitialRequest();

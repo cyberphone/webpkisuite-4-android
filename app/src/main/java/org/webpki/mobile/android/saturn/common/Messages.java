@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2016 WebPKI.org (http://webpki.org).
+ *  Copyright 2015-2018 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ public enum Messages {
     PAYMENT_CLIENT_IS_READY       ("PaymentClientIsReady"),          // PaymentClient to payee Web page message
     PAYMENT_CLIENT_REQUEST        ("PaymentClientRequest"),          // Payee payment request + other data
     PAYMENT_CLIENT_ALERT          ("PaymentClientAlert"),            // Payee to PaymentClient message
-    PAYMENT_CLIENT_SUCCESS        ("PaymentClientSuccess"),          // Payee to PaymentClient message
     PAYER_AUTHORIZATION           ("PayerAuthorization"),            // Created by the PaymentClient
     
     ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -93,13 +92,13 @@ public enum Messages {
         return requestObject;
     }
 
-    public String getlowerCamelCase() {
+    public String lowerCamelCase() {
         char[] lowerCamelCasedMessage = qualifier.toCharArray();
         lowerCamelCasedMessage[0] = Character.toLowerCase(lowerCamelCasedMessage[0]);
         return String.valueOf(lowerCamelCasedMessage);
     }
 
     public JSONObjectReader getEmbeddedMessage(JSONObjectReader reader) throws IOException {
-        return reader.getObject(getlowerCamelCase());
+        return reader.getObject(lowerCamelCase());
     }
 }
