@@ -169,7 +169,9 @@ public class KeyGen2KeyCreation extends AsyncTask<Void, String, String> {
                 key_creation_response.addPublicKey(key_data.getPublicKey(), key_data.getAttestation(), key.getID());
             }
 
-            keygen2_activity.postJSONData(keygen2_activity.getTransactionURL(), key_creation_response, false);
+            keygen2_activity.postJSONData(keygen2_activity.getTransactionURL(),
+                                          key_creation_response,
+                                          BaseProxyActivity.RedirectPermitted.FORBIDDEN);
 
             publishProgress(BaseProxyActivity.PROGRESS_DEPLOY_CERTS);
 
@@ -268,7 +270,7 @@ public class KeyGen2KeyCreation extends AsyncTask<Void, String, String> {
                             keygen2_activity.sks.closeProvisioningSession(eps.getProvisioningHandle(),
                                                                           prov_final_request.getCloseSessionNonce(),
                                                                           prov_final_request.getCloseSessionMac())),
-                    true);
+                    BaseProxyActivity.RedirectPermitted.REQUIRED);
             return keygen2_activity.getRedirectURL();
         } catch (InterruptedProtocolException e) {
             return keygen2_activity.getRedirectURL();

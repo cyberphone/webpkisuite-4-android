@@ -20,6 +20,8 @@ import android.os.AsyncTask;
 
 import org.webpki.json.JSONDecoder;
 
+import org.webpki.mobile.android.proxy.BaseProxyActivity;
+
 import org.webpki.mobile.android.saturn.common.EncryptedMessage;
 import org.webpki.mobile.android.saturn.common.UserChallengeItem;
 import org.webpki.mobile.android.saturn.common.PayerAuthorizationEncoder;
@@ -45,7 +47,7 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
             // Since user authorizations are pushed through the Payees they must be encrypted in order
             // to not leak user information to Payees.  Only the proper Payment Provider can decrypt
             // and process user authorizations.
-            saturnActivity.postJSONData(
+            if (!saturnActivity.postJSONData(
                 saturnActivity.getTransactionURL(),
                 new PayerAuthorizationEncoder(saturnActivity.authorizationData,
                                               saturnActivity.selectedCard.authorityUrl,
@@ -54,16 +56,16 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
                                               saturnActivity.selectedCard.keyEncryptionKey,
                                               saturnActivity.selectedCard.optionalKeyId,
                                               saturnActivity.selectedCard.keyEncryptionAlgorithm),
-                false);
-            JSONDecoder returnMessage = saturnActivity.parseJSONResponse();
-            if (returnMessage instanceof ProviderUserResponseDecoder) {
-                encryptedMessage =
-                    ((ProviderUserResponseDecoder)returnMessage)
-                        .getEncryptedMessage(saturnActivity.dataEncryptionKey,
-                                             saturnActivity.selectedCard.dataEncryptionAlgorithm);
-                return true;
-            } else if (returnMessage instanceof WalletAlertDecoder) {
-                merchantHtmlAlert = ((WalletAlertDecoder)returnMessage).getText();
+                BaseProxyActivity.RedirectPermitted.OPTIONAL)) {
+                JSONDecoder returnMessage = saturnActivity.parseJSONResponse();
+                if (returnMessage instanceof ProviderUserResponseDecoder) {
+                    encryptedMessage =
+                        ((ProviderUserResponseDecoder)returnMessage)
+                            .getEncryptedMessage(saturnActivity.dataEncryptionKey,
+                                                 saturnActivity.selectedCard.dataEncryptionAlgorithm);
+                } else {
+                    merchantHtmlAlert = ((WalletAlertDecoder)returnMessage).getText();
+                }
                 return true;
             }
         } catch (Exception e) {
@@ -144,9 +146,9 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
             saturnActivity.currentForm = SaturnActivity.FORM.SIMPLE;
             saturnActivity.loadHtml(js.toString(), html.append("</table>").toString());
        } else {
-            String url = "local";
+ //           String url = "local";
 //TODO
-//            String url = saturnActivity.walletRequest.getAndroidSuccessUrl();
+            String url = saturnActivity.getRedirectURL();
             if (url.equals("local")) {
                 saturnActivity.done = true;
                 saturnActivity.simpleDisplay("The operation was successful!");

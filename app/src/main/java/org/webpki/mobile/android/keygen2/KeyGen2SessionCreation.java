@@ -282,7 +282,9 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
                 invocation_response.addImagePreference(KeyGen2URIs.LOGOTYPES.LIST, "image/png", default_icon.getWidth(), default_icon.getHeight());
             }
 
-            keygen2_activity.postJSONData(keygen2_activity.getTransactionURL(), invocation_response, false);
+            keygen2_activity.postJSONData(keygen2_activity.getTransactionURL(),
+                                          invocation_response,
+                                          BaseProxyActivity.RedirectPermitted.FORBIDDEN);
 
             keygen2_activity.prov_init_request = (ProvisioningInitializationRequestDecoder) keygen2_activity.parseJSONResponse();
             GregorianCalendar client_time = new GregorianCalendar();
@@ -324,7 +326,9 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
                 }
             });
 
-            keygen2_activity.postJSONData(keygen2_activity.getTransactionURL(), prov_sess_response, false);
+            keygen2_activity.postJSONData(keygen2_activity.getTransactionURL(),
+                                          prov_sess_response,
+                                          BaseProxyActivity.RedirectPermitted.FORBIDDEN);
             JSONDecoder json_object = keygen2_activity.parseJSONResponse();
             if (json_object instanceof CredentialDiscoveryRequestDecoder) {
                 publishProgress(BaseProxyActivity.PROGRESS_LOOKUP);
@@ -357,7 +361,9 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
                         }
                     }
                 }
-                keygen2_activity.postJSONData(keygen2_activity.getTransactionURL(), cred_disc_response, false);
+                keygen2_activity.postJSONData(keygen2_activity.getTransactionURL(),
+                                              cred_disc_response,
+                                              BaseProxyActivity.RedirectPermitted.FORBIDDEN);
                 json_object = keygen2_activity.parseJSONResponse();
             }
             keygen2_activity.key_creation_request = (KeyCreationRequestDecoder) json_object;

@@ -85,7 +85,9 @@ public class WebAuthResponseCreation extends AsyncTask<Void, String, String> {
                                                       webauth_activity.authentication_request,
                                                       new GregorianCalendar(),
                                                       webauth_activity.getServerCertificate());
-            webauth_activity.postJSONData(webauth_activity.getTransactionURL(), authentication_response, true);
+            webauth_activity.postJSONData(webauth_activity.getTransactionURL(),
+                                          authentication_response,
+                                          BaseProxyActivity.RedirectPermitted.REQUIRED);
             return webauth_activity.getRedirectURL();
         } catch (SKSException e) {
             webauth_activity.logException(e);

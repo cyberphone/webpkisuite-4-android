@@ -61,6 +61,8 @@ public abstract class BaseProxyActivity extends Activity {
     //////////////////////
     // Progress messages
     //////////////////////
+    public enum RedirectPermitted {FORBIDDEN, OPTIONAL, REQUIRED};
+
     public static final String PROGRESS_INITIALIZING   = "Initializing...";
     public static final String PROGRESS_SESSION        = "Creating session...";
     public static final String PROGRESS_KEYGEN         = "Generating keys...";
@@ -241,9 +243,9 @@ public abstract class BaseProxyActivity extends Activity {
         finish();
     }
 
-    public void postJSONData(String url,
-                             JSONEncoder json_object,
-                             boolean interrupt_expected) throws IOException, InterruptedProtocolException {
+    public boolean postJSONData(String url,
+                                JSONEncoder json_object,
+                                RedirectPermitted redirectPermitted) throws IOException, InterruptedProtocolException {
         logOK("Writing \"" + json_object.getQualifier() + "\" object to: " + url);
         addOptionalCookies(url);
         https_wrapper.setHeader("Content-Type", JSON_CONTENT);
@@ -254,18 +256,20 @@ public abstract class BaseProxyActivity extends Activity {
             if ((redirect_url = https_wrapper.getHeaderValue("Location")) == null) {
                 throw new IOException("Malformed redirect");
             }
-            if (!interrupt_expected) {
+            if (redirectPermitted == RedirectPermitted.FORBIDDEN) {
                 Log.e(getProtocolName(), "Unexpected redirect");
                 throw new InterruptedProtocolException();
             }
+            return true;
         } else {
             if (https_wrapper.getResponseCode() != HttpURLConnection.HTTP_OK) {
                 throw new IOException(https_wrapper.getResponseMessage());
             }
             checkContentType();
-            if (interrupt_expected) {
+            if (redirectPermitted == RedirectPermitted.REQUIRED) {
                 throw new IOException("Redirect expected");
             }
+            return false;
         }
     }
 
