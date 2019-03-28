@@ -22,6 +22,7 @@ import org.webpki.json.JSONDecoder;
 
 import org.webpki.mobile.android.proxy.BaseProxyActivity;
 
+import org.webpki.mobile.android.saturn.common.BaseProperties;
 import org.webpki.mobile.android.saturn.common.EncryptedMessage;
 import org.webpki.mobile.android.saturn.common.UserChallengeItem;
 import org.webpki.mobile.android.saturn.common.PayerAuthorizationEncoder;
@@ -146,10 +147,8 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
             saturnActivity.currentForm = SaturnActivity.FORM.SIMPLE;
             saturnActivity.loadHtml(js.toString(), html.append("</table>").toString());
        } else {
- //           String url = "local";
-//TODO
             String url = saturnActivity.getRedirectURL();
-            if (url.equals("local")) {
+            if (url.equals(BaseProperties.SATURN_LOCAL_SUCCESS_URI)) {
                 saturnActivity.done = true;
                 saturnActivity.simpleDisplay("The operation was successful!");
                 saturnActivity.closeProxy();

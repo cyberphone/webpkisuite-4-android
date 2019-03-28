@@ -142,7 +142,6 @@ public class PropertiesActivity extends ListActivity {
                 about_builder.setIcon(android.R.drawable.btn_star_big_on);
                 about_builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        return;
                     }
                 });
                 return about_builder.create();
@@ -162,7 +161,6 @@ public class PropertiesActivity extends ListActivity {
                 }
                 device_id_builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        return;
                     }
                 });
                 return device_id_builder.create();
@@ -174,7 +172,6 @@ public class PropertiesActivity extends ListActivity {
                 no_credentials_alert.setMessage("You have no credentials yet");
                 no_credentials_alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
-                        return;
                     }
                 });
                 return no_credentials_alert.create();
