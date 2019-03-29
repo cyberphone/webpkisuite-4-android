@@ -41,6 +41,7 @@ public class QRCancel extends AsyncTask<Void, String, Boolean> {
     @Override
     protected void onPostExecute(Boolean success) {
         saturnActivity.done = true;
-//        saturnActivity.loadHtml("<tr><td>The operation was cancelled</td></tr>");
+        saturnActivity.simpleDisplay("The operation was cancelled");
+        saturnActivity.closeProxy();
     }
 }

@@ -298,6 +298,11 @@ public abstract class BaseProxyActivity extends Activity {
         }
     }
 
+    boolean qr_mode;
+    protected boolean qrInvoked() {
+        return qr_mode;
+    }
+
     public void showFailLog() {
         noMoreWorkToDo();
         Intent intent = new Intent(this, FailLoggerActivity.class);
@@ -354,12 +359,14 @@ public abstract class BaseProxyActivity extends Activity {
         }
         transaction_url = getQueryParameter(uri, "url");
         String boot_url = getQueryParameter(uri, "init");
+        qr_mode = uri.getQueryParameter("qr") != null;
         requesting_host = new URL(boot_url).getHost();
         List<String> arg = uri.getQueryParameters("cookie");
         if (!arg.isEmpty()) {
             cookies.add(arg.get(0));
         }
         logOK("Invocation URL=" + transaction_url + ", Cookie: " + (arg.isEmpty() ? "N/A" : cookies.elementAt(0)));
+        logOK(uri.toString());
         addOptionalCookies(transaction_url);
         cancelUrl = uri.getQueryParameter("cncl");
         String versionSpan = getQueryParameter(uri, "ver");

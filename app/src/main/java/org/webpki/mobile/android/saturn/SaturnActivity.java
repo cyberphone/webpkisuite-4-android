@@ -186,8 +186,8 @@ public class SaturnActivity extends BaseProxyActivity {
 
     @Override
     public void launchBrowser(String url) {
-        if (url.startsWith("get:")) {
-            new QRCancel(this, url.substring(4)).execute();
+        if (qrInvoked()) {
+            new QRCancel(this, url).execute();
         } else {
             super.launchBrowser(url);
         }
