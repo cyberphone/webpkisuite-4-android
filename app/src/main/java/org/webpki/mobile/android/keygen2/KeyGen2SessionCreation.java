@@ -307,12 +307,9 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
                                                                   session.getClientSessionId(),
                                                                   client_time,
                                                                   session.getAttestation(),
+                                                                  keygen2_activity.getServerCertificate(),
                                                                   keygen2_activity.invocation_request.getPrivacyEnabledFlag() ?
                                                                       null : device_info.getCertificatePath());
-
-            if (keygen2_activity.getServerCertificate() != null) {
-                prov_sess_response.setServerCertificate(keygen2_activity.getServerCertificate());
-            }
 
             prov_sess_response.setResponseSigner(new SymKeySignerInterface() {
                 @Override
