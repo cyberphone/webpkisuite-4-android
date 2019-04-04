@@ -92,7 +92,7 @@ import android.util.Log;
  *  Author: Anders Rundgren
  */
 public class SKSImplementation implements SKSError, SecureKeyStore, Serializable, GrantInterface {
-    private static final long serialVersionUID = 10L;
+    private static final long serialVersionUID = 11L;
 
     /////////////////////////////////////////////////////////////////////////////////////////////
     // SKS version and configuration data
@@ -970,16 +970,12 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
                      "RSA/ECB/PKCS1Padding",
                      ALG_ASYM_ENC | ALG_RSA_KEY);
 
-        addAlgorithm("http://xmlns.webpki.org/sks/algorithm#rsa.oaep.sha1.mgf1p",
+        addAlgorithm("http://xmlns.webpki.org/sks/algorithm#rsa.oaep.sha1",
                      "RSA/ECB/OAEPWithSHA-1AndMGF1Padding",
                      ALG_ASYM_ENC | ALG_RSA_KEY);
 
-        addAlgorithm("http://xmlns.webpki.org/sks/algorithm#rsa.oaep.sha256.mgf1p",
+        addAlgorithm("http://xmlns.webpki.org/sks/algorithm#rsa.oaep.sha256",
                      "RSA/ECB/OAEPWithSHA-256AndMGF1Padding",
-                     ALG_ASYM_ENC | ALG_RSA_KEY);
-
-        addAlgorithm("http://xmlns.webpki.org/sks/algorithm#rsa.raw",
-                     "RSA/ECB/NoPadding",
                      ALG_ASYM_ENC | ALG_RSA_KEY);
 
         //////////////////////////////////////////////////////////////////////////////////////
