@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package org.webpki.mobile.android.sks;
+package org.webpki.sks.test;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -24,6 +24,7 @@ import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.KeyPairGenerator;
+import java.security.KeyStore;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -56,6 +57,7 @@ import java.util.Vector;
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
 import javax.crypto.Mac;
+
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -70,8 +72,6 @@ import org.webpki.sks.ProvisioningSession;
 import org.webpki.sks.SKSException;
 import org.webpki.sks.SecureKeyStore;
 
-import android.util.Log;
-
 /*
  *                          ###########################
  *                          #  SKS - Secure Key Store #
@@ -85,37 +85,43 @@ import android.util.Log;
  *  reliable share a key container, something which will become a necessity in
  *  mobile phones with embedded security hardware.
  *
- *  Compared to the SKS specification, the Android implementation uses a slightly
+ *  The following SKS Reference Implementation is intended to complement the
+ *  specification by showing how the different constructs can be implemented.
+ *
+ *  In addition to the Reference Implementation there is a set of SKS JUnit tests
+ *  that should work identical when performed on a "real" SKS token.
+ *
+ *  Compared to the SKS specification, the Reference Implementation uses a slightly
  *  more java-centric way of passing parameters, including "null" arguments, but the
  *  content is supposed to be identical.
  *  
+ *  Note that persistence is not supported by the Reference Implementation.
+ *
  *  Author: Anders Rundgren
  */
-public class SKSImplementation implements SKSError, SecureKeyStore, Serializable, GrantInterface {
-    private static final long serialVersionUID = 11L;
+public class SKSReferenceImplementation implements SKSError, SecureKeyStore, Serializable {
+    private static final long serialVersionUID = 1L;
 
     /////////////////////////////////////////////////////////////////////////////////////////////
     // SKS version and configuration data
     /////////////////////////////////////////////////////////////////////////////////////////////
-    static final String SKS_VENDOR_NAME           = "WebPKI.org";
-    static final String SKS_VENDOR_DESCRIPTION    = "SKS for Android";
-    static final String SKS_UPDATE_URL            = null;   // Change here to test or disable
-    static final boolean SKS_DEVICE_PIN_SUPPORT   = false;  // Change here to test or disable
-    static final boolean SKS_BIOMETRIC_SUPPORT    = false;  // Change here to test or disable
-    static final boolean SKS_RSA_EXPONENT_SUPPORT = true;   // Change here to test or disable
-    static final int MAX_LENGTH_CRYPTO_DATA       = 16384;
-    static final int MAX_LENGTH_EXTENSION_DATA    = 65536;
+    static final String SKS_VENDOR_NAME                    = "WebPKI.org";
+    static final String SKS_VENDOR_DESCRIPTION             = "SKS Reference - Java Emulator Edition";
+    static final String SKS_UPDATE_URL                     = null;  // Change here to test or disable
+    static final boolean SKS_DEVICE_PIN_SUPPORT            = true;  // Change here to test or disable
+    static final boolean SKS_BIOMETRIC_SUPPORT             = true;  // Change here to test or disable
+    static final boolean SKS_RSA_EXPONENT_SUPPORT          = true;  // Change here to test or disable
+    static final int MAX_LENGTH_CRYPTO_DATA                = 16384;
+    static final int MAX_LENGTH_EXTENSION_DATA             = 65536;
 
-    private static final String SKS_DEBUG = "SKS";  // Android SKS debug constant
-
-    static final char[] BASE64_URL = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-                                      'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-                                      'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-                                      'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
-                                      'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
-                                      'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
-                                      'w', 'x', 'y', 'z', '0', '1', '2', '3',
-                                      '4', '5', '6', '7', '8', '9', '-', '_'};
+    static final char[] BASE64_URL = {'A','B','C','D','E','F','G','H',
+                                      'I','J','K','L','M','N','O','P',
+                                      'Q','R','S','T','U','V','W','X',
+                                      'Y','Z','a','b','c','d','e','f',
+                                      'g','h','i','j','k','l','m','n',
+                                      'o','p','q','r','s','t','u','v',
+                                      'w','x','y','z','0','1','2','3',
+                                      '4','5','6','7','8','9','-','_'};
 
     int nextKeyHandle = 1;
     LinkedHashMap<Integer, KeyEntry> keys = new LinkedHashMap<Integer, KeyEntry>();
@@ -129,13 +135,6 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
     int nextPukHandle = 1;
     LinkedHashMap<Integer, PUKPolicy> pukPolicies = new LinkedHashMap<Integer, PUKPolicy>();
 
-    X509Certificate deviceCertificate;
-    PrivateKey attestationKey;
-
-    SKSImplementation(X509Certificate deviceCertificate, PrivateKey attestationKey) {
-        this.deviceCertificate = deviceCertificate;
-        this.attestationKey = attestationKey;
-    }
 
     abstract class NameSpace implements Serializable {
         private static final long serialVersionUID = 1L;
@@ -192,8 +191,6 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         byte[] symmetricKey;     // Defined by "importSymmetricKey"
 
         LinkedHashSet<String> endorsedAlgorithms;
-
-        LinkedHashSet<String> grantedDomains = new LinkedHashSet<String>();
 
         String friendlyName;
 
@@ -573,7 +570,9 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
             return keyEntry;
         }
 
-        void addPostProvisioningObject(KeyEntry targetKeyEntry, KeyEntry newKey, boolean updateOrDelete) throws SKSException {
+        void addPostProvisioningObject(KeyEntry targetKeyEntry, 
+                                       KeyEntry newKey,
+                                       boolean updateOrDelete) throws SKSException {
             for (PostProvisioningObject postOp : postProvisioningObjects) {
                 if (postOp.newKey != null && postOp.newKey == newKey) {
                     abort("New key used for multiple operations: " + newKey.id);
@@ -582,7 +581,8 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
                     ////////////////////////////////////////////////////////////////////////////////////////////////
                     // Multiple targeting of the same old key is OK but has restrictions
                     ////////////////////////////////////////////////////////////////////////////////////////////////
-                    if ((newKey == null && updateOrDelete) || (postOp.newKey == null && postOp.updateOrDelete)) // postDeleteKey
+                    if ((newKey == null && updateOrDelete) || 
+                        (postOp.newKey == null && postOp.updateOrDelete)) // postDeleteKey
                     {
                         abort("Delete wasn't exclusive for key #" + targetKeyEntry.keyHandle);
                     } else if (newKey == null && postOp.newKey == null) // postUnlockKey * 2
@@ -616,7 +616,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
                                                     byte[] argument,
                                                     byte[] authorization) throws GeneralSecurityException {
             return new SignatureWrapper(keyManagementKey instanceof RSAPublicKey ?
-                                            "SHA256WithRSA" : "SHA256WithECDSA",
+                                           "SHA256WithRSA" : "SHA256WithECDSA",
                                         keyManagementKey)
                 .update(kmkKdf)
                 .update(argument)
@@ -681,6 +681,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
 
 
     class AttestationSignatureGenerator {
+
         SignatureWrapper signer;
 
         AttestationSignatureGenerator() throws GeneralSecurityException {
@@ -727,7 +728,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
             signer.update(flag ? (byte) 0x01 : (byte) 0x00);
         }
 
-        byte[] getResult() throws GeneralSecurityException {
+        byte[] getResult() throws GeneralSecurityException, IOException {
             return signer.sign();
         }
     }
@@ -736,7 +737,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         private static final long serialVersionUID = 1L;
 
         KeyEntry targetKeyEntry;
-        KeyEntry newKey;      // null for postDeleteKey and postUnlockKey
+        KeyEntry newKey;           // null for postDeleteKey and postUnlockKey
         boolean updateOrDelete;    // true for postUpdateKey and postDeleteKey
 
         PostProvisioningObject(KeyEntry targetKeyEntry, KeyEntry newKey, boolean updateOrDelete) {
@@ -748,9 +749,9 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
 
     class SignatureWrapper {
         static final int ASN1_SEQUENCE = 0x30;
-        static final int ASN1_INTEGER  = 0x02;
+        static final int ASN1_INTEGER = 0x02;
 
-        static final int LEADING_ZERO  = 0x00;
+        static final int LEADING_ZERO = 0x00;
 
         Signature instance;
         boolean rsaFlag;
@@ -886,8 +887,8 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         void addEcCurve(int ecPointLength, byte[] samplePublicKey) {
             this.ecPointLength = ecPointLength;
             try {
-                ecParameterSpec =
-                    ((ECPublicKey) KeyFactory.getInstance("EC").generatePublic(new X509EncodedKeySpec(samplePublicKey))).getParams();
+                ecParameterSpec = ((ECPublicKey) KeyFactory.getInstance("EC")
+                    .generatePublic(new X509EncodedKeySpec(samplePublicKey))).getParams();
             } catch (Exception e) {
                 new RuntimeException(e);
             }
@@ -970,12 +971,16 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
                      "RSA/ECB/PKCS1Padding",
                      ALG_ASYM_ENC | ALG_RSA_KEY);
 
-        addAlgorithm("http://xmlns.webpki.org/sks/algorithm#rsa.oaep.sha1",
+        addAlgorithm("http://xmlns.webpki.org/sks/algorithm#rsa.oaep.sha1.mgf1p",
                      "RSA/ECB/OAEPWithSHA-1AndMGF1Padding",
                      ALG_ASYM_ENC | ALG_RSA_KEY);
 
-        addAlgorithm("http://xmlns.webpki.org/sks/algorithm#rsa.oaep.sha256",
+        addAlgorithm("http://xmlns.webpki.org/sks/algorithm#rsa.oaep.sha256.mgf1p",
                      "RSA/ECB/OAEPWithSHA-256AndMGF1Padding",
+                     ALG_ASYM_ENC | ALG_RSA_KEY);
+
+        addAlgorithm("http://xmlns.webpki.org/sks/algorithm#rsa.raw",
+                     "RSA/ECB/NoPadding",
                      ALG_ASYM_ENC | ALG_RSA_KEY);
 
         //////////////////////////////////////////////////////////////////////////////////////
@@ -984,7 +989,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         addAlgorithm("http://xmlns.webpki.org/sks/algorithm#ecdh.raw",
                      "ECDH",
                      ALG_ASYM_KA | ALG_EC_KEY);
-
+        
         //////////////////////////////////////////////////////////////////////////////////////
         //  Asymmetric Key Signatures
         //////////////////////////////////////////////////////////////////////////////////////
@@ -1106,10 +1111,10 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
 
         for (short rsa_size : SKS_DEFAULT_RSA_SUPPORT) {
             addAlgorithm("http://xmlns.webpki.org/sks/algorithm#rsa" + rsa_size,
-                    null, ALG_RSA_KEY | ALG_KEY_GEN | rsa_size);
+                         null, ALG_RSA_KEY | ALG_KEY_GEN | rsa_size);
             if (SKS_RSA_EXPONENT_SUPPORT) {
                 addAlgorithm("http://xmlns.webpki.org/sks/algorithm#rsa" + rsa_size + ".exp",
-                        null, ALG_KEY_PARM | ALG_RSA_KEY | ALG_KEY_GEN | rsa_size);
+                             null, ALG_KEY_PARM | ALG_RSA_KEY | ALG_KEY_GEN | rsa_size);
             }
         }
 
@@ -1124,7 +1129,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
 
     }
 
-    static final byte[] RSA_ENCRYPTION_OID = {(byte) 0x06, (byte) 0x09, (byte) 0x2A, (byte) 0x86,
+    static final byte[] RSA_ENCRYPTION_OID = {(byte) 0x06, (byte) 0x09, (byte) 0x2A, (byte) 0x86, 
                                               (byte) 0x48, (byte) 0x86, (byte) 0xF7, (byte) 0x0D,
                                               (byte) 0x01, (byte) 0x01, (byte) 0x01};
 
@@ -1132,8 +1137,22 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
     // Utility Functions
     /////////////////////////////////////////////////////////////////////////////////////////////
 
+    static final char[] ATTESTATION_KEY_PASSWORD = {'t', 'e', 's', 't', 'i', 'n', 'g'};
+
+    static final String ATTESTATION_KEY_ALIAS = "mykey";
+
+    KeyStore getAttestationKeyStore() throws GeneralSecurityException {
+        try {
+            KeyStore ks = KeyStore.getInstance("JKS");
+            ks.load(getClass().getResourceAsStream("attestationkeystore.jks"), ATTESTATION_KEY_PASSWORD);
+            return ks;
+        } catch (IOException e) {
+            throw new GeneralSecurityException(e);
+        }
+    }
+
     X509Certificate[] getDeviceCertificatePath() throws GeneralSecurityException {
-        return new X509Certificate[]{deviceCertificate};
+        return new X509Certificate[]{(X509Certificate) getAttestationKeyStore().getCertificate(ATTESTATION_KEY_ALIAS)};
     }
 
     byte[] getDeviceID(boolean privacyEnabled) throws GeneralSecurityException {
@@ -1141,16 +1160,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
     }
 
     PrivateKey getAttestationKey() throws GeneralSecurityException {
-        return attestationKey;
-    }
-
-    void logCertificateOperation(KeyEntry keyEntry, String operation) {
-        Log.i(SKS_DEBUG, certificateLogData(keyEntry) + " " + operation);
-    }
-
-    String certificateLogData(KeyEntry keyEntry) {
-        return "Certificate for '" + keyEntry.certificatePath[0].getSubjectX500Principal().getName() +
-               "' Serial=" + keyEntry.certificatePath[0].getSerialNumber();
+        return (PrivateKey) getAttestationKeyStore().getKey(ATTESTATION_KEY_ALIAS, ATTESTATION_KEY_PASSWORD);
     }
 
     Provisioning getProvisioningSession(int provisioningHandle) throws SKSException {
@@ -1288,7 +1298,10 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         throw new GeneralSecurityException("Unsupported EC curve");
     }
 
-    void checkRsaKeyCompatibility(int rsaKeySize, BigInteger exponent, SKSError sksError, String keyId) throws SKSException {
+    void checkRsaKeyCompatibility(int rsaKeySize,
+                                  BigInteger exponent, 
+                                  SKSError sksError,
+                                  String keyId) throws SKSException {
         if (!SKS_RSA_EXPONENT_SUPPORT && !exponent.equals(RSAKeyGenParameterSpec.F4)) {
             sksError.abort("Unsupported RSA exponent value for: " + keyId);
         }
@@ -1310,7 +1323,11 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
     }
 
     @SuppressWarnings("fallthrough")
-    void verifyPinPolicyCompliance(boolean forcedSetter, byte[] pinValue, PINPolicy pinPolicy, byte appUsage, SKSError sksError) throws SKSException {
+    void verifyPinPolicyCompliance(boolean forcedSetter,
+                                   byte[] pinValue,
+                                   PINPolicy pinPolicy,
+                                   byte appUsage,
+                                   SKSError sksError) throws SKSException {
         ///////////////////////////////////////////////////////////////////////////////////
         // Check PIN length
         ///////////////////////////////////////////////////////////////////////////////////
@@ -1338,7 +1355,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
             }
         }
         if ((pinPolicy.format == PASSPHRASE_FORMAT_NUMERIC && (loweralpha || nonalphanum || upperalpha)) ||
-                (pinPolicy.format == PASSPHRASE_FORMAT_ALPHANUMERIC && (loweralpha || nonalphanum))) {
+            (pinPolicy.format == PASSPHRASE_FORMAT_ALPHANUMERIC && (loweralpha || nonalphanum))) {
             sksError.abort("PIN syntax error");
         }
 
@@ -1347,7 +1364,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         ///////////////////////////////////////////////////////////////////////////////////
         if ((pinPolicy.patternRestrictions & PIN_PATTERN_MISSING_GROUP) != 0) {
             if (!upperalpha || !number ||
-                    (pinPolicy.format == PASSPHRASE_FORMAT_STRING && (!loweralpha || !nonalphanum))) {
+                (pinPolicy.format == PASSPHRASE_FORMAT_STRING && (!loweralpha || !nonalphanum))) {
                 sksError.abort("Missing character group in PIN");
             }
         }
@@ -1560,7 +1577,6 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         ///////////////////////////////////////////////////////////////////////////////////
         // Put the operation in the post-op buffer used by "closeProvisioningSession"
         ///////////////////////////////////////////////////////////////////////////////////
-        logCertificateOperation(targetKeyEntry, update ? "post-updated" : "post-cloned");
         provisioning.addPostProvisioningObject(targetKeyEntry, newKey, update);
     }
 
@@ -1591,7 +1607,6 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         ///////////////////////////////////////////////////////////////////////////////////
         // Put the operation in the post-op buffer used by "closeProvisioningSession"
         ///////////////////////////////////////////////////////////////////////////////////
-        logCertificateOperation(targetKeyEntry, delete ? "post-deleted" : "post-unlocked");
         provisioning.addPostProvisioningObject(targetKeyEntry, null, delete);
     }
 
@@ -1835,8 +1850,8 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         // Check that the encryption algorithm is known and applicable
         ///////////////////////////////////////////////////////////////////////////////////
         Algorithm alg = checkKeyAndAlgorithm(keyEntry, algorithm, ALG_ASYM_ENC);
-        if (parameters != null) {  // Only support basic RSA yet...
-            abort("\"" + VAR_PARAMETERS + "\" for key #" + keyHandle + " do not match algorithm");
+        if (parameters != null)  { // Only support basic RSA yet...
+             abort("\"" + VAR_PARAMETERS + "\" for key #" + keyHandle + " do not match algorithm");
         }
 
         ///////////////////////////////////////////////////////////////////////////////////
@@ -1899,8 +1914,8 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
                 data = addArrays(alg.pkcs1DigestInfo, data);
             }
             return new SignatureWrapper(alg.jceName, keyEntry.privateKey)
-                    .update(data)
-                    .sign();
+                .update(data)
+                .sign();
         } catch (Exception e) {
             throw new SKSException(e, SKSException.ERROR_CRYPTO);
         }
@@ -1932,7 +1947,8 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         // Check that the key agreement algorithm is known and applicable
         ///////////////////////////////////////////////////////////////////////////////////
         Algorithm alg = checkKeyAndAlgorithm(keyEntry, algorithm, ALG_ASYM_KA);
-        if (parameters != null) { // Only support external KDFs yet...
+        if (parameters != null)  // Only support external KDFs yet...
+        {
             abort("\"" + VAR_PARAMETERS + "\" for key #" + keyHandle + " do not match algorithm");
         }
 
@@ -1945,10 +1961,10 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         // Finally, perform operation
         ///////////////////////////////////////////////////////////////////////////////////
         try {
-            KeyAgreement keyAgreement = KeyAgreement.getInstance(alg.jceName);
-            keyAgreement.init(keyEntry.privateKey);
-            keyAgreement.doPhase(publicKey, true);
-            return keyAgreement.generateSecret();
+            KeyAgreement key_agreement = KeyAgreement.getInstance(alg.jceName);
+            key_agreement.init(keyEntry.privateKey);
+            key_agreement.doPhase(publicKey, true);
+            return key_agreement.generateSecret();
         } catch (Exception e) {
             throw new SKSException(e, SKSException.ERROR_CRYPTO);
         }
@@ -2224,11 +2240,11 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         // Return core key entry metadata
         ///////////////////////////////////////////////////////////////////////////////////
         return new KeyAttributes((short) (keyEntry.isSymmetric() ? keyEntry.symmetricKey.length : 0),
-                keyEntry.certificatePath,
-                keyEntry.appUsage,
-                keyEntry.friendlyName,
-                keyEntry.endorsedAlgorithms.toArray(new String[0]),
-                keyEntry.extensions.keySet().toArray(new String[0]));
+                                 keyEntry.certificatePath,
+                                 keyEntry.appUsage,
+                                 keyEntry.friendlyName,
+                                 keyEntry.endorsedAlgorithms.toArray(new String[0]),
+                                 keyEntry.extensions.keySet().toArray(new String[0]));
     }
 
 
@@ -2260,7 +2276,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
             // Success, update KeyManagementKey
             ///////////////////////////////////////////////////////////////////////////////////
             provisioning.keyManagementKey = keyManagementKey;
-        } catch (GeneralSecurityException e) {
+        } catch (Exception e) {
             abort(e.getMessage(), SKSException.ERROR_CRYPTO);
         }
     }
@@ -2406,7 +2422,6 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         deleteObject(pinPolicies, provisioning);
         deleteObject(pukPolicies, provisioning);
         provisionings.remove(provisioningHandle);
-        Log.e(SKS_DEBUG, "Session ABORTED");
     }
 
 
@@ -2630,7 +2645,6 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         // We are done, close the show for this time
         ///////////////////////////////////////////////////////////////////////////////////
         provisioning.open = false;
-        Log.i(SKS_DEBUG, "Session successfully CLOSED");
         return attestation;
     }
 
@@ -2788,7 +2802,6 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         p.clientTime = clientTime;
         p.sessionLifeTime = sessionLifeTime;
         p.sessionKeyLimit = sessionKeyLimit;
-        Log.i(SKS_DEBUG, "Session CREATED");
         return new ProvisioningSession(p.provisioningHandle,
                                        clientSessionId,
                                        attestation,
@@ -2926,8 +2939,8 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
             keyEntry.privateKey = KeyFactory.getInstance(rsaFlag ? "RSA" : "EC").generatePrivate(keySpec);
             if (rsaFlag) {
                 checkRsaKeyCompatibility(getRSAKeySize((RSAPrivateKey) keyEntry.privateKey),
-                        keyEntry.getPublicRSAExponentFromPrivateKey(),
-                        keyEntry.owner, keyEntry.id);
+                                         keyEntry.getPublicRSAExponentFromPrivateKey(),
+                                         keyEntry.owner, keyEntry.id);
             } else {
                 checkEcKeyCompatibility((ECPrivateKey) keyEntry.privateKey, keyEntry.owner, keyEntry.id);
             }
@@ -3020,8 +3033,8 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         ///////////////////////////////////////////////////////////////////////////////////
         if (keyEntry.publicKey instanceof RSAPublicKey) {
             checkRsaKeyCompatibility(getRSAKeySize((RSAPublicKey) keyEntry.publicKey),
-                                                   ((RSAPublicKey) keyEntry.publicKey).getPublicExponent(),
-                                                   keyEntry.owner, keyEntry.id);
+                                     ((RSAPublicKey) keyEntry.publicKey).getPublicExponent(),
+                                     keyEntry.owner, keyEntry.id);
         } else {
             checkEcKeyCompatibility((ECPublicKey) keyEntry.publicKey, keyEntry.owner, keyEntry.id);
         }
@@ -3033,7 +3046,6 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
             keyEntry.owner.abort("Multiple calls to \"setCertificatePath\" for: " + keyEntry.id);
         }
         keyEntry.certificatePath = certificatePath.clone();
-        logCertificateOperation(keyEntry, "received");
     }
 
 
@@ -3205,10 +3217,8 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
                 exponent = new BigInteger(keyParameters);
             }
             algParSpec = new RSAKeyGenParameterSpec(rsaKeySize, exponent);
-            Log.i(SKS_DEBUG, "RSA " + rsaKeySize + " key created");
         } else {
             algParSpec = new ECGenParameterSpec(kalg.jceName);
-            Log.i(SKS_DEBUG, "EC " + kalg.jceName + " key created");
         }
         try {
             ///////////////////////////////////////////////////////////////////////////////////
@@ -3341,7 +3351,6 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         pinPolicy.minLength = minLength;
         pinPolicy.maxLength = maxLength;
         pinPolicy.inputMethod = inputMethod;
-        Log.i(SKS_DEBUG, "PIN policy object created");
         return pinPolicy.pinPolicyHandle;
     }
 
@@ -3397,36 +3406,6 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         pukPolicy.pukValue = decryptedPukValue;
         pukPolicy.format = format;
         pukPolicy.retryLimit = retryLimit;
-        Log.i(SKS_DEBUG, "PUK policy object created");
         return pukPolicy.pukPolicyHandle;
-    }
-
-
-    ////////////////////////////////////////////////////////////////////////////////
-    //                                                                            //
-    //                      A set of public non-SKS methods                       //
-    //                                                                            //
-    ////////////////////////////////////////////////////////////////////////////////
-
-    @Override
-    public boolean isGranted(int keyHandle, String domain) throws SKSException {
-        KeyEntry keyEntry = getStdKey(keyHandle);
-        return keyEntry.grantedDomains.contains(domain);
-    }
-
-    @Override
-    public void setGrant(int keyHandle, String domain, boolean granted) throws SKSException {
-        KeyEntry keyEntry = getStdKey(keyHandle);
-        if (granted) {
-            keyEntry.grantedDomains.add(domain);
-        } else {
-            keyEntry.grantedDomains.remove(domain);
-        }
-    }
-
-    @Override
-    public String[] listGrants(int keyHandle) throws SKSException {
-        KeyEntry keyEntry = getStdKey(keyHandle);
-        return keyEntry.grantedDomains.toArray(new String[0]);
     }
 }
