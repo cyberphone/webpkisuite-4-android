@@ -663,7 +663,6 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         byte[] getData() throws IOException {
              return baos.toByteArray();
         }
-
     }
     
 
@@ -688,6 +687,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         }
     }
 
+
     class AttestationSignatureGenerator extends ByteWriter {
 
         SignatureWrapper signer;
@@ -704,6 +704,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         }
     }
 
+
     class PostProvisioningObject implements Serializable {
         private static final long serialVersionUID = 1L;
 
@@ -717,6 +718,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
             this.updateOrDelete = updateOrDelete;
         }
     }
+
 
     class SignatureWrapper {
         static final int ASN1_SEQUENCE = 0x30;
@@ -1116,11 +1118,11 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         return attestationKey;
     }
 
-     void logCertificateOperation(KeyEntry keyEntry, String operation) {
+    void logCertificateOperation(KeyEntry keyEntry, String operation) {
         Log.i(SKS_DEBUG, certificateLogData(keyEntry) + " " + operation);
     }
 
-     String certificateLogData(KeyEntry keyEntry) {
+    String certificateLogData(KeyEntry keyEntry) {
         return "Certificate for '" + keyEntry.certificatePath[0].getSubjectX500Principal().getName() +
                "' Serial=" + keyEntry.certificatePath[0].getSerialNumber();
     }
@@ -1225,7 +1227,6 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
     void abort(String message, int option) throws SKSException {
         throw new SKSException(message, option);
     }
-
 
     void tearDownSession(KeyEntry key, Throwable e) throws SKSException {
         if (key == null) {
@@ -2393,7 +2394,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
         deleteObject(keys, provisioning);
         deleteObject(pinPolicies, provisioning);
         deleteObject(pukPolicies, provisioning);
-         provisionings.remove(provisioningHandle);
+        provisionings.remove(provisioningHandle);
         Log.e(SKS_DEBUG, "Session ABORTED");
     }
 
