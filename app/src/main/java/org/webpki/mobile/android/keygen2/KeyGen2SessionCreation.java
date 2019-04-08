@@ -16,8 +16,6 @@
  */
 package org.webpki.mobile.android.keygen2;
 
-import java.io.IOException;
-
 import java.security.cert.X509Certificate;
 
 import java.util.GregorianCalendar;
@@ -48,12 +46,8 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import org.webpki.mobile.android.proxy.BaseProxyActivity;
-import org.webpki.mobile.android.proxy.InterruptedProtocolException;
 
 import org.webpki.mobile.android.R;
-
-import org.webpki.crypto.MACAlgorithms;
-import org.webpki.crypto.SymKeySignerInterface;
 
 import org.webpki.json.JSONDecoder;
 
@@ -297,7 +291,8 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
                                                                    keygen2_activity.prov_init_request.getKeyManagementKey(),
                                                                    (int) (client_time.getTimeInMillis() / 1000),
                                                                    keygen2_activity.prov_init_request.getSessionLifeTime(),
-                                                                   keygen2_activity.prov_init_request.getSessionKeyLimit());
+                                                                   keygen2_activity.prov_init_request.getSessionKeyLimit(),
+                                                                   keygen2_activity.getServerCertificate().getEncoded());
 
             keygen2_activity.provisioning_handle = session.getProvisioningHandle();
 
@@ -307,21 +302,8 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
                                                                   session.getClientSessionId(),
                                                                   client_time,
                                                                   session.getAttestation(),
-                                                                  keygen2_activity.getServerCertificate(),
                                                                   keygen2_activity.invocation_request.getPrivacyEnabledFlag() ?
                                                                       null : device_info.getCertificatePath());
-
-            prov_sess_response.setResponseSigner(new SymKeySignerInterface() {
-                @Override
-                public byte[] signData(byte[] data, MACAlgorithms algorithm) throws IOException {
-                    return keygen2_activity.sks.signProvisioningSessionData(keygen2_activity.provisioning_handle, data);
-                }
-
-                @Override
-                public MACAlgorithms getMacAlgorithm() throws IOException {
-                    return MACAlgorithms.HMAC_SHA256;
-                }
-            });
 
             keygen2_activity.postJSONData(keygen2_activity.getTransactionURL(),
                                           prov_sess_response,
@@ -365,8 +347,6 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
             }
             keygen2_activity.key_creation_request = (KeyCreationRequestDecoder) json_object;
             return KeyGen2Activity.CONTINUE_EXECUTION;
-        } catch (InterruptedProtocolException e) {
-            return keygen2_activity.getRedirectURL();
         } catch (Exception e) {
             keygen2_activity.logException(e);
         }

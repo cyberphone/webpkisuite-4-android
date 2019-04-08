@@ -245,7 +245,7 @@ public abstract class BaseProxyActivity extends Activity {
 
     public boolean postJSONData(String url,
                                 JSONEncoder json_object,
-                                RedirectPermitted redirectPermitted) throws IOException, InterruptedProtocolException {
+                                RedirectPermitted redirectPermitted) throws IOException {
         logOK("Writing \"" + json_object.getQualifier() + "\" object to: " + url);
         addOptionalCookies(url);
         https_wrapper.setHeader("Content-Type", JSON_CONTENT);
@@ -257,8 +257,7 @@ public abstract class BaseProxyActivity extends Activity {
                 throw new IOException("Malformed redirect");
             }
             if (redirectPermitted == RedirectPermitted.FORBIDDEN) {
-                Log.e(getProtocolName(), "Unexpected redirect");
-                throw new InterruptedProtocolException();
+                throw new IOException("Unexpected redirect: " + getProtocolName());
             }
             return true;
         } else {

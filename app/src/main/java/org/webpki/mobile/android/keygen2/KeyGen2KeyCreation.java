@@ -23,7 +23,6 @@ import java.security.GeneralSecurityException;
 import android.os.AsyncTask;
 
 import org.webpki.mobile.android.proxy.BaseProxyActivity;
-import org.webpki.mobile.android.proxy.InterruptedProtocolException;
 
 import org.webpki.util.ArrayUtil;
 
@@ -271,8 +270,6 @@ public class KeyGen2KeyCreation extends AsyncTask<Void, String, String> {
                                                                           prov_final_request.getCloseSessionNonce(),
                                                                           prov_final_request.getCloseSessionMac())),
                     BaseProxyActivity.RedirectPermitted.REQUIRED);
-            return keygen2_activity.getRedirectURL();
-        } catch (InterruptedProtocolException e) {
             return keygen2_activity.getRedirectURL();
         } catch (Exception e) {
             keygen2_activity.logException(e);
