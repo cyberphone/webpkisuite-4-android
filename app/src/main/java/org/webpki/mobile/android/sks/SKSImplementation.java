@@ -1468,7 +1468,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
             return alg;
         }
         abort("\"" + VAR_ENDORSED_ALGORITHMS + "\" for key #" + keyEntry.keyHandle + " does not include: " + inputAlgorithm, SKSException.ERROR_ALGORITHM);
-        return null;    // For the compiler only...
+        return null;    // For the compiler...
     }
 
     byte[] addArrays(byte[] a, byte[] b) {
@@ -2316,7 +2316,7 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
             }
         }
         provisioning.abort("Key " + id + " missing");
-        return 0;    // For the compiler only...
+        return 0;    // For the compiler...
     }
 
 
@@ -3258,8 +3258,8 @@ public class SKSImplementation implements SKSError, SecureKeyStore, Serializable
             return new KeyData(keyEntry.keyHandle, publicKey, attestation);
         } catch (GeneralSecurityException | IOException e) {
             tearDownSession(provisioning, e);
+            return null;    // For the compiler...
         }
-        return null;    // For the compiler only...
     }
 
 
