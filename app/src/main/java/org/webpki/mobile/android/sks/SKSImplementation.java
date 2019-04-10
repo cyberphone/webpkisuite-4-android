@@ -521,7 +521,7 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
             abort(e.getMessage(), SKSException.ERROR_INTERNAL);
         }
 
-        public void abort(String message) {
+        void abort(String message) {
             abort(message, SKSException.ERROR_OPTION);
         }
 
