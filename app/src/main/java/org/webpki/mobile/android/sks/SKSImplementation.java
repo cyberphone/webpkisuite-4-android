@@ -366,7 +366,7 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
             }
         }
 
-        MacBuilder getEeCertMacBuilder(byte[] method) throws GeneralSecurityException, IOException {
+        MacBuilder getEeCertMacBuilder(byte[] method) throws IOException, GeneralSecurityException {
             checkEECertificateAvailability();
             MacBuilder macBuilder = owner.getMacBuilderForMethodCall(method);
             macBuilder.addArray(certificatePath[0].getEncoded());
@@ -376,31 +376,27 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
         void validateTargetKeyReference(MacBuilder verifier,
                                         byte[] mac,
                                         byte[] authorization,
-                                        Provisioning provisioning) {
-            try {
-                ///////////////////////////////////////////////////////////////////////////////////
-                // "Sanity check"
-                ///////////////////////////////////////////////////////////////////////////////////
-                if (provisioning.privacyEnabled ^ owner.privacyEnabled) {
-                    provisioning.abort("Inconsistent use of the \"" + VAR_PRIVACY_ENABLED + "\" attribute for key #" + keyHandle);
-                }
+                                        Provisioning provisioning) throws IOException, GeneralSecurityException {
+            ///////////////////////////////////////////////////////////////////////////////////
+            // "Sanity check"
+            ///////////////////////////////////////////////////////////////////////////////////
+            if (provisioning.privacyEnabled ^ owner.privacyEnabled) {
+                provisioning.abort("Inconsistent use of the \"" + VAR_PRIVACY_ENABLED + "\" attribute for key #" + keyHandle);
+            }
 
-                ///////////////////////////////////////////////////////////////////////////////////
-                // Verify MAC
-                ///////////////////////////////////////////////////////////////////////////////////
-                verifier.addArray(authorization);
-                provisioning.verifyMac(verifier, mac);
+            ///////////////////////////////////////////////////////////////////////////////////
+            // Verify MAC
+            ///////////////////////////////////////////////////////////////////////////////////
+            verifier.addArray(authorization);
+            provisioning.verifyMac(verifier, mac);
 
-                ///////////////////////////////////////////////////////////////////////////////////
-                // Verify KMK signature
-                ///////////////////////////////////////////////////////////////////////////////////
-                if (!owner.verifyKeyManagementKeyAuthorization(KMK_TARGET_KEY_REFERENCE,
-                        provisioning.getMacBuilder(getDeviceID(provisioning.privacyEnabled))
-                            .addVerbatim(certificatePath[0].getEncoded()).getResult(), authorization)) {
-                    provisioning.abort("\"" + VAR_AUTHORIZATION + "\" signature did not verify for key #" + keyHandle);
-                }
-            } catch (Exception e) {
-                provisioning.abort(e.getMessage(), SKSException.ERROR_CRYPTO);
+            ///////////////////////////////////////////////////////////////////////////////////
+            // Verify KMK signature
+            ///////////////////////////////////////////////////////////////////////////////////
+            if (!owner.verifyKeyManagementKeyAuthorization(KMK_TARGET_KEY_REFERENCE,
+                    provisioning.getMacBuilder(getDeviceID(provisioning.privacyEnabled))
+                        .addVerbatim(certificatePath[0].getEncoded()).getResult(), authorization)) {
+                provisioning.abort("\"" + VAR_AUTHORIZATION + "\" signature did not verify for key #" + keyHandle);
             }
         }
 
@@ -529,7 +525,7 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
             abort(message, SKSException.ERROR_OPTION);
         }
 
-        byte[] decrypt(byte[] data) throws GeneralSecurityException, IOException {
+        byte[] decrypt(byte[] data) throws IOException, GeneralSecurityException {
             byte[] key = getMacBuilder(ZERO_LENGTH_ARRAY).addVerbatim(KDF_ENCRYPTION_KEY).getResult();
             Cipher crypt = Cipher.getInstance("AES/CBC/PKCS5Padding");
             crypt.init(Cipher.DECRYPT_MODE, new SecretKeySpec(key, "AES"), new IvParameterSpec(data, 0, 16));
@@ -697,7 +693,7 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
                                           attester);
         }
 
-        byte[] getResult() throws GeneralSecurityException, IOException {
+        byte[] getResult() throws IOException, GeneralSecurityException {
             return signer.update(getData()).sign();
         }
     }
@@ -2928,7 +2924,7 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
             } else {
                 checkEcKeyCompatibility((ECPrivateKey) keyEntry.privateKey, keyEntry.id);
             }
-        } catch (GeneralSecurityException | IOException e) {
+        } catch (Exception e) {
             tearDownSession(keyEntry, e);
         }
     }
@@ -3251,7 +3247,7 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
             keyEntry.endorsedAlgorithms = tempEndorsed;
             Log.i(SKS_DEBUG, "Key with algorithm \"" + keyAlgorithm + "\" created");
             return new KeyData(keyEntry.keyHandle, publicKey, attestation);
-        } catch (GeneralSecurityException | IOException e) {
+        } catch (Exception e) {
             tearDownSession(provisioning, e);
             return null;    // For the compiler...
         }
