@@ -16,17 +16,17 @@
  */
 package org.webpki.mobile.android.sks;
 
+import android.util.Log;
+
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import java.math.BigInteger;
 
-import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.SecureRandom;
-import java.security.Security;
 
 import java.security.cert.X509Certificate;
 import java.security.spec.ECGenParameterSpec;
@@ -41,7 +41,6 @@ import android.content.Context;
 import android.provider.Settings;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
-import android.util.Log;
 
 import javax.security.auth.x500.X500Principal;
 
@@ -56,8 +55,8 @@ public abstract class SKSStore {
     private static HashSet<String> supportedAlgorithms;
 
     public static synchronized AndroidSKSImplementation createSKS(String callerForLog,
-                                                           Context caller,
-                                                           boolean saveIfNew) {
+                                                                  Context caller,
+                                                                  boolean saveIfNew) {
         if (sks == null) {
             try {
                 sks = (AndroidSKSImplementation) new ObjectInputStream(
