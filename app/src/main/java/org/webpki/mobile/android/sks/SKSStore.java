@@ -26,6 +26,7 @@ import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
+import java.security.PrivateKey;
 import java.security.SecureRandom;
 
 import java.security.cert.X509Certificate;
@@ -46,17 +47,71 @@ import javax.security.auth.x500.X500Principal;
 
 @SuppressWarnings("deprecation")
 public abstract class SKSStore {
-    private static final String PERSISTENCE_SKS = "SKS";  // SKS persistence file
 
-    private static final String DEVICE_KEY_NAME = "device";
+    private static final String PERSISTENCE_SKS   = "SKS";  // SKS persistence file
+
+    private static final String DEVICE_KEY_NAME   = "device";
+
+    private static final String LOG_NAME          = "ANDROID/KS";
+
+    private static final String ANDROID_KEYSTORE  = "AndroidKeyStore";    // Hardware backed keys
+
 
     private static AndroidSKSImplementation sks;
 
     private static HashSet<String> supportedAlgorithms;
 
+    static KeyStore hardwareBacked;
+
+    static {
+        try {
+            hardwareBacked = KeyStore.getInstance(ANDROID_KEYSTORE);
+            hardwareBacked.load(null);
+        } catch (Exception e) {
+            Log.e(LOG_NAME, e.getMessage());
+            throw new RuntimeException();
+        }
+    }
+
+    static X509Certificate deviceCertificate;
+    static PrivateKey deviceKey;
+
+    static void getDeviceCredentials(String androidId) {
+        if (deviceCertificate == null) {
+            try {
+                if (hardwareBacked.isKeyEntry(DEVICE_KEY_NAME)) {
+                    deviceKey = (PrivateKey) hardwareBacked.getKey(DEVICE_KEY_NAME, null);
+                    Log.i(LOG_NAME, "Had a key already");
+                } else {
+                    byte[] serial = new byte[8];
+                    new SecureRandom().nextBytes(serial);
+                    KeyPairGenerator kpg = KeyPairGenerator.getInstance(
+                            KeyProperties.KEY_ALGORITHM_EC, ANDROID_KEYSTORE);
+                    kpg.initialize(new KeyGenParameterSpec.Builder(
+                            DEVICE_KEY_NAME, KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_VERIFY)
+                            .setAlgorithmParameterSpec(new ECGenParameterSpec("secp256r1"))
+                            .setDigests(KeyProperties.DIGEST_SHA256)
+                            .setCertificateSerialNumber(new BigInteger(1, serial))
+                            .setCertificateNotBefore(new Date(System.currentTimeMillis() - 600000L))
+                            .setCertificateSubject(new X500Principal("serialNumber=" +
+                                    (androidId == null ? "N/A" : androidId) + ",CN=Android SKS"))
+                            .build());
+                    KeyPair keyPair = kpg.generateKeyPair();
+                    deviceKey = keyPair.getPrivate();
+                    Log.i(LOG_NAME, "Created a key");
+                }
+                deviceCertificate = (X509Certificate) hardwareBacked.getCertificate(DEVICE_KEY_NAME);
+            } catch (Exception e) {
+                Log.e(LOG_NAME, e.getMessage());
+            }
+        }
+    }
+
     public static synchronized AndroidSKSImplementation createSKS(String callerForLog,
                                                                   Context caller,
                                                                   boolean saveIfNew) {
+        getDeviceCredentials(Settings.Secure.getString(caller.getContentResolver(),
+                             Settings.Secure.ANDROID_ID));
         if (sks == null) {
             try {
                 sks = (AndroidSKSImplementation) new ObjectInputStream(
@@ -66,28 +121,7 @@ public abstract class SKSStore {
             } catch (Exception e) {
                 Log.i(callerForLog, "SKS not found, recreating it");
                 try {
-                    String androidId = Settings.Secure.getString(caller.getContentResolver(), 
-                                                                 Settings.Secure.ANDROID_ID);
-                    byte[] serial = new byte[8];
-                    new SecureRandom().nextBytes(serial);
-                    KeyPairGenerator kpg = KeyPairGenerator.getInstance(
-                        KeyProperties.KEY_ALGORITHM_EC, AndroidSKSImplementation.ANDROID_KEYSTORE);
-                    kpg.initialize(new KeyGenParameterSpec.Builder(
-                        DEVICE_KEY_NAME, KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_VERIFY)
-                            .setAlgorithmParameterSpec(new ECGenParameterSpec("secp256r1"))
-                            .setDigests(KeyProperties.DIGEST_SHA256)
-                            .setCertificateSerialNumber(new BigInteger(1, serial))
-                            .setCertificateNotBefore(new Date(System.currentTimeMillis() - 600000L))
-                            .setCertificateSubject(new X500Principal("serialNumber=" +
-                                    (androidId == null ? "N/A" : androidId) + ",CN=Android SKS"))
-                        .build());
-                    KeyPair keyPair = kpg.generateKeyPair();
-                    KeyStore keyStore = KeyStore.getInstance(AndroidSKSImplementation.ANDROID_KEYSTORE);
-                    keyStore.load(null);
-
-                    sks = new AndroidSKSImplementation(
-                            new X509Certificate[]{(X509Certificate) keyStore.getCertificate(DEVICE_KEY_NAME)},
-                            keyPair.getPrivate());
+                    sks = new AndroidSKSImplementation();
                     if (saveIfNew) {
                         serializeSKS(callerForLog, caller);
                     }
@@ -96,6 +130,7 @@ public abstract class SKSStore {
                     Log.e(callerForLog, e2.getMessage());
                 }
             }
+            sks.setDeviceCredentials(new X509Certificate[]{deviceCertificate}, deviceKey);
         }
         return sks;
     }
@@ -114,7 +149,7 @@ public abstract class SKSStore {
                 oos.writeObject(sks);
                 oos.close();
             } catch (Exception e) {
-                Log.e(callerForLog, "Couldn't write SKS");
+                Log.e(callerForLog, "Couldn't write SKS: " + e.getMessage());
             }
         }
     }
