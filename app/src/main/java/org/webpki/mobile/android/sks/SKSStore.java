@@ -147,6 +147,7 @@ public abstract class SKSStore {
                 ObjectOutputStream oos = new ObjectOutputStream(caller.openFileOutput(PERSISTENCE_SKS, Context.MODE_PRIVATE));
                 oos.writeObject(sks);
                 oos.close();
+                Log.i(callerForLog, "Successfully wrote SKS");
             } catch (Exception e) {
                 Log.e(callerForLog, "Couldn't write SKS: " + e.getMessage());
             }
