@@ -45,7 +45,6 @@ import android.security.keystore.KeyProperties;
 
 import javax.security.auth.x500.X500Principal;
 
-@SuppressWarnings("deprecation")
 public abstract class SKSStore {
 
     private static final String PERSISTENCE_SKS   = "SKS";  // SKS persistence file
@@ -61,7 +60,7 @@ public abstract class SKSStore {
 
     private static HashSet<String> supportedAlgorithms;
 
-    static KeyStore hardwareBacked;
+    private static KeyStore hardwareBacked;
 
     static {
         try {
@@ -73,8 +72,8 @@ public abstract class SKSStore {
         }
     }
 
-    static X509Certificate deviceCertificate;
-    static PrivateKey deviceKey;
+    private static X509Certificate deviceCertificate;
+    private static PrivateKey deviceKey;
 
     static void getDeviceCredentials(String androidId) {
         if (deviceCertificate == null) {
