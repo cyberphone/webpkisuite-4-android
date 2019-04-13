@@ -28,7 +28,7 @@ import org.webpki.mobile.android.webauth.WebAuthActivity;
 
 import org.webpki.mobile.android.saturn.SaturnActivity;
 
-import org.webpki.mobile.android.sks.SKSImplementation;
+import org.webpki.mobile.android.sks.AndroidSKSImplementation;
 import org.webpki.mobile.android.sks.SKSStore;
 
 import android.net.Uri;
@@ -65,7 +65,7 @@ public class PropertiesActivity extends ListActivity {
                       "User Credentials",
                       "Device Certificate",
                       "Show Protocol Log"};
-    SKSImplementation sks;
+    AndroidSKSImplementation sks;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

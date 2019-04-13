@@ -51,7 +51,7 @@ import org.webpki.json.JSONOutputFormats;
 
 import org.webpki.net.HTTPSWrapper;
 
-import org.webpki.mobile.android.sks.SKSImplementation;
+import org.webpki.mobile.android.sks.AndroidSKSImplementation;
 import org.webpki.mobile.android.sks.SKSStore;
 
 /**
@@ -84,7 +84,7 @@ public abstract class BaseProxyActivity extends Activity {
 
     private HTTPSWrapper https_wrapper;
 
-    public SKSImplementation sks;
+    public AndroidSKSImplementation sks;
 
     private String transaction_url;
 

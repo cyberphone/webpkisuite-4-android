@@ -19,12 +19,11 @@ package org.webpki.mobile.android.application;
 import java.util.ArrayList;
 import java.util.List;
 
-
 import org.webpki.sks.EnumeratedKey;
 import org.webpki.sks.KeyAttributes;
 import org.webpki.sks.SKSException;
 
-import org.webpki.mobile.android.sks.SKSImplementation;
+import org.webpki.mobile.android.sks.AndroidSKSImplementation;
 import org.webpki.mobile.android.sks.SKSStore;
 
 import org.webpki.mobile.android.util.CredentialListDataFactory;
@@ -53,7 +52,7 @@ import android.graphics.drawable.BitmapDrawable;
 public class CredentialsActivity extends ListActivity {
     private static final String DIALOG = "Dialog";
 
-    SKSImplementation sks = SKSStore.createSKS(DIALOG, getBaseContext(), true);
+    AndroidSKSImplementation sks = SKSStore.createSKS(DIALOG, getBaseContext(), true);
 
     List<CredentialArrayAdapter.CredentialData> list = new ArrayList<CredentialArrayAdapter.CredentialData>();
 

@@ -21,76 +21,80 @@ import java.io.ObjectOutputStream;
 
 import java.math.BigInteger;
 
+import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.security.Security;
 
+import java.security.cert.X509Certificate;
 import java.security.spec.ECGenParameterSpec;
 
 import java.util.Date;
 import java.util.HashSet;
-
-import org.spongycastle.asn1.x509.BasicConstraints;
-import org.spongycastle.asn1.x509.KeyUsage;
-import org.spongycastle.asn1.x509.X509Extensions;
-
-import org.spongycastle.jce.X509Principal;
-import org.spongycastle.jce.provider.BouncyCastleProvider;
-
-import org.spongycastle.x509.X509V3CertificateGenerator;
 
 import org.webpki.sks.SKSException;
 
 import android.content.Context;
 
 import android.provider.Settings;
+import android.security.keystore.KeyGenParameterSpec;
+import android.security.keystore.KeyProperties;
 import android.util.Log;
+
+import javax.security.auth.x500.X500Principal;
 
 @SuppressWarnings("deprecation")
 public abstract class SKSStore {
     private static final String PERSISTENCE_SKS = "SKS";  // SKS persistence file
 
-    private static SKSImplementation sks;
+    private static final String DEVICE_KEY_NAME = "device";
 
-    private static HashSet<String> supported_algorithms;
+    private static AndroidSKSImplementation sks;
 
-    public static synchronized SKSImplementation createSKS(String caller_for_log, Context caller, boolean save_if_new) {
+    private static HashSet<String> supportedAlgorithms;
+
+    public static synchronized AndroidSKSImplementation createSKS(String callerForLog,
+                                                           Context caller,
+                                                           boolean saveIfNew) {
         if (sks == null) {
             try {
-                Security.insertProviderAt(new BouncyCastleProvider(), 1);
-                sks = (SKSImplementation) new ObjectInputStream(caller.openFileInput(PERSISTENCE_SKS)).readObject();
+                sks = (AndroidSKSImplementation) new ObjectInputStream(
+                        caller.openFileInput(PERSISTENCE_SKS)).readObject();
                 getAlgorithms();
-                Log.i(caller_for_log, "SKS found, restoring it");
+                Log.i(callerForLog, "SKS found, restoring it");
             } catch (Exception e) {
-                Log.i(caller_for_log, "SKS not found, recreating it");
+                Log.i(callerForLog, "SKS not found, recreating it");
                 try {
-                    KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
-                    ECGenParameterSpec eccgen = new ECGenParameterSpec("secp256r1");
-                    generator.initialize(eccgen, new SecureRandom());
-                    KeyPair kp = generator.generateKeyPair();
-                    X509V3CertificateGenerator cert_gen = new X509V3CertificateGenerator();
+                    String androidId = Settings.Secure.getString(caller.getContentResolver(), 
+                                                                 Settings.Secure.ANDROID_ID);
                     byte[] serial = new byte[8];
                     new SecureRandom().nextBytes(serial);
-                    cert_gen.setSerialNumber(new BigInteger(1, serial));
-                    String android_id = Settings.Secure.getString(caller.getContentResolver(), Settings.Secure.ANDROID_ID);
-                    X509Principal x509_name = new X509Principal("serialNumber=" + (android_id == null ? "N/A" : android_id) +
-                            ",CN=Android SKS");
-                    cert_gen.setIssuerDN(x509_name);
-                    cert_gen.setNotBefore(new Date(System.currentTimeMillis() - 1000L * 60 * 10));  // EJBCA also uses 10 minutes predating...
-                    cert_gen.setNotAfter(new Date(System.currentTimeMillis() + (1000L * 60 * 60 * 24 * 365 * 100)));
-                    cert_gen.setSubjectDN(x509_name);
-                    cert_gen.addExtension(X509Extensions.BasicConstraints, true, new BasicConstraints(false));
-                    cert_gen.addExtension(X509Extensions.KeyUsage, true, new KeyUsage(KeyUsage.digitalSignature));
-                    cert_gen.setPublicKey(kp.getPublic());
-                    cert_gen.setSignatureAlgorithm("SHA256withECDSA");
-                    sks = new SKSImplementation(cert_gen.generateX509Certificate(kp.getPrivate()), kp.getPrivate());
-                    if (save_if_new) {
-                        serializeSKS(caller_for_log, caller);
+                    KeyPairGenerator kpg = KeyPairGenerator.getInstance(
+                        KeyProperties.KEY_ALGORITHM_EC, AndroidSKSImplementation.ANDROID_KEYSTORE);
+                    kpg.initialize(new KeyGenParameterSpec.Builder(
+                        DEVICE_KEY_NAME, KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_VERIFY)
+                            .setAlgorithmParameterSpec(new ECGenParameterSpec("secp256r1"))
+                            .setDigests(KeyProperties.DIGEST_SHA256)
+                            .setCertificateSerialNumber(new BigInteger(1, serial))
+                            .setCertificateNotBefore(new Date(System.currentTimeMillis() - 600000L))
+                            .setCertificateSubject(new X500Principal("serialNumber=" +
+                                    (androidId == null ? "N/A" : androidId) + ",CN=Android SKS"))
+                        .build());
+                    KeyPair keyPair = kpg.generateKeyPair();
+                    KeyStore keyStore = KeyStore.getInstance(AndroidSKSImplementation.ANDROID_KEYSTORE);
+                    keyStore.load(null);
+
+                    sks = new AndroidSKSImplementation(
+                            new X509Certificate[]{(X509Certificate) keyStore.getCertificate(DEVICE_KEY_NAME)},
+                            keyPair.getPrivate());
+                    if (saveIfNew) {
+                        serializeSKS(callerForLog, caller);
                     }
                     getAlgorithms();
                 } catch (Exception e2) {
-                    Log.e(caller_for_log, e2.getMessage());
+                    Log.e(callerForLog, e2.getMessage());
                 }
             }
         }
@@ -98,25 +102,25 @@ public abstract class SKSStore {
     }
 
     private static void getAlgorithms() throws SKSException {
-        supported_algorithms = new HashSet<String>();
+        supportedAlgorithms = new HashSet<String>();
         for (String alg : sks.getDeviceInfo().getSupportedAlgorithms()) {
-            supported_algorithms.add(alg);
+            supportedAlgorithms.add(alg);
         }
     }
 
-    public static synchronized void serializeSKS(String caller_for_log, Context caller) {
+    public static synchronized void serializeSKS(String callerForLog, Context caller) {
         if (sks != null) {
             try {
                 ObjectOutputStream oos = new ObjectOutputStream(caller.openFileOutput(PERSISTENCE_SKS, Context.MODE_PRIVATE));
                 oos.writeObject(sks);
                 oos.close();
             } catch (Exception e) {
-                Log.e(caller_for_log, "Couldn't write SKS");
+                Log.e(callerForLog, "Couldn't write SKS");
             }
         }
     }
 
     public static boolean isSupported(String algorithm) {
-        return supported_algorithms.contains(algorithm);
+        return supportedAlgorithms.contains(algorithm);
     }
 }

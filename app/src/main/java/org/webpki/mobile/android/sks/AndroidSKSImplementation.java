@@ -82,14 +82,12 @@ import org.webpki.sks.SecureKeyStore;
  *
  *  SKS is a cryptographic module that supports On-line Provisioning and Management
  *  of PKI, Symmetric keys, PINs, PUKs and Extension data.
- *  
- *  Compared to the SKS specification, the Reference Implementation uses a slightly
- *  more java-centric way of passing parameters, including "null" arguments, but the
- *  content is supposed to be identical.
- *  
+ *
+ *  This is an Android version of SKS.
+ *
  *  Author: Anders Rundgren
  */
-public class SKSImplementation implements SecureKeyStore, Serializable, GrantInterface {
+public class AndroidSKSImplementation implements SecureKeyStore, Serializable, GrantInterface {
     private static final long serialVersionUID = 12L;
 
     /////////////////////////////////////////////////////////////////////////////////////////////
@@ -103,8 +101,6 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
     static final boolean SKS_RSA_EXPONENT_SUPPORT          = true;  // Change here to test or disable
     static final int MAX_LENGTH_CRYPTO_DATA                = 16384;
     static final int MAX_LENGTH_EXTENSION_DATA             = 65536;
-
-    private static final String SKS_DEBUG = "SKS";  // Android SKS debug constant
 
     static final char[] BASE64_URL = {'A','B','C','D','E','F','G','H',
                                       'I','J','K','L','M','N','O','P',
@@ -127,17 +123,29 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
     int nextPukHandle = 1;
     LinkedHashMap<Integer, PUKPolicy> pukPolicies = new LinkedHashMap<Integer, PUKPolicy>();
 
-
-    X509Certificate deviceCertificate;
+    X509Certificate[] deviceCertificatePath;
     PrivateKey attestationKey;
+    
+    private static final String SKS_DEBUG = "SKS";                // Android SKS debug constant
 
-    SKSImplementation(X509Certificate deviceCertificate, PrivateKey attestationKey) {
-        this.deviceCertificate = deviceCertificate;
+    static final String ANDROID_KEYSTORE  = "AndroidKeyStore";    // Hardware backed keys
+
+    AndroidSKSImplementation(X509Certificate[] deviceCertificatePath, PrivateKey attestationKey) {
+        this.deviceCertificatePath = deviceCertificatePath;
         this.attestationKey = attestationKey;
     }
 
+    void logCertificateOperation(KeyEntry keyEntry, String operation) {
+        Log.i(SKS_DEBUG, certificateLogData(keyEntry) + " " + operation);
+    }
+
+    String certificateLogData(KeyEntry keyEntry) {
+        return "Certificate for '" + keyEntry.certificatePath[0].getSubjectX500Principal().getName() +
+               "' Serial=" + keyEntry.certificatePath[0].getSerialNumber();
+    }
+
     abstract class NameSpace implements Serializable {
-        private static final long serialVersionUID = 12L;
+        private static final long serialVersionUID = 1L;
 
         String id;
 
@@ -645,7 +653,7 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
         byte[] getData() throws IOException {
              return baos.toByteArray();
         }
-
+        
         byte[] getResult() throws IOException, GeneralSecurityException {
             return null;
         }
@@ -680,10 +688,9 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
         SignatureWrapper signer;
 
         AttestationSignatureGenerator() throws GeneralSecurityException {
-            PrivateKey attester = getAttestationKey();
-            signer = new SignatureWrapper(attester instanceof RSAPrivateKey ?
-                                                            "SHA256withRSA" : "SHA256withECDSA",
-                                          attester);
+            signer = new SignatureWrapper(attestationKey instanceof RSAPrivateKey ?
+                                                                  "SHA256withRSA" : "SHA256withECDSA",
+                                          attestationKey);
         }
 
         @Override
@@ -1094,25 +1101,8 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
     // Utility Functions
     /////////////////////////////////////////////////////////////////////////////////////////////
 
-    X509Certificate[] getDeviceCertificatePath() throws GeneralSecurityException {
-        return new X509Certificate[]{deviceCertificate};
-    }
-
     byte[] getDeviceID(boolean privacyEnabled) throws GeneralSecurityException {
-        return privacyEnabled ? KDF_ANONYMOUS : getDeviceCertificatePath()[0].getEncoded();
-    }
-
-    PrivateKey getAttestationKey() throws GeneralSecurityException {
-        return attestationKey;
-    }
-
-    void logCertificateOperation(KeyEntry keyEntry, String operation) {
-        Log.i(SKS_DEBUG, certificateLogData(keyEntry) + " " + operation);
-    }
-
-    String certificateLogData(KeyEntry keyEntry) {
-        return "Certificate for '" + keyEntry.certificatePath[0].getSubjectX500Principal().getName() +
-               "' Serial=" + keyEntry.certificatePath[0].getSerialNumber();
+        return privacyEnabled ? KDF_ANONYMOUS : deviceCertificatePath[0].getEncoded();
     }
 
     Provisioning getProvisioningSession(int provisioningHandle) {
@@ -1544,8 +1534,8 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
             ///////////////////////////////////////////////////////////////////////////////////
             // Put the operation in the post-op buffer used by "closeProvisioningSession"
             ///////////////////////////////////////////////////////////////////////////////////
-            logCertificateOperation(targetKeyEntry, update ? "post-updated" : "post-cloned");
             provisioning.addPostProvisioningObject(targetKeyEntry, newKey, update);
+            logCertificateOperation(targetKeyEntry, update ? "post-updated" : "post-cloned");
         } catch (Exception e) {
             tearDownSession(newKey, e);
         }
@@ -1582,8 +1572,8 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
             ///////////////////////////////////////////////////////////////////////////////////
             // Put the operation in the post-op buffer used by "closeProvisioningSession"
             ///////////////////////////////////////////////////////////////////////////////////
-            logCertificateOperation(targetKeyEntry, delete ? "post-deleted" : "post-unlocked");
             provisioning.addPostProvisioningObject(targetKeyEntry, null, delete);
+            logCertificateOperation(targetKeyEntry, delete ? "post-deleted" : "post-unlocked");
         } catch (Exception e) {
             tearDownSession(provisioning, e);
         }
@@ -1846,7 +1836,8 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
             cipher.init(Cipher.DECRYPT_MODE, keyEntry.privateKey);
             return cipher.doFinal(data);
         } catch (Exception e) {
-            throw new SKSException(e, SKSException.ERROR_CRYPTO);
+            abort(e);
+            return null;   // For the compiler...
         }
     }
 
@@ -1862,47 +1853,47 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
                                               byte[] parameters,
                                               byte[] authorization,
                                               byte[] data) {
-        ///////////////////////////////////////////////////////////////////////////////////
-        // Get key (which must belong to an already fully provisioned session)
-        ///////////////////////////////////////////////////////////////////////////////////
-        KeyEntry keyEntry = getStdKey(keyHandle);
-
-        ///////////////////////////////////////////////////////////////////////////////////
-        // Verify PIN (in any)
-        ///////////////////////////////////////////////////////////////////////////////////
-        keyEntry.verifyPin(authorization);
-
-        ///////////////////////////////////////////////////////////////////////////////////
-        // Enforce the data limit
-        ///////////////////////////////////////////////////////////////////////////////////
-        keyEntry.checkCryptoDataSize(data);
-
-        ///////////////////////////////////////////////////////////////////////////////////
-        // Check that the signature algorithm is known and applicable
-        ///////////////////////////////////////////////////////////////////////////////////
-        Algorithm alg = checkKeyAndAlgorithm(keyEntry, algorithm, ALG_ASYM_SGN);
-        int hashLen = (alg.mask / ALG_HASH_DIV) & ALG_HASH_MSK;
-        if (hashLen > 0 && hashLen != data.length) {
-            abort("Incorrect length of \"" + VAR_DATA + "\": " + data.length);
-        }
-        if (parameters != null)  // Only supports non-parameterized operations yet...
-        {
-            abort("\"" + VAR_PARAMETERS + "\" for key #" + keyHandle + " do not match algorithm");
-        }
-
-        ///////////////////////////////////////////////////////////////////////////////////
-        // Finally, perform operation
-        ///////////////////////////////////////////////////////////////////////////////////
         try {
+            ///////////////////////////////////////////////////////////////////////////////////
+            // Get key (which must belong to an already fully provisioned session)
+            ///////////////////////////////////////////////////////////////////////////////////
+            KeyEntry keyEntry = getStdKey(keyHandle);
+    
+            ///////////////////////////////////////////////////////////////////////////////////
+            // Verify PIN (in any)
+            ///////////////////////////////////////////////////////////////////////////////////
+            keyEntry.verifyPin(authorization);
+    
+            ///////////////////////////////////////////////////////////////////////////////////
+            // Enforce the data limit
+            ///////////////////////////////////////////////////////////////////////////////////
+            keyEntry.checkCryptoDataSize(data);
+    
+            ///////////////////////////////////////////////////////////////////////////////////
+            // Check that the signature algorithm is known and applicable
+            ///////////////////////////////////////////////////////////////////////////////////
+            Algorithm alg = checkKeyAndAlgorithm(keyEntry, algorithm, ALG_ASYM_SGN);
+            int hashLen = (alg.mask / ALG_HASH_DIV) & ALG_HASH_MSK;
+            if (hashLen > 0 && hashLen != data.length) {
+                abort("Incorrect length of \"" + VAR_DATA + "\": " + data.length);
+            }
+            if (parameters != null)  // Only supports non-parameterized operations yet...
+            {
+                abort("\"" + VAR_PARAMETERS + "\" for key #" + keyHandle + " do not match algorithm");
+            }
+    
+            ///////////////////////////////////////////////////////////////////////////////////
+            // Finally, perform operation
+            ///////////////////////////////////////////////////////////////////////////////////
             if (keyEntry.isRsa() && hashLen > 0) {
                 data = addArrays(alg.pkcs1DigestInfo, data);
             }
-            return new SignatureWrapper(alg.jceName, keyEntry.privateKey)
-                .update(data)
-                .sign();
+            return new SignatureWrapper(alg.jceName, keyEntry.privateKey).update(data).sign();
         } catch (Exception e) {
-            throw new SKSException(e, SKSException.ERROR_CRYPTO);
+            abort(e);
+            return null;    // For the compiler...
         }
+
     }
 
 
@@ -2023,7 +2014,8 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
             data = crypt.doFinal(data);
             return (mode && (alg.mask & ALG_IV_INT) != 0) ? addArrays(parameters, data) : data;
         } catch (Exception e) {
-            throw new SKSException(e, SKSException.ERROR_CRYPTO);
+            abort(e);
+            return null;   // For the compiler...
         }
     }
 
@@ -2070,7 +2062,8 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
             mac.init(new SecretKeySpec(keyEntry.symmetricKey, "RAW"));
             return mac.doFinal(data);
         } catch (Exception e) {
-            throw new SKSException(e, SKSException.ERROR_CRYPTO);
+            abort(e);
+            return null;   // For the compiler...
         }
     }
 
@@ -2082,21 +2075,17 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
     ////////////////////////////////////////////////////////////////////////////////
     @Override
     public synchronized DeviceInfo getDeviceInfo() {
-        try {
-            return new DeviceInfo(SKS_API_LEVEL,
-                                  (byte) (DeviceInfo.LOCATION_EMBEDDED | DeviceInfo.TYPE_SOFTWARE),
-                                  SKS_UPDATE_URL,
-                                  SKS_VENDOR_NAME,
-                                  SKS_VENDOR_DESCRIPTION,
-                                  getDeviceCertificatePath(),
-                                  supportedAlgorithms.keySet().toArray(new String[0]),
-                                  MAX_LENGTH_CRYPTO_DATA,
-                                  MAX_LENGTH_EXTENSION_DATA,
-                                  SKS_DEVICE_PIN_SUPPORT,
-                                  SKS_BIOMETRIC_SUPPORT);
-        } catch (GeneralSecurityException e) {
-            throw new SKSException(e, SKSException.ERROR_CRYPTO);
-        }
+        return new DeviceInfo(SKS_API_LEVEL,
+                              (byte) (DeviceInfo.LOCATION_EMBEDDED | DeviceInfo.TYPE_SOFTWARE),
+                              SKS_UPDATE_URL,
+                              SKS_VENDOR_NAME,
+                              SKS_VENDOR_DESCRIPTION,
+                              deviceCertificatePath,
+                              supportedAlgorithms.keySet().toArray(new String[0]),
+                              MAX_LENGTH_CRYPTO_DATA,
+                              MAX_LENGTH_EXTENSION_DATA,
+                              SKS_DEVICE_PIN_SUPPORT,
+                              SKS_BIOMETRIC_SUPPORT);
     }
 
 
@@ -2260,6 +2249,7 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
             // Success, update KeyManagementKey
             ///////////////////////////////////////////////////////////////////////////////////
             provisioning.keyManagementKey = keyManagementKey;
+            Log.i(SKS_DEBUG, "Updated KMK");
         } catch (Exception e) {
             abort(e);
         }
@@ -2387,7 +2377,7 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
         deleteObject(pinPolicies, provisioning);
         deleteObject(pukPolicies, provisioning);
         provisionings.remove(provisioningHandle);
-        Log.e(SKS_DEBUG, "Session ABORTED");
+        Log.i(SKS_DEBUG, "Session ABORTED");
     }
 
 
@@ -2611,7 +2601,7 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
             // We are done, close the show for this time
             ///////////////////////////////////////////////////////////////////////////////////
             provisioning.open = false;
-            Log.i(SKS_DEBUG, "Session successfully CLOSED");
+            Log.i(SKS_DEBUG, "Session CLOSED");
             return attestation;
         } catch (Exception e) {
             tearDownSession(provisioning, e);
@@ -2720,7 +2710,7 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
             ///////////////////////////////////////////////////////////////////////////////////
             // Finally, create the Attestation
             ///////////////////////////////////////////////////////////////////////////////////
-            ByteWriter attestationCreator = privacyEnabled  ?
+            ByteWriter attestationCreator = privacyEnabled  ? 
                                  new MacBuilder(sessionKey) : new AttestationSignatureGenerator();
             attestationCreator.addString(clientSessionId);
             attestationCreator.addString(serverSessionId);
@@ -2833,6 +2823,7 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
             extension.extensionData = (subType == SUB_TYPE_ENCRYPTED_EXTENSION) ?
                     keyEntry.owner.decrypt(extensionData) : extensionData;
             keyEntry.extensions.put(type, extension);
+            logCertificateOperation(keyEntry, "extension '" + type + "'");
         } catch (Exception e) {
             tearDownSession(keyEntry, e);
         }
@@ -2902,6 +2893,7 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
             } else {
                 checkEcKeyCompatibility((ECPrivateKey) keyEntry.privateKey, keyEntry.id);
             }
+            logCertificateOperation(keyEntry, "private key import");
         } catch (Exception e) {
             tearDownSession(keyEntry, e);
         }
@@ -2948,6 +2940,7 @@ public class SKSImplementation implements SecureKeyStore, Serializable, GrantInt
             // Decrypt and store symmetric key
             ///////////////////////////////////////////////////////////////////////////////////
             keyEntry.symmetricKey = keyEntry.owner.decrypt(encryptedKey);
+            logCertificateOperation(keyEntry, "symmetric key import");
         } catch (Exception e) {
             tearDownSession(keyEntry, e);
         }

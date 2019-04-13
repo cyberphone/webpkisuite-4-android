@@ -21,6 +21,8 @@ import java.net.URL;
 
 import org.webpki.keygen2.KeyGen2URIs;
 
+import org.webpki.mobile.android.sks.AndroidSKSImplementation;
+
 import org.webpki.sks.EnumeratedKey;
 import org.webpki.sks.EnumeratedProvisioningSession;
 import org.webpki.sks.Extension;
@@ -28,8 +30,6 @@ import org.webpki.sks.KeyAttributes;
 import org.webpki.sks.SKSException;
 
 import org.webpki.mobile.android.R;
-
-import org.webpki.mobile.android.sks.SKSImplementation;
 
 import android.content.Context;
 
@@ -40,10 +40,10 @@ import android.graphics.Canvas;
 public class CredentialListDataFactory {
     BitmapFactory.Options bmo;
     Bitmap default_icon;
-    SKSImplementation sks;
+    AndroidSKSImplementation sks;
     Context caller;
 
-    public CredentialListDataFactory(Context caller, SKSImplementation sks) {
+    public CredentialListDataFactory(Context caller, AndroidSKSImplementation sks) {
         this.sks = sks;
         this.caller = caller;
         bmo = new BitmapFactory.Options();
