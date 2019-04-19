@@ -27,7 +27,6 @@ import java.math.BigInteger;
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
 import java.security.KeyPairGenerator;
-import java.security.KeyStore;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -40,7 +39,6 @@ import java.security.interfaces.ECKey;
 import java.security.interfaces.ECPrivateKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAKey;
-import java.security.interfaces.RSAPrivateCrtKey;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
@@ -98,7 +96,13 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
     static final String SKS_UPDATE_URL                     = null;  // Change here to test or disable
     static final boolean SKS_DEVICE_PIN_SUPPORT            = false;  // Change here to test or disable
     static final boolean SKS_BIOMETRIC_SUPPORT             = false; // Change here to test or disable
-    static final boolean SKS_RSA_EXPONENT_SUPPORT          = true;  // Change here to test or disable
+
+    ///////////////////////////////////////////////////////////////////////////////////
+    // Default RSA support
+    ///////////////////////////////////////////////////////////////////////////////////
+    static final boolean SKS_RSA_EXPONENT_SUPPORT          = false;
+    static final short[] SKS_DEFAULT_RSA_SUPPORT           = {2048};
+
     static final int MAX_LENGTH_CRYPTO_DATA                = 16384;
     static final int MAX_LENGTH_EXTENSION_DATA             = 65536;
 
@@ -191,17 +195,21 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
 
         int keyHandle;
 
+// SKS update of keys mandate that keyHandles stay intact.
+// To cope with this requirement updated keys must be remapped...
+        Integer remappedKeyHandle;
+
         byte appUsage;
 
         PublicKey publicKey;     // In this implementation overwritten by "setCertificatePath"
-        PrivateKey privateKey;   // Overwritten if "restorePivateKey" is called
+        PrivateKey exportablePrivateKey;  // Not stored in AndroidKeyStore
         X509Certificate[] certificatePath;
 
         byte[] symmetricKey;     // Defined by "importSymmetricKey"
 
-        LinkedHashSet<String> endorsedAlgorithms;
-
         LinkedHashSet<String> grantedDomains = new LinkedHashSet<String>();
+
+        LinkedHashSet<String> endorsedAlgorithms;
 
         String friendlyName;
 
@@ -229,6 +237,15 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
 
         void authError() {
             abort("\"" + VAR_AUTHORIZATION + "\" error for key #" + keyHandle, SKSException.ERROR_AUTHORIZATION);
+        }
+
+        PrivateKey getPrivateKey() throws GeneralSecurityException {
+            return exportablePrivateKey == null ?
+              SKSStore.getPrivateKey(getKeyId()) : exportablePrivateKey;
+        }
+        
+        String getKeyId() {
+            return String.valueOf(remappedKeyHandle == null ? keyHandle : (int)remappedKeyHandle);
         }
 
         @SuppressWarnings("fallthrough")
@@ -428,10 +445,6 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
                 abort("Mutiple key imports for: " + id);
             }
             keyBackup |= KeyProtectionInfo.KEYBACKUP_IMPORTED;
-        }
-
-        BigInteger getPublicRSAExponentFromPrivateKey() {
-            return ((RSAPrivateCrtKey) privateKey).getPublicExponent();
         }
     }
 
@@ -689,7 +702,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
         SignatureWrapper signer;
 
         AttestationSignatureGenerator() throws GeneralSecurityException {
-            signer = new SignatureWrapper(attestationKey instanceof RSAPrivateKey ?
+            signer = new SignatureWrapper(attestationKey instanceof RSAKey ?
                                                                   "SHA256withRSA" : "SHA256withECDSA",
                                           attestationKey);
         }
@@ -738,7 +751,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
         public SignatureWrapper(String algorithm, PrivateKey privateKey) throws GeneralSecurityException {
             instance = Signature.getInstance(algorithm);
             instance.initSign(privateKey);
-            rsaFlag = privateKey instanceof RSAPrivateKey;
+            rsaFlag = privateKey instanceof RSAKey;
             if (!rsaFlag) {
                 extendTo = getEcPointLength((ECKey) privateKey);
             }
@@ -951,10 +964,14 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
         //////////////////////////////////////////////////////////////////////////////////////
         //  Diffie-Hellman Key Agreement
         //////////////////////////////////////////////////////////////////////////////////////
+
+        // ECDH is not supported by AndroidKeyStore
+/*
         addAlgorithm("https://webpki.github.io/sks/algorithm#ecdh.raw",
                      "ECDH",
                      ALG_ASYM_KA | ALG_EC_KEY);
-        
+*/
+
         //////////////////////////////////////////////////////////////////////////////////////
         //  Asymmetric Key Signatures
         //////////////////////////////////////////////////////////////////////////////////////
@@ -1240,12 +1257,12 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
         throw new GeneralSecurityException("Unsupported EC curve");
     }
 
-    void checkRsaKeyCompatibility(int rsaKeySize,
-                                  BigInteger exponent, 
-                                  String keyId) {
-        if (!SKS_RSA_EXPONENT_SUPPORT && !exponent.equals(RSAKeyGenParameterSpec.F4)) {
+    void checkRsaKeyCompatibility(RSAPublicKey publicKey, String keyId) {
+
+        if (!SKS_RSA_EXPONENT_SUPPORT && !publicKey.getPublicExponent().equals(RSAKeyGenParameterSpec.F4)) {
             abort("Unsupported RSA exponent value for: " + keyId);
         }
+        int rsaKeySize = getRsaKeySize(publicKey);
         boolean found = false;
         for (short keySize : SKS_DEFAULT_RSA_SUPPORT) {
             if (keySize == rsaKeySize) {
@@ -1258,7 +1275,13 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
         }
     }
 
-    int getRSAKeySize(RSAKey rsaKey) {
+    void coreCompatibilityCheck(KeyEntry keyEntry, PrivateKey privateKey){
+        if (keyEntry.isRsa() ^ privateKey instanceof RSAKey) {
+            abort("RSA/EC mixup between public and private keys for: " + keyEntry.id);
+        }
+    }
+
+    int getRsaKeySize(RSAKey rsaKey) {
         byte[] modblob = rsaKey.getModulus().toByteArray();
         return (modblob[0] == 0 ? modblob.length - 1 : modblob.length) * 8;
     }
@@ -1672,6 +1695,11 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
         ///////////////////////////////////////////////////////////////////////////////////
         // Delete key and optionally the entire provisioning object (if empty)
         ///////////////////////////////////////////////////////////////////////////////////
+        try {
+            SKSStore.deleteKey(keyEntry.getKeyId());
+        } catch (Exception e) {
+            abort(e);
+        }
         localDeleteKey(keyEntry);
         deleteEmptySession(keyEntry.owner);
     }
@@ -1702,7 +1730,8 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
         ///////////////////////////////////////////////////////////////////////////////////
         // Export key in raw unencrypted format
         ///////////////////////////////////////////////////////////////////////////////////
-        return keyEntry.isSymmetric() ? keyEntry.symmetricKey : keyEntry.privateKey.getEncoded();
+        return keyEntry.isSymmetric() ? 
+                keyEntry.symmetricKey : keyEntry.exportablePrivateKey.getEncoded();
     }
 
 
@@ -1818,7 +1847,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
         ///////////////////////////////////////////////////////////////////////////////////
         try {
             Cipher cipher = Cipher.getInstance(alg.jceName);
-            cipher.init(Cipher.DECRYPT_MODE, keyEntry.privateKey);
+            cipher.init(Cipher.DECRYPT_MODE, keyEntry.getPrivateKey());
             return cipher.doFinal(data);
         } catch (Exception e) {
             abort(e);
@@ -1873,7 +1902,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
             if (keyEntry.isRsa() && hashLen > 0) {
                 data = addArrays(alg.pkcs1DigestInfo, data);
             }
-            return new SignatureWrapper(alg.jceName, keyEntry.privateKey).update(data).sign();
+            return new SignatureWrapper(alg.jceName, keyEntry.getPrivateKey()).update(data).sign();
         } catch (Exception e) {
             abort(e);
             return null;    // For the compiler...
@@ -1922,7 +1951,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
         ///////////////////////////////////////////////////////////////////////////////////
         try {
             KeyAgreement key_agreement = KeyAgreement.getInstance(alg.jceName);
-            key_agreement.init(keyEntry.privateKey);
+            key_agreement.init(keyEntry.getPrivateKey());
             key_agreement.doPhase(publicKey, true);
             return key_agreement.generateSecret();
         } catch (Exception e) {
@@ -2420,25 +2449,17 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
                     ///////////////////////////////////////////////////////////////////////////////////
                     // Check public versus private key match
                     ///////////////////////////////////////////////////////////////////////////////////
-                    if (keyEntry.isRsa() ^ keyEntry.privateKey instanceof RSAPrivateKey) {
-                        abort("RSA/EC mixup between public and private keys for: " + keyEntry.id);
-                    }
-                    if (keyEntry.isRsa()) {
-                        if (!((RSAPublicKey) keyEntry.publicKey).getPublicExponent().equals(keyEntry.getPublicRSAExponentFromPrivateKey()) ||
-                                !((RSAPublicKey) keyEntry.publicKey).getModulus().equals(((RSAPrivateKey) keyEntry.privateKey).getModulus())) {
-                            abort("RSA mismatch between public and private keys for: " + keyEntry.id);
-                        }
-                    } else {
-                        Signature ecSigner = Signature.getInstance("SHA256withECDSA");
-                        ecSigner.initSign(keyEntry.privateKey);
-                        ecSigner.update(RSA_ENCRYPTION_OID);  // Any data could be used...
-                        byte[] ecSignData = ecSigner.sign();
-                        Signature ecVerifier = Signature.getInstance("SHA256withECDSA");
-                        ecVerifier.initVerify(keyEntry.publicKey);
-                        ecVerifier.update(RSA_ENCRYPTION_OID);
-                        if (!ecVerifier.verify(ecSignData)) {
-                            abort("EC mismatch between public and private keys for: " + keyEntry.id);
-                        }
+                    coreCompatibilityCheck(keyEntry, keyEntry.getPrivateKey());
+                    String signatureAlgorithm = keyEntry.isRsa() ? "NONEwithRSA" : "NONEwithECDSA";
+                    Signature sign = Signature.getInstance(signatureAlgorithm);
+                    sign.initSign(keyEntry.getPrivateKey());
+                    sign.update(RSA_ENCRYPTION_OID);  // Any data could be used...
+                    byte[] signedData = sign.sign();
+                    Signature verify = Signature.getInstance(signatureAlgorithm);
+                    verify.initVerify(keyEntry.publicKey);
+                    verify.update(RSA_ENCRYPTION_OID);
+                    if (!verify.verify(signedData)) {
+                        abort("Public/private key mismatch for: " + keyEntry.id);
                     }
     
                     ///////////////////////////////////////////////////////////////////////////////////
@@ -2539,6 +2560,9 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
                         ///////////////////////////////////////////////////////////////////////////////////
                         // Remove space occupied by the new key and restore old key handle
                         ///////////////////////////////////////////////////////////////////////////////////
+                        // In Android updates are slightly more fuzzy...
+                        SKSStore.deleteKey(keyEntry.getKeyId());
+                        postOp.newKey.remappedKeyHandle = postOp.newKey.keyHandle;
                         keys.remove(postOp.newKey.keyHandle);
                         postOp.newKey.keyHandle = keyEntry.keyHandle;
                     }
@@ -2635,10 +2659,11 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
         ///////////////////////////////////////////////////////////////////////////////////
         if (keyManagementKey != null) {
             if (keyManagementKey instanceof RSAPublicKey) {
-                checkRsaKeyCompatibility(getRSAKeySize((RSAPublicKey) keyManagementKey),
-                        ((RSAPublicKey) keyManagementKey).getPublicExponent(), "\"" + VAR_KEY_MANAGEMENT_KEY + "\"");
+                checkRsaKeyCompatibility((RSAPublicKey) keyManagementKey,
+                                         "\"" + VAR_KEY_MANAGEMENT_KEY + "\"");
             } else {
-                checkEcKeyCompatibility((ECPublicKey) keyManagementKey, "\"" + VAR_KEY_MANAGEMENT_KEY + "\"");
+                checkEcKeyCompatibility((ECPublicKey) keyManagementKey,
+                                        "\"" + VAR_KEY_MANAGEMENT_KEY + "\"");
             }
         }
 
@@ -2870,14 +2895,23 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
                 }
                 if (rsaFlag) break;
             }
-            keyEntry.privateKey = KeyFactory.getInstance(rsaFlag ? "RSA" : "EC").generatePrivate(keySpec);
+            PrivateKey importedPrivateKey = 
+                    KeyFactory.getInstance(rsaFlag ? "RSA" : "EC").generatePrivate(keySpec);
+            coreCompatibilityCheck(keyEntry, importedPrivateKey);
             if (rsaFlag) {
-                checkRsaKeyCompatibility(getRSAKeySize((RSAPrivateKey) keyEntry.privateKey),
-                                         keyEntry.getPublicRSAExponentFromPrivateKey(),
-                                         keyEntry.id);
+                // https://stackoverflow.com/questions/24121801/how-to-verify-if-the-private-key-matches-with-the-certificate
+                if (!(((RSAPublicKey)keyEntry.publicKey).getModulus()
+                            .equals(((RSAPrivateKey)importedPrivateKey).getModulus()) &&
+                      BigInteger.valueOf(2).modPow(((RSAPublicKey)keyEntry.publicKey).getPublicExponent()
+                                .multiply(((RSAPrivateKey)importedPrivateKey).getPrivateExponent())
+                                .subtract(BigInteger.ONE),((RSAPublicKey) keyEntry.publicKey).getModulus())
+                            .equals(BigInteger.ONE))) {
+                    abort("Imported RSA key does not match certificate for: " + keyEntry.id);
+                }
             } else {
-                checkEcKeyCompatibility((ECPrivateKey) keyEntry.privateKey, keyEntry.id);
+                checkEcKeyCompatibility((ECPrivateKey)importedPrivateKey, keyEntry.id);
             }
+            SKSStore.importKey(keyEntry.getKeyId(), importedPrivateKey, keyEntry.certificatePath);
             logCertificateOperation(keyEntry, "private key import");
         } catch (Exception e) {
             tearDownSession(keyEntry, e);
@@ -2972,9 +3006,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
             // Check key material for SKS compliance
             ///////////////////////////////////////////////////////////////////////////////////
             if (keyEntry.publicKey instanceof RSAPublicKey) {
-                checkRsaKeyCompatibility(getRSAKeySize((RSAPublicKey) keyEntry.publicKey),
-                                         ((RSAPublicKey) keyEntry.publicKey).getPublicExponent(),
-                                         keyEntry.id);
+                checkRsaKeyCompatibility((RSAPublicKey) keyEntry.publicKey, keyEntry.id);
             } else {
                 checkEcKeyCompatibility((ECPublicKey) keyEntry.publicKey, keyEntry.id);
             }
@@ -3153,7 +3185,9 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
             // Decode key algorithm specifier
             ///////////////////////////////////////////////////////////////////////////////////
             AlgorithmParameterSpec algParSpec = null;
+            String keyFactory;
             if ((kalg.mask & ALG_RSA_KEY) == ALG_RSA_KEY) {
+                keyFactory = "RSA";
                 int rsaKeySize = kalg.mask & ALG_RSA_GMSK;
                 BigInteger exponent = RSAKeyGenParameterSpec.F4;
                 if (keyParameters != null) {
@@ -3164,17 +3198,33 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
                 }
                 algParSpec = new RSAKeyGenParameterSpec(rsaKeySize, exponent);
             } else {
+                keyFactory = "EC";
                 algParSpec = new ECGenParameterSpec(kalg.jceName);
             }
+
             ///////////////////////////////////////////////////////////////////////////////////
-            // At last, generate the desired key-pair
+            //Reserve a key entry
             ///////////////////////////////////////////////////////////////////////////////////
-            SecureRandom secureRandom = serverSeed.length == 0 ? new SecureRandom() : new SecureRandom(serverSeed);
-            KeyPairGenerator kpg = KeyPairGenerator.getInstance(algParSpec instanceof RSAKeyGenParameterSpec ? "RSA" : "EC");
-            kpg.initialize(algParSpec, secureRandom);
-            KeyPair keyPair = kpg.generateKeyPair();
-            PublicKey publicKey = keyPair.getPublic();
-            PrivateKey privateKey = keyPair.getPrivate();
+            KeyEntry keyEntry = new KeyEntry(provisioning, id);
+            provisioning.names.put(id, true); // Referenced (for "closeProvisioningSession")
+
+            ///////////////////////////////////////////////////////////////////////////////////
+            // Generate the desired key pair
+            ///////////////////////////////////////////////////////////////////////////////////
+            PublicKey publicKey;
+            if (exportProtection == EXPORT_DELETE_PROTECTION_NOT_ALLOWED) {
+                publicKey = SKSStore.createSecureKeyPair(keyEntry.getKeyId(),
+                                                         algParSpec,
+                                                         keyFactory.equals("RSA"));
+            } else {
+                SecureRandom secureRandom = serverSeed.length == 0 ? 
+                                                new SecureRandom() : new SecureRandom(serverSeed);
+                KeyPairGenerator kpg = KeyPairGenerator.getInstance(keyFactory);
+                kpg.initialize(algParSpec, secureRandom);
+                KeyPair keyPair = kpg.generateKeyPair();
+                keyEntry.exportablePrivateKey = keyPair.getPrivate();
+                publicKey = keyPair.getPublic();
+            }
 
             ///////////////////////////////////////////////////////////////////////////////////
             // Create key attest
@@ -3185,15 +3235,12 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
             byte[] attestation = cka.getResult();
 
             ///////////////////////////////////////////////////////////////////////////////////
-            // Finally, create a key entry
+            // Finally, fill in the key attributes
             ///////////////////////////////////////////////////////////////////////////////////
-            KeyEntry keyEntry = new KeyEntry(provisioning, id);
-            provisioning.names.put(id, true); // Referenced (for "closeProvisioningSession")
             keyEntry.pinPolicy = pinPolicy;
             keyEntry.friendlyName = friendlyName;
             keyEntry.pinValue = pinValue;
             keyEntry.publicKey = publicKey;
-            keyEntry.privateKey = privateKey;
             keyEntry.appUsage = appUsage;
             keyEntry.devicePinProtection = devicePinProtection;
             keyEntry.enablePinCaching = enablePinCaching;
