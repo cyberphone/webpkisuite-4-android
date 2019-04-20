@@ -81,12 +81,12 @@ import org.webpki.sks.SKSException;
 import org.webpki.sks.SecureKeyStore;
 
 
+
 import android.support.test.runner.AndroidJUnit4;
 import android.support.test.InstrumentationRegistry;
 
 import org.junit.runner.RunWith;
-
-import org.webpki.mobile.android.sks.SKSStore;
+import org.webpki.mobile.android.sks.HardwareKeyStore;
 
 import org.webpki.util.ArrayUtil;
 
@@ -117,7 +117,7 @@ public class SKSTest {
 
     @BeforeClass
     public static void openFile() throws Exception {
-        sks = SKSStore.createSKS("JUnit", InstrumentationRegistry.getTargetContext(), true);
+        sks = HardwareKeyStore.createSKS("JUnit", InstrumentationRegistry.getTargetContext(), true);
         device = new Device(sks);
         DeviceInfo dev = device.device_info;
         reference_implementation = true;
@@ -154,7 +154,7 @@ public class SKSTest {
             }
         }
         assertTrue("Sess mismatch", i == prov_sessions.size());
-        SKSStore.serializeSKS("JUnit", InstrumentationRegistry.getTargetContext());
+        HardwareKeyStore.serializeSKS("JUnit", InstrumentationRegistry.getTargetContext());
     }
 
     @Before
@@ -792,12 +792,17 @@ public class SKSTest {
             cipher.init(Cipher.ENCRYPT_MODE, key.getPublicKey());
         }
         byte[] enc = cipher.doFinal(TEST_STRING);
+try {
         assertTrue("Encryption error: " + encryption_algorithm,
                 ArrayUtil.compare(device.sks.asymmetricKeyDecrypt(key.keyHandle,
                         encryption_algorithm.getAlgorithmId(AlgorithmPreferences.SKS),
                         null,
                         good_pin.getBytes("UTF-8"),
                         enc), TEST_STRING));
+} catch (SKSException e) {
+    assertTrue("Android OAEP", e.getMessage().contains("Unsupported MGF1 digest: SHA-256"));
+    return;
+}
         try {
             device.sks.asymmetricKeyDecrypt(key.keyHandle,
                     AsymSignatureAlgorithms.RSA_SHA256.getAlgorithmId(AlgorithmPreferences.SKS),
@@ -3137,4 +3142,25 @@ public class SKSTest {
             checkException(e, "Unsupported: \"devicePinProtection\"");
         }
     }
-}
+ 
+    @Test
+    public void test84() throws Exception {
+        ProvSess sess = new ProvSess(device);
+        GenKey key = sess.createKey("Key.1",
+                KeyAlgorithms.NIST_P_256,
+                null /* pin_value */,
+                null,
+                AppUsage.AUTHENTICATION,
+                new String[]{AsymSignatureAlgorithms.ECDSA_SHA256
+                        .getAlgorithmId(AlgorithmPreferences.SKS)})
+                            .setCertificate(cn());
+        sess.closeSession();
+        key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, null, TEST_STRING);
+        try {
+            key.signData(AsymSignatureAlgorithms.ECDSA_SHA384, null, TEST_STRING);
+            fail("Should not accept");
+        } catch (SKSException e) {
+            assertTrue("Flag not endorsed", e.getMessage().contains("384"));
+        }
+    }
+ }

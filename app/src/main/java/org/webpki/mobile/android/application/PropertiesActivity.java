@@ -29,7 +29,7 @@ import org.webpki.mobile.android.webauth.WebAuthActivity;
 import org.webpki.mobile.android.saturn.SaturnActivity;
 
 import org.webpki.mobile.android.sks.AndroidSKSImplementation;
-import org.webpki.mobile.android.sks.SKSStore;
+import org.webpki.mobile.android.sks.HardwareKeyStore;
 
 import android.net.Uri;
 
@@ -79,7 +79,7 @@ public class PropertiesActivity extends ListActivity {
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
-        sks = SKSStore.createSKS("Dialog", getBaseContext(), true);
+        sks = HardwareKeyStore.createSKS("Dialog", getBaseContext(), true);
         if (id == SETTINGS_DEVICE_CERT) {
             Intent intent = new Intent(this, CertificateViewActivity.class);
             try {

@@ -54,7 +54,7 @@ import org.webpki.crypto.KeyContainerTypes;
 import org.webpki.webauth.AuthenticationRequestDecoder;
 
 import org.webpki.mobile.android.sks.AndroidSKSImplementation;
-import org.webpki.mobile.android.sks.SKSStore;
+import org.webpki.mobile.android.sks.HardwareKeyStore;
 
 import org.webpki.mobile.android.util.CredentialListDataFactory;
 
@@ -74,7 +74,7 @@ public class WebAuthProtocolInit extends AsyncTask<Void, String, Boolean> {
             webauth_activity.addDecoder(AuthenticationRequestDecoder.class);
             webauth_activity.authentication_request = (AuthenticationRequestDecoder) webauth_activity.getInitialRequest();
             EnumeratedKey ek = new EnumeratedKey();
-            sks = SKSStore.createSKS(WebAuthActivity.WEBAUTH, webauth_activity, false);
+            sks = HardwareKeyStore.createSKS(WebAuthActivity.WEBAUTH, webauth_activity, false);
 
             ////////////////////////////////////////////////////////////////////////////////////
             // Maybe the requester wants better protected keys...
@@ -104,7 +104,7 @@ public class WebAuthProtocolInit extends AsyncTask<Void, String, Boolean> {
                 boolean rsa_flag = cert_path[0].getPublicKey() instanceof RSAPublicKey;
                 AsymSignatureAlgorithms signature_algorithm = null;
                 for (AsymSignatureAlgorithms sig_alg : webauth_activity.authentication_request.getSignatureAlgorithms()) {
-                    if (rsa_flag == sig_alg.isRsa() && SKSStore.isSupported(sig_alg.getAlgorithmId(AlgorithmPreferences.SKS))) {
+                    if (rsa_flag == sig_alg.isRsa() && HardwareKeyStore.isSupported(sig_alg.getAlgorithmId(AlgorithmPreferences.SKS))) {
                         signature_algorithm = sig_alg;
                         did_it = true;
                         break;

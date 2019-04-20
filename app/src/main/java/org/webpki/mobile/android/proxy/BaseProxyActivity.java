@@ -52,7 +52,7 @@ import org.webpki.json.JSONOutputFormats;
 import org.webpki.net.HTTPSWrapper;
 
 import org.webpki.mobile.android.sks.AndroidSKSImplementation;
-import org.webpki.mobile.android.sks.SKSStore;
+import org.webpki.mobile.android.sks.HardwareKeyStore;
 
 /**
  * Class for taking care of "webpkiproxy://" JSON protocol handlers
@@ -217,7 +217,7 @@ public abstract class BaseProxyActivity extends Activity {
     }
 
     public void initSKS() {
-        sks = SKSStore.createSKS(getProtocolName(), this, false);
+        sks = HardwareKeyStore.createSKS(getProtocolName(), this, false);
     }
 
     public void closeProxy() {
@@ -232,7 +232,7 @@ public abstract class BaseProxyActivity extends Activity {
             }
 
         }
-        SKSStore.serializeSKS(getProtocolName(), this);
+        HardwareKeyStore.serializeSKS(getProtocolName(), this);
     }
 
     public void launchBrowser(String url) {

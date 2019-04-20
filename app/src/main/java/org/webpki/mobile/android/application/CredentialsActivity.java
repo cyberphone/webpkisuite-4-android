@@ -24,7 +24,7 @@ import org.webpki.sks.KeyAttributes;
 import org.webpki.sks.SKSException;
 
 import org.webpki.mobile.android.sks.AndroidSKSImplementation;
-import org.webpki.mobile.android.sks.SKSStore;
+import org.webpki.mobile.android.sks.HardwareKeyStore;
 
 import org.webpki.mobile.android.util.CredentialListDataFactory;
 
@@ -52,18 +52,15 @@ import android.graphics.drawable.BitmapDrawable;
 public class CredentialsActivity extends ListActivity {
     private static final String DIALOG = "Dialog";
 
-    AndroidSKSImplementation sks = SKSStore.createSKS(DIALOG, getBaseContext(), true);
-
     List<CredentialArrayAdapter.CredentialData> list = new ArrayList<CredentialArrayAdapter.CredentialData>();
 
-    private void serializeSKS() {
-        SKSStore.serializeSKS(DIALOG, getBaseContext());
-    }
+    AndroidSKSImplementation sks;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         try {
+            sks = HardwareKeyStore.createSKS(DIALOG, getBaseContext(), true);
             CredentialListDataFactory credential_data_factory = new CredentialListDataFactory(this, sks);
             EnumeratedKey ek = new EnumeratedKey();
             while ((ek = sks.enumerateKeys(ek.getKeyHandle())) != null) {
@@ -125,7 +122,7 @@ public class CredentialsActivity extends ListActivity {
                     sks.setGrant(key_handle, domain, false);
                 }
                 Toast.makeText(getApplicationContext(), String.valueOf(i) + " granted domains cleared", Toast.LENGTH_LONG).show();
-                serializeSKS();
+                HardwareKeyStore.serializeSKS(DIALOG, getBaseContext());
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -142,7 +139,7 @@ public class CredentialsActivity extends ListActivity {
                                 list.remove(info.position);
                                 ((ArrayAdapter<CredentialArrayAdapter.CredentialData>) getListAdapter()).notifyDataSetChanged();
                                 dialog.cancel();
-                                serializeSKS();
+                                HardwareKeyStore.serializeSKS(DIALOG, getBaseContext());
                             } catch (SKSException e) {
                                 Toast.makeText(getApplicationContext(), "Not permitted: " + e.getMessage(), Toast.LENGTH_LONG).show();
                             }
