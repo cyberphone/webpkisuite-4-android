@@ -44,6 +44,7 @@ import org.webpki.mobile.android.saturn.common.WalletRequestDecoder;
 
 import org.webpki.sks.EnumeratedKey;
 import org.webpki.sks.Extension;
+import org.webpki.sks.KeyAttributes;
 import org.webpki.sks.SKSException;
 import org.webpki.sks.SecureKeyStore;
 
@@ -67,23 +68,21 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
             // Web Payments (according to our fictitious payment schemes...)
             EnumeratedKey ek = new EnumeratedKey();
             while ((ek = saturnActivity.sks.enumerateKeys(ek.getKeyHandle())) != null) {
-                Extension ext = null;
-                try {
-                    ext = saturnActivity.sks.getExtension(ek.getKeyHandle(),
-                                                          BaseProperties.SATURN_WEB_PAY_CONTEXT_URI);
-                } catch (SKSException e) {
-                    if (e.getError() == SKSException.ERROR_OPTION) {
-                        continue;
-                    }
-                    throw new Exception(e);
+                KeyAttributes ka = saturnActivity.sks.getKeyAttributes(ek.getKeyHandle());
+                if (!ka.getExtensionTypes().contains(BaseProperties.SATURN_WEB_PAY_CONTEXT_URI)) {
+                    continue;
                 }
+                Extension ext =
+                        saturnActivity.sks.getExtension(ek.getKeyHandle(),
+                                                        BaseProperties.SATURN_WEB_PAY_CONTEXT_URI);
 
                 // This key had the attribute signifying that it is a payment credential
                 // for the fictitious payment schemes this system is supporting but it
                 // might still not match the Payee's list of supported account types.
-                collectPotentialCard(ek.getKeyHandle(),
-                                     JSONParser.parse(ext.getExtensionData(SecureKeyStore.SUB_TYPE_EXTENSION)),
-                                     saturnActivity.walletRequest);
+                ek = collectPotentialCard(ek,
+                                          JSONParser.parse(ext.getExtensionData(
+                                                  SecureKeyStore.SUB_TYPE_EXTENSION)),
+                                          saturnActivity.walletRequest);
             }
             return true;
         } catch (Exception e) {
@@ -127,7 +126,9 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
         }
     }
 
-    void collectPotentialCard(int keyHandle, JSONObjectReader cardProperties, WalletRequestDecoder wrd) throws IOException {
+    EnumeratedKey collectPotentialCard(EnumeratedKey foundKey,
+                                       JSONObjectReader cardProperties,
+                                       WalletRequestDecoder wrd) throws IOException {
         String paymentMethod = cardProperties.getString(BaseProperties.PAYMENT_METHOD_JSON);
         for (WalletRequestDecoder.PaymentNetwork paymentNetwork : wrd.getPaymentNetworks()) {
             for (String acceptedPaymentMethod : paymentNetwork.getPaymentMethods()) {
@@ -137,9 +138,10 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                                     paymentMethod,
                                     cardProperties.getString(BaseProperties.ACCOUNT_ID_JSON),
                                     cardProperties.getBoolean(BaseProperties.CARD_FORMAT_ACCOUNT_ID_JSON),
-                                    saturnActivity.sks.getExtension(keyHandle, KeyGen2URIs.LOGOTYPES.CARD)
+                                    saturnActivity.sks.getExtension(foundKey.getKeyHandle(),
+                                                                    KeyGen2URIs.LOGOTYPES.CARD)
                                         .getExtensionData(SecureKeyStore.SUB_TYPE_LOGOTYPE),
-                                    keyHandle,
+                                                          foundKey.getKeyHandle(),
                                     AsymSignatureAlgorithms
                                         .getAlgorithmFromId(cardProperties.getString(BaseProperties.SIGNATURE_ALGORITHM_JSON),
                                                             AlgorithmPreferences.JOSE),
@@ -158,5 +160,6 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                 }
             }
         }
+        return foundKey;
     }
 }
