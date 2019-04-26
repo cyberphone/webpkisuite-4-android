@@ -36,6 +36,7 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import android.view.ContextMenu;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -59,12 +60,14 @@ public class PropertiesActivity extends ListActivity {
     static final int SETTINGS_USER_CREDENTIALS = 3;
     static final int SETTINGS_DEVICE_CERT      = 4;
     static final int SETTINGS_PROTOCOL_LOG     = 5;
+    static final int SETTINGS_THEME            = 6;
     String[] items = {"About",
                       "Privacy Policy",
                       "Device ID",
                       "User Credentials",
                       "Device Certificate",
-                      "Show Protocol Log"};
+                      "Show Protocol Log",
+                      "UI Theme"};
     AndroidSKSImplementation sks;
 
     @Override
@@ -101,29 +104,41 @@ public class PropertiesActivity extends ListActivity {
             } catch (SKSException e) {
             }
             showDialog(position);
-        } else if (id == SETTINGS_PROTOCOL_LOG) {
+        } else if (id == SETTINGS_PROTOCOL_LOG || id == SETTINGS_THEME) {
             super.onListItemClick(l, v, position, id);
             v.showContextMenu();
         } else {
             showDialog(position);
         }
     }
-
+    static boolean black;
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        if (((AdapterView.AdapterContextMenuInfo) menuInfo).position == SETTINGS_PROTOCOL_LOG) {
-            menu.setHeaderTitle("Show last run with:");
-            menu.add(KeyGen2Activity.KEYGEN2);
-            menu.add(WebAuthActivity.WEBAUTH);
-            menu.add(SaturnActivity.SATURN);
+        switch (((AdapterView.AdapterContextMenuInfo) menuInfo).position) {
+            case SETTINGS_PROTOCOL_LOG:
+                menu.setHeaderTitle("Show last run with:");
+                menu.add(KeyGen2Activity.KEYGEN2);
+                menu.add(WebAuthActivity.WEBAUTH);
+                menu.add(SaturnActivity.SATURN);
+                break;
+            case SETTINGS_THEME:
+                menu.setHeaderTitle("Set UI Theme:");
+                menu.add(1, 0, Menu.NONE, "Black").setChecked(black);
+                menu.add(1, 1, Menu.NONE, "White").setChecked(!black);
+                menu.setGroupCheckable(1, true, true);
+                break;
         }
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
-        Intent intent = new Intent(this, ProtocolViewActivity.class);
-        intent.putExtra(ProtocolViewActivity.LOG_FILE, item.getTitle());
-        startActivity(intent);
+        if (item.getGroupId() == 1) {
+            black = item.getItemId() == 0;
+        } else {
+            Intent intent = new Intent(this, ProtocolViewActivity.class);
+            intent.putExtra(ProtocolViewActivity.LOG_FILE, item.getTitle());
+            startActivity(intent);
+        }
         return true;
     }
 
