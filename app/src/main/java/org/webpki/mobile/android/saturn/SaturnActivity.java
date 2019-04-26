@@ -84,10 +84,11 @@ public class SaturnActivity extends BaseProxyActivity {
     static final String HTML_HEADER = "<html><head><style type='text/css'>\n" +
                                       "body {margin:0;font-size:12pt;color:#000000;font-family:Roboto;background-color:white}\n" +
                                       "td.label {text-align:right;padding:3pt 3pt 3pt 0pt}\n" +
+                                      "div.balance {display:inline-block;padding:3pt 5pt;border-width:1px;" +
+                                      "border-style:solid;border-color:#808080;border-radius:5pt}\n" +
                                       "td.field {min-width:11em;max-width:15em;padding:3pt 6pt 3pt 6pt;border-width:1px;" +
                                       "border-style:solid;border-color:#808080;background-color:#fafafa;overflow:hidden;" +
                                       "white-space:nowrap;box-sizing:border-box}\n" +
-                                      "td.pan {text-align:center;padding:5pt 0 0 0;font-size:9pt;font-family:monospace}\n" +
                                       "div.cardimage {border-style:groove;border-width:2px;border-color:#c0c0c0;border-radius:12pt;" +
                                       "box-shadow:3pt 3pt 3pt #d0d0d0;background-size:cover;background-repeat:no-repeat}\n" +
                                       "span.marquee {display:inline-block;position:relative;top:1pt;white-space:nowrap;animation-name:rollingtext;" +
@@ -137,7 +138,7 @@ public class SaturnActivity extends BaseProxyActivity {
         String accountId;
         String authorityUrl;
         boolean cardFormatAccountId;
-        byte[] cardSvgIcon;
+        String cardSvgIcon;
         AsymSignatureAlgorithms signatureAlgorithm;
         int signatureKeyHandle;
         DataEncryptionAlgorithms dataEncryptionAlgorithm;
@@ -153,7 +154,7 @@ public class SaturnActivity extends BaseProxyActivity {
                 String authorityUrl,
                 // Card visuals
                 boolean cardFormatAccountId,
-                byte[] cardSvgIcon,
+                String cardSvgIcon,
                 // Signature
                 int signatureKeyHandle,
                 AsymSignatureAlgorithms signatureAlgorithm,
@@ -304,17 +305,48 @@ public class SaturnActivity extends BaseProxyActivity {
             .append(card)
             .append("' style='visibility:hidden;position:absolute'><tr><td id='")
             .append(card)
-            .append("image'><div class='cardimage' style='width:")
-            .append((width * 100) / factor)
-            .append("px;height:")
-            .append((width * 60) / factor)
-            .append("px;background-image:url(data:image/svg+xml;base64,")
-            .append(Base64.encodeToString(account.cardSvgIcon, Base64.NO_WRAP))
-            .append(")'")
+            .append("image'><svg ")
             .append(clickOption)
-            .append("></div></td></tr><tr><td class='pan'>")
-            .append(formatAccountId(account))
-            .append("</td></tr></table>").toString();
+            .append(" style=\"width:")
+            .append((width * 100) / factor)
+            .append("px\" viewBox=\"0 0 318 190\" xmlns=\"http://www.w3.org/2000/svg\">" +
+                    "<defs>" +
+                    " <clipPath id=\"cardClip\">" +
+                    "  <rect rx=\"15\" ry=\"15\" height=\"180\" width=\"300\" y=\"0\" x=\"0\"/>" +
+                    " </clipPath>" +
+                    " <filter id=\"dropShaddow\">" +
+                    "  <feGaussianBlur stdDeviation=\"2.4\"/>" +
+                    " </filter>" +
+                    " <linearGradient y1=\"0\" x1=\"0\" y2=\"1\" x2=\"1\" id=\"innerCardBorder\">" +
+                    "  <stop offset=\"0\" stop-opacity=\"0.6\" stop-color=\"white\"/>" +
+                    "  <stop offset=\"0.48\" stop-opacity=\"0.6\" stop-color=\"white\"/>" +
+                    "  <stop offset=\"0.52\" stop-opacity=\"0.6\" stop-color=\"#b0b0b0\"/>" +
+                    "  <stop offset=\"1\" stop-opacity=\"0.6\" stop-color=\"#b0b0b0\"/>" +
+                    " </linearGradient>" +
+                    " <linearGradient y1=\"0\" x1=\"0\" y2=\"1\" x2=\"1\" id=\"outerCardBorder\">" +
+                    "  <stop offset=\"0\" stop-color=\"#b0b0b0\"/>" +
+                    "  <stop offset=\"0.48\" stop-color=\"#b0b0b0\"/>" +
+                    "  <stop offset=\"0.52\" stop-color=\"#808080\"/>" +
+                    "  <stop offset=\"1\" stop-color=\"#808080\"/>" +
+                    " </linearGradient>" +
+                    "</defs>" +
+                    "<rect filter=\"url(#dropShaddow)\" rx=\"16\" ry=\"16\" " +
+                    "height=\"182\" width=\"302\" y=\"4\" x=\"12\" fill=\"#c0c0c0\"/>" +
+                    "<svg x=\"9\" y=\"1\" clip-path=\"url(#cardClip)\"")
+            .append(account.cardSvgIcon.substring(account.cardSvgIcon.indexOf('>')))
+            .append(
+                    "<rect x=\"10\" y=\"2\" " +
+                    "width=\"298\" height=\"178\" " +
+                    "rx=\"14.7\" ry=\"14.7\" " +
+                    "fill=\"none\" " +
+                    "stroke=\"url(#innerCardBorder)\" stroke-width=\"2.7\"/>" +
+                    "<rect x=\"8.5\" y=\"0.5\" " +
+                    "width=\"301\" height=\"181\" " +
+                    "rx=\"16\" ry=\"16\" fill=\"none\" stroke=\"url(#outerCardBorder)\"/>" +
+                    "</svg></td></tr><tr><td style='text-align:center'>" +
+                    "<div class='balance'>")
+            .append("Balance: \u20ac\u20092304")
+            .append("</div></td></tr></table>").toString();
     }
 
     void ShowPaymentRequest() throws IOException {
@@ -467,7 +499,7 @@ public class SaturnActivity extends BaseProxyActivity {
                         "</form></table>");
         }
 
-        html.append(htmlOneCard(selectedCard, landscapeMode ? (width * 4) / 11 : (width * 3) / 5, "card", " onClick=\"Saturn.toast('The selected card')\""));
+        html.append(htmlOneCard(selectedCard, landscapeMode ? (width * 4) / 11 : (width * 4) / 5, "card", " onClick=\"Saturn.toast('The selected card')\""));
         loadHtml(js.toString(), html.toString());
     }
 
@@ -503,7 +535,7 @@ public class SaturnActivity extends BaseProxyActivity {
             }
             js.append(card + ".style.visibility = 'visible';\n");
             html.append(htmlOneCard(account,
-                                    landscapeMode ? (width * 4) / 11 : (width * 3) / 5,
+                                    landscapeMode ? (width * 4) / 11 : (width * 4) / 5,
                                     card,
                                     " onClick=\"Saturn.selectCard('" + (index++) + "')\""));
         }

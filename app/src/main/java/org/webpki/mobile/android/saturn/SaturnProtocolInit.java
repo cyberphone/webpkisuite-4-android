@@ -129,9 +129,9 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                         cardData.getAuthorityUrl(),
                         // Card visuals
                         true,
-                        saturnActivity.sks.getExtension(foundKey.getKeyHandle(),
+                        new String(saturnActivity.sks.getExtension(foundKey.getKeyHandle(),
                                                         KeyGen2URIs.LOGOTYPES.CARD)
-                           .getExtensionData(SecureKeyStore.SUB_TYPE_LOGOTYPE),
+                           .getExtensionData(SecureKeyStore.SUB_TYPE_LOGOTYPE), "utf-8"),
                         // Signature
                         foundKey.getKeyHandle(),
                         cardData.getSignatureAlgorithm(),
