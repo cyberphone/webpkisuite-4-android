@@ -119,7 +119,7 @@ public class SaturnActivity extends BaseProxyActivity {
 
     UserResponseItem[] challengeResults;
 
-    byte[] dataEncryptionKey;
+    byte[] privateMessageEncryptionKey;
 
     String keyboardSvg;
 
@@ -135,36 +135,49 @@ public class SaturnActivity extends BaseProxyActivity {
         PaymentRequest paymentRequest;
         String paymentMethod;
         String accountId;
+        String authorityUrl;
         boolean cardFormatAccountId;
         byte[] cardSvgIcon;
         AsymSignatureAlgorithms signatureAlgorithm;
-        String authorityUrl;
-        int keyHandle;
-        String optionalKeyId;
+        int signatureKeyHandle;
         DataEncryptionAlgorithms dataEncryptionAlgorithm;
         KeyEncryptionAlgorithms keyEncryptionAlgorithm;
-        PublicKey keyEncryptionKey;
+        PublicKey encryptionKey;
+        String optionalKeyId;
+        int optionalBalanceKeyHandle;
 
         Account(PaymentRequest paymentRequest,
+                // The core...
                 String paymentMethod,
                 String accountId,
+                String authorityUrl,
+                // Card visuals
                 boolean cardFormatAccountId,
                 byte[] cardSvgIcon,
-                int keyHandle,
+                // Signature
+                int signatureKeyHandle,
                 AsymSignatureAlgorithms signatureAlgorithm,
-                String authorityUrl) {
+                // Encryption
+                KeyEncryptionAlgorithms keyEncryptionAlgorithm,
+                DataEncryptionAlgorithms dataEncryptionAlgorithm,
+                PublicKey encryptionKey,
+                String optionalKeyId) {
             this.paymentRequest = paymentRequest;
             this.paymentMethod = paymentMethod;
             this.accountId = accountId;
+            this.authorityUrl = authorityUrl;
             this.cardFormatAccountId = cardFormatAccountId;
             this.cardSvgIcon = cardSvgIcon;
-            this.keyHandle = keyHandle;
+            this.signatureKeyHandle = signatureKeyHandle;
             this.signatureAlgorithm = signatureAlgorithm;
-            this.authorityUrl = authorityUrl;
+            this.keyEncryptionAlgorithm = keyEncryptionAlgorithm;
+            this.dataEncryptionAlgorithm = dataEncryptionAlgorithm;
+            this.encryptionKey = encryptionKey;
+            this.optionalKeyId = optionalKeyId;
         }
     }
 
-    Vector<Account> cardCollection = new Vector<Account>();
+    Vector<Account> accountCollection = new Vector<Account>();
 
     void loadHtml(final String positionScript, final String body) {
         runOnUiThread(new Runnable() {
@@ -306,7 +319,7 @@ public class SaturnActivity extends BaseProxyActivity {
 
     void ShowPaymentRequest() throws IOException {
         currentForm = FORM.PAYMENTREQUEST;
-        boolean numericPin = sks.getKeyProtectionInfo(selectedCard.keyHandle).getPinFormat() == PassphraseFormat.NUMERIC;
+        boolean numericPin = sks.getKeyProtectionInfo(selectedCard.signatureKeyHandle).getPinFormat() == PassphraseFormat.NUMERIC;
         int width = displayMetrics.widthPixels;
         StringBuffer js = new StringBuffer(
             "var card = document.getElementById('card');\n" +
@@ -465,7 +478,7 @@ public class SaturnActivity extends BaseProxyActivity {
             new StringBuffer("<div id='header' style='visibility:hidden;position:absolute;width:100%;text-align:center'>Select Payment Card</div>");
         int width = displayMetrics.widthPixels;
         int index = 0;
-        for (SaturnActivity.Account account : cardCollection) {
+        for (SaturnActivity.Account account : accountCollection) {
             String card = "card" + String.valueOf(index);
             js.append("var " + card + " = document.getElementById('" + card + "');\n");
             if (index == 0) {
@@ -501,7 +514,7 @@ public class SaturnActivity extends BaseProxyActivity {
     @JavascriptInterface
     public void selectCard(String index) throws IOException {
         pin = "";
-        selectedCard = cardCollection.elementAt(Integer.parseInt(index));
+        selectedCard = accountCollection.elementAt(Integer.parseInt(index));
         ShowPaymentRequest();
     }
 
@@ -535,7 +548,7 @@ public class SaturnActivity extends BaseProxyActivity {
     }
 
     boolean pinBlockCheck() throws SKSException {
-        if (sks.getKeyProtectionInfo(selectedCard.keyHandle).isPinBlocked()) {
+        if (sks.getKeyProtectionInfo(selectedCard.signatureKeyHandle).isPinBlocked()) {
             unconditionalAbort("Card blocked due to previous PIN errors!");
             return true;
         }
@@ -553,25 +566,25 @@ public class SaturnActivity extends BaseProxyActivity {
                 UserResponseItem[] tempChallenge = challengeResults;
                 challengeResults = null;
                 // The key we use for decrypting private information from our bank
-                dataEncryptionKey = CryptoRandom.generateRandom(selectedCard.dataEncryptionAlgorithm.getKeyLength());
+                privateMessageEncryptionKey = CryptoRandom.generateRandom(selectedCard.dataEncryptionAlgorithm.getKeyLength());
                 // The response
                 authorizationData = AuthorizationData.encode(
                     selectedCard.paymentRequest,
                     getRequestingHost(),
                     selectedCard.paymentMethod,
                     selectedCard.accountId,
-                    dataEncryptionKey,
+                        privateMessageEncryptionKey,
                     selectedCard.dataEncryptionAlgorithm,
                     tempChallenge,
                     selectedCard.signatureAlgorithm,
                     new AsymKeySignerInterface () {
                         @Override
                         public PublicKey getPublicKey() throws IOException {
-                            return sks.getKeyAttributes(selectedCard.keyHandle).getCertificatePath()[0].getPublicKey();
+                            return sks.getKeyAttributes(selectedCard.signatureKeyHandle).getCertificatePath()[0].getPublicKey();
                         }
                         @Override
                         public byte[] signData(byte[] data, AsymSignatureAlgorithms algorithm) throws IOException {
-                            return sks.signHashedData(selectedCard.keyHandle,
+                            return sks.signHashedData(selectedCard.signatureKeyHandle,
                                                       algorithm.getAlgorithmId (AlgorithmPreferences.SKS),
                                                       null,
                                                       pin.getBytes("UTF-8"),
@@ -588,7 +601,7 @@ public class SaturnActivity extends BaseProxyActivity {
             }
             if (!pinBlockCheck()) {
                 Log.w(SATURN, "Incorrect PIN");
-                KeyProtectionInfo pi = sks.getKeyProtectionInfo(selectedCard.keyHandle);
+                KeyProtectionInfo pi = sks.getKeyProtectionInfo(selectedCard.signatureKeyHandle);
                 showAlert("Incorrect PIN. There are " +
                           (pi.getPinRetryLimit() - pi.getPinErrorCount()) +
                           " tries left.");
@@ -654,7 +667,7 @@ public class SaturnActivity extends BaseProxyActivity {
         } else {
             if (selectedCard == null) {
                 conditionalAbort(null);
-            } else if (cardCollection.size() == 1) {
+            } else if (accountCollection.size() == 1) {
                 conditionalAbort(null);
                 return;
             }
