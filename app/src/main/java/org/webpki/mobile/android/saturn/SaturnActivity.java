@@ -455,7 +455,7 @@ public class SaturnActivity extends BaseProxyActivity {
                 "}\n" +
                 "function addDigit(digit) {\n" +
                 "if (pin.length < 16) {\n" +
-                "pinfield.innerHTML = pin.length == 0 ? digit : pinfield.innerHTML.substring(0, pinfield.innerHTML.length - 34)  + digit;\n" +
+                "pinfield.innerHTML = pin.length == 0 ? digit : pinfield.innerHTML.substring(0, pinfield.innerHTML.length - 29)  + digit;\n" +
                 "pin += digit;\n" +
                 "setTimeout(function() {\n" +
                 "showPin();\n" +
