@@ -499,7 +499,7 @@ public class SaturnActivity extends BaseProxyActivity {
                         "</form></table>");
         }
 
-        html.append(htmlOneCard(selectedCard, landscapeMode ? (width * 4) / 11 : (width * 4) / 5, "card", " onClick=\"Saturn.toast('The selected card')\""));
+        html.append(htmlOneCard(selectedCard, landscapeMode ? (width * 4) / 11 : (width * 7) / 10, "card", " onClick=\"Saturn.toast('The selected card')\""));
         loadHtml(js.toString(), html.toString());
     }
 
@@ -535,7 +535,7 @@ public class SaturnActivity extends BaseProxyActivity {
             }
             js.append(card + ".style.visibility = 'visible';\n");
             html.append(htmlOneCard(account,
-                                    landscapeMode ? (width * 4) / 11 : (width * 4) / 5,
+                                    landscapeMode ? (width * 4) / 11 : (width * 7) / 10,
                                     card,
                                     " onClick=\"Saturn.selectCard('" + (index++) + "')\""));
         }
