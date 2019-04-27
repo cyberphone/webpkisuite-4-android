@@ -114,7 +114,7 @@ public class SaturnActivity extends BaseProxyActivity {
           "div.header {font-weight:500;color:white;" +
           "visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
           "span.pinfix {color:black}\n" +
-          "span.marquee {display:inline-block;position:relative;top:1pt;white-space:nowrap;animation-name:rollingtext;" +
+          "span.marquee {color:orange;display:inline-block;position:relative;top:1pt;white-space:nowrap;animation-name:rollingtext;" +
           "animation-duration:10s;animation-timing-function:linear;" +
           "animation-iteration-count:infinite;font-size:10pt}\n" +
           "@keyframes rollingtext {0% {opacity:1;text-indent:0em} 33% {opacity:1;text-indent:0em} " +
@@ -432,9 +432,8 @@ public class SaturnActivity extends BaseProxyActivity {
         }
         if (selectedCard.paymentRequest.getNonDirectPayment() == NonDirectPayments.GAS_STATION) {
             js.append("document.getElementById('amountfield').innerHTML += " +
-                      "\"<br><span class='marquee'><i>Reserved</i>, actual payment will match fuel quantity</span>\";\n");
+                    "\"<span class='marquee'><i>Reserved</i>, actual payment will match fuel quantity</span>\";\n");
         }
-
         js.append(
             "card.style.visibility='visible';\n" +
             "paydata.style.visibility='visible';\n" +
@@ -497,8 +496,12 @@ public class SaturnActivity extends BaseProxyActivity {
           .append(HTMLEncoder.encode(selectedCard.paymentRequest.getPayee().getCommonName()))
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
-            "<tr><td class='label'>Amount</td><td id='amountfield' style='letter-spacing:1pt' class='field' onClick=\"Saturn.toast('Amount to pay')\">")
+            "<tr><td class='label'>Amount</td><td id='amountfield' " +
+            "class='field' onClick=\"Saturn.toast('Amount to pay')\"><span style='letter-spacing:1pt'>")
           .append(selectedCard.paymentRequest.getCurrency().amountToDisplayString(selectedCard.paymentRequest.getAmount(), true))
+          .append("</span>")
+          .append(selectedCard.paymentRequest.getNonDirectPayment() == NonDirectPayments.GAS_STATION ?
+                  "<br>\u200b":"")
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
             "<tr><td class='label'>PIN</td>");
