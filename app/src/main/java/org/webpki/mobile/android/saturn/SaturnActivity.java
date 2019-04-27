@@ -22,7 +22,6 @@ import android.content.Context;
 
 import android.content.res.Configuration;
 
-import android.os.Build;
 import android.os.Bundle;
 
 import android.util.Base64;
@@ -60,6 +59,7 @@ import org.webpki.json.JSONParser;
 import org.webpki.json.DataEncryptionAlgorithms;
 import org.webpki.json.KeyEncryptionAlgorithms;
 
+import org.webpki.mobile.android.application.ThemeHolder;
 import org.webpki.mobile.android.proxy.BaseProxyActivity;
 
 import org.webpki.mobile.android.saturn.common.AuthorizationData;
@@ -81,32 +81,53 @@ public class SaturnActivity extends BaseProxyActivity {
 
     public static final String SATURN = "Saturn";
 
-    static final String HTML_HEADER = "<html><head><style type='text/css'>\n" +
-                                      "body {margin:0;font-size:12pt;color:#000000;font-family:Roboto;background-color:white}\n" +
-                                      "td.label {text-align:right;padding:3pt 3pt 3pt 0pt}\n" +
-                                      "div.balance {display:inline-block;padding:3pt 5pt;border-width:1px;" +
-                                      "border-style:solid;border-color:#808080;border-radius:5pt}\n" +
-                                      "td.field {min-width:11em;max-width:15em;padding:3pt 6pt 3pt 6pt;border-width:1px;" +
-                                      "border-style:solid;border-color:#808080;background-color:#fafafa;overflow:hidden;" +
-                                      "white-space:nowrap;box-sizing:border-box}\n" +
-                                      "div.cardimage {border-style:groove;border-width:2px;border-color:#c0c0c0;border-radius:12pt;" +
-                                      "box-shadow:3pt 3pt 3pt #d0d0d0;background-size:cover;background-repeat:no-repeat}\n" +
-                                      "span.marquee {display:inline-block;position:relative;top:1pt;white-space:nowrap;animation-name:rollingtext;" +
-                                      "animation-duration:10s;animation-timing-function:linear;" +
-                                      "animation-iteration-count:infinite;font-size:10pt}\n" +
-                                      "@keyframes rollingtext {0% {opacity:1;text-indent:0em} 33% {opacity:1;text-indent:0em} " +
-                                      "75% {opacity:1;text-indent:-30em} 76% {opacity:0;text-indent:-30em} 77% {opacity:0;text-indent:15em} " +
-                                      "78% {opacity:1;text-indent:15em} 100% {opacity:1;text-indent:0em}}\n" +
-                                      "</style>\n" +
-                                      "<script type='text/javascript'>\n" +
-                                      "'use strict';\n" +
-                                      "function positionElements() {\n";
+    static final String HTML_HEADER_WHITE = "<html><head><style type='text/css'>\n" +
+          "body {margin:0;font-size:12pt;color:#000000;font-family:Roboto;background-color:white}\n" +
+          "td.label {font-weight:500;text-align:right;padding:3pt 3pt 3pt 0pt}\n" +
+          "td.field {font-weight:500;min-width:11em;max-width:15em;padding:3pt 6pt 3pt 6pt;border-width:1px;" +
+          "border-style:solid;border-color:#808080;background-color:#fafafa;overflow:hidden;" +
+          "white-space:nowrap;box-sizing:border-box}\n" +
+          "div.balance {font-weight:500;display:inline-block;padding:2pt 5pt;border-width:1px;" +
+          "border-style:solid;border-color:#808080;border-radius:5pt;background-color:#fafafa}\n" +
+          "div.header {font-weight:500;visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
+          "span.pinfix {color:#fafafa}\n" +
+          "span.marquee {display:inline-block;position:relative;top:1pt;white-space:nowrap;animation-name:rollingtext;" +
+          "animation-duration:10s;animation-timing-function:linear;" +
+          "animation-iteration-count:infinite;font-size:10pt}\n" +
+          "@keyframes rollingtext {0% {opacity:1;text-indent:0em} 33% {opacity:1;text-indent:0em} " +
+          "75% {opacity:1;text-indent:-30em} 76% {opacity:0;text-indent:-30em} 77% {opacity:0;text-indent:15em} " +
+          "78% {opacity:1;text-indent:15em} 100% {opacity:1;text-indent:0em}}\n" +
+          "</style>\n" +
+          "<script type='text/javascript'>\n" +
+          "'use strict';\n" +
+          "function positionElements() {\n";
+
+    static final String HTML_HEADER_STEEL = "<html><head><style type='text/css'>\n" +
+          "body {margin:0;font-size:12pt;color:#000000;font-family:Roboto;" +
+          "background:linear-gradient(to bottom right, #263e5b, #6d7a8e, #263e5b);background-attachment:fixed}\n" +
+          "td.label {font-weight:500;text-align:right;padding:3pt 3pt 3pt 0pt;color:white}\n" +
+          "td.field {font-weight:500;min-width:11em;max-width:15em;padding:3pt 6pt 3pt 6pt;color:white;border-width:1px;" +
+          "border-style:solid;border-color:#b0b0b0;background-color:black;overflow:hidden;" +
+          "white-space:nowrap;box-sizing:border-box}\n" +
+          "div.balance {font-weight:500;display:inline-block;padding:2pt 5pt;border-width:1pt;" +
+          "border-style:solid;color:white;border-color:#b0b0b0;border-radius:5pt;background-color:black}\n" +
+          "div.header {font-weight:500;color:white;" +
+          "visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
+          "span.pinfix {color:black}\n" +
+          "span.marquee {display:inline-block;position:relative;top:1pt;white-space:nowrap;animation-name:rollingtext;" +
+          "animation-duration:10s;animation-timing-function:linear;" +
+          "animation-iteration-count:infinite;font-size:10pt}\n" +
+          "@keyframes rollingtext {0% {opacity:1;text-indent:0em} 33% {opacity:1;text-indent:0em} " +
+          "75% {opacity:1;text-indent:-30em} 76% {opacity:0;text-indent:-30em} 77% {opacity:0;text-indent:15em} " +
+          "78% {opacity:1;text-indent:15em} 100% {opacity:1;text-indent:0em}}\n" +
+          "</style>\n" +
+          "<script type='text/javascript'>\n" +
+          "'use strict';\n" +
+          "function positionElements() {\n";
 
     String htmlBodyPrefix;
 
     boolean landscapeMode;
-
-    boolean oldAndroid;
 
     WalletRequestDecoder walletRequest;
 
@@ -127,6 +148,8 @@ public class SaturnActivity extends BaseProxyActivity {
     JSONObjectWriter authorizationData;
 
     boolean done;
+
+    static boolean whiteTheme;
 
     WebView saturnView;
     int factor;
@@ -186,7 +209,8 @@ public class SaturnActivity extends BaseProxyActivity {
             public void run() {
                 saturnView.loadUrl("about:blank");
                 try {
-                    String html = Base64.encodeToString(new StringBuffer(HTML_HEADER)
+                    String html = Base64.encodeToString(new StringBuffer(
+                            whiteTheme ? HTML_HEADER_WHITE : HTML_HEADER_STEEL)
                             .append(positionScript)
                             .append(htmlBodyPrefix)
                             .append(body)
@@ -264,10 +288,10 @@ public class SaturnActivity extends BaseProxyActivity {
         webSettings.setJavaScriptEnabled(true);
         saturnView.addJavascriptInterface (this, "Saturn");
         displayMetrics = new DisplayMetrics();
+        whiteTheme = ThemeHolder.isWhiteTheme(getBaseContext());
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         factor = (int)(displayMetrics.density * 100);
         landscapeMode = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
-        oldAndroid = Build.VERSION.SDK_INT < 21;
         try {
             keyboardSvg = new String(ArrayUtil.getByteArrayFromInputStream(getResources()
                     .openRawResource(R.raw.pinkeyboard)), "utf-8");
@@ -345,7 +369,7 @@ public class SaturnActivity extends BaseProxyActivity {
                     "rx=\"16\" ry=\"16\" fill=\"none\" stroke=\"url(#outerCardBorder)\"/>" +
                     "</svg></td></tr><tr><td style='text-align:center'>" +
                     "<div class='balance'>")
-            .append("Balance: \u20ac\u20092304")
+            .append("Balance: <span style='letter-spacing:1pt'>\u20ac\u200a2,304</span>")
             .append("</div></td></tr></table>").toString();
     }
 
@@ -426,7 +450,7 @@ public class SaturnActivity extends BaseProxyActivity {
                 "for (var i = 0; i < pin.length; i++) {\n" +
                 "pwd += '\u25cf\u2009';\n" +
                 "}\n" +
-                "pinfield.innerHTML = pwd + \"</span><span style='color:white'>K</span>\";\n" +
+                "pinfield.innerHTML = pwd + \"</span><span class='pinfix'>K</span>\";\n" +
                 "}\n" +
                 "}\n" +
                 "function addDigit(digit) {\n" +
@@ -473,14 +497,14 @@ public class SaturnActivity extends BaseProxyActivity {
           .append(HTMLEncoder.encode(selectedCard.paymentRequest.getPayee().getCommonName()))
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
-            "<tr><td class='label'>Amount</td><td id='amountfield' class='field' onClick=\"Saturn.toast('Amount to pay')\">")
+            "<tr><td class='label'>Amount</td><td id='amountfield' style='letter-spacing:1pt' class='field' onClick=\"Saturn.toast('Amount to pay')\">")
           .append(selectedCard.paymentRequest.getCurrency().amountToDisplayString(selectedCard.paymentRequest.getAmount(), true))
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
             "<tr><td class='label'>PIN</td>");
 
         if (numericPin) {
-            html.append("<td id='pinfield' class='field' style='background-color:white;border-color:#0000ff' " +
+            html.append("<td id='pinfield' class='field' " +
                         "onClick=\"Saturn.toast('Use the keyboard below...')\"></td></tr>" +
                         "</table>" +
                         "<div id='kbd' style='visibility:hidden;position:absolute;width:")
@@ -507,7 +531,7 @@ public class SaturnActivity extends BaseProxyActivity {
         currentForm = FORM.COLLECTION;
         StringBuffer js = new StringBuffer("var header = document.getElementById('header');\n");
         StringBuffer html = 
-            new StringBuffer("<div id='header' style='visibility:hidden;position:absolute;width:100%;text-align:center'>Select Payment Card</div>");
+            new StringBuffer("<div id='header' class='header'>Select Payment Card</div>");
         int width = displayMetrics.widthPixels;
         int index = 0;
         for (SaturnActivity.Account account : accountCollection) {

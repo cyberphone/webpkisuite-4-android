@@ -68,10 +68,14 @@ public class PropertiesActivity extends ListActivity {
                       "Device Certificate",
                       "Show Protocol Log",
                       "UI Theme"};
+
     AndroidSKSImplementation sks;
+
+    boolean whiteTheme;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        whiteTheme = ThemeHolder.isWhiteTheme(getBaseContext());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_properties);
         setListAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, items));
@@ -111,7 +115,7 @@ public class PropertiesActivity extends ListActivity {
             showDialog(position);
         }
     }
-    static boolean black;
+
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         switch (((AdapterView.AdapterContextMenuInfo) menuInfo).position) {
@@ -123,8 +127,8 @@ public class PropertiesActivity extends ListActivity {
                 break;
             case SETTINGS_THEME:
                 menu.setHeaderTitle("Set UI Theme:");
-                menu.add(1, 0, Menu.NONE, "Black").setChecked(black);
-                menu.add(1, 1, Menu.NONE, "White").setChecked(!black);
+                menu.add(1, 0, Menu.NONE, "Steel").setChecked(!whiteTheme);
+                menu.add(1, 1, Menu.NONE, "White").setChecked(whiteTheme);
                 menu.setGroupCheckable(1, true, true);
                 break;
         }
@@ -133,7 +137,7 @@ public class PropertiesActivity extends ListActivity {
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         if (item.getGroupId() == 1) {
-            black = item.getItemId() == 0;
+            ThemeHolder.writeTheme(getBaseContext(), whiteTheme = item.getItemId() == 1);
         } else {
             Intent intent = new Intent(this, ProtocolViewActivity.class);
             intent.putExtra(ProtocolViewActivity.LOG_FILE, item.getTitle());
