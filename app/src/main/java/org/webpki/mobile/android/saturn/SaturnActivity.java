@@ -91,7 +91,7 @@ public class SaturnActivity extends BaseProxyActivity {
           "border-style:solid;border-color:#808080;border-radius:5pt;background-color:#fafafa}\n" +
           "div.header {font-weight:500;visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
           "span.pinfix {color:#fafafa}\n" +
-          "span.marquee {display:inline-block;position:relative;top:1pt;white-space:nowrap;animation-name:rollingtext;" +
+          "span.marquee {color:brown;display:inline-block;position:relative;top:1pt;white-space:nowrap;animation-name:rollingtext;" +
           "animation-duration:10s;animation-timing-function:linear;" +
           "animation-iteration-count:infinite;font-size:10pt}\n" +
           "@keyframes rollingtext {0% {opacity:1;text-indent:0em} 33% {opacity:1;text-indent:0em} " +
@@ -102,7 +102,7 @@ public class SaturnActivity extends BaseProxyActivity {
           "'use strict';\n" +
           "function positionElements() {\n";
 
-    static final String HTML_HEADER_STEEL = "<html><head><style type='text/css'>\n" +
+    static final String HTML_HEADER_SPACE = "<html><head><style type='text/css'>\n" +
           "body {margin:0;font-size:12pt;color:#000000;font-family:Roboto;" +
           "background:linear-gradient(to bottom right, #263e5b, #6d7a8e, #263e5b);background-attachment:fixed}\n" +
           "td.label {font-weight:500;text-align:right;padding:3pt 3pt 3pt 0pt;color:white}\n" +
@@ -210,7 +210,7 @@ public class SaturnActivity extends BaseProxyActivity {
                 saturnView.loadUrl("about:blank");
                 try {
                     String html = Base64.encodeToString(new StringBuffer(
-                            whiteTheme ? HTML_HEADER_WHITE : HTML_HEADER_STEEL)
+                            whiteTheme ? HTML_HEADER_WHITE : HTML_HEADER_SPACE)
                             .append(positionScript)
                             .append(htmlBodyPrefix)
                             .append(body)

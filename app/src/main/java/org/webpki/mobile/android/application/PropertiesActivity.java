@@ -127,7 +127,7 @@ public class PropertiesActivity extends ListActivity {
                 break;
             case SETTINGS_THEME:
                 menu.setHeaderTitle("Set UI Theme:");
-                menu.add(1, 0, Menu.NONE, "Steel").setChecked(!whiteTheme);
+                menu.add(1, 0, Menu.NONE, "Space").setChecked(!whiteTheme);
                 menu.add(1, 1, Menu.NONE, "White").setChecked(whiteTheme);
                 menu.setGroupCheckable(1, true, true);
                 break;
