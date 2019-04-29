@@ -103,16 +103,15 @@ public class SaturnActivity extends BaseProxyActivity {
           "function positionElements() {\n";
 
     static final String HTML_HEADER_SPACE = "<html><head><style type='text/css'>\n" +
-          "body {margin:0;font-size:12pt;color:#000000;font-family:Roboto;" +
+          "body {margin:0;font-size:12pt;color:white;font-family:Roboto;" +
           "background:linear-gradient(to bottom right, #263e5b, #6d7a8e, #263e5b);background-attachment:fixed}\n" +
-          "td.label {font-weight:500;text-align:right;padding:3pt 3pt 3pt 0pt;color:white}\n" +
-          "td.field {font-weight:500;min-width:11em;max-width:15em;padding:3pt 6pt 3pt 6pt;color:white;border-width:1px;" +
+          "td.label {font-weight:500;text-align:right;padding:3pt 3pt 3pt 0pt}\n" +
+          "td.field {font-weight:500;min-width:11em;max-width:15em;padding:3pt 6pt 3pt 6pt;border-width:1pt;" +
           "border-style:solid;border-color:#b0b0b0;background-color:black;overflow:hidden;" +
           "white-space:nowrap;box-sizing:border-box}\n" +
           "div.balance {font-weight:500;display:inline-block;padding:2pt 5pt;border-width:1pt;" +
-          "border-style:solid;color:white;border-color:#b0b0b0;border-radius:5pt;background-color:black}\n" +
-          "div.header {font-weight:500;color:white;" +
-          "visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
+          "border-style:solid;border-color:#b0b0b0;border-radius:5pt;background-color:black}\n" +
+"div.header {font-weight:500;visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
           "span.pinfix {color:black}\n" +
           "span.marquee {color:orange;display:inline-block;position:relative;top:1pt;white-space:nowrap;animation-name:rollingtext;" +
           "animation-duration:10s;animation-timing-function:linear;" +
