@@ -81,16 +81,21 @@ public class SaturnActivity extends BaseProxyActivity {
 
     public static final String SATURN = "Saturn";
 
+    static final String BACKGROUND_WH = "#f2f2ff";
+    static final String BORDER_WH     = "#8080ff";
+
+    static final String HEADER_FONT_SIZE   = "14pt";
+
     static final String HTML_HEADER_WHITE = "<html><head><style type='text/css'>\n" +
           "body {margin:0;font-size:12pt;color:#000000;font-family:Roboto;background-color:white}\n" +
-          "td.label {font-weight:500;text-align:right;padding:3pt 3pt 3pt 0pt}\n" +
-          "td.field {font-weight:500;min-width:11em;max-width:15em;padding:3pt 6pt 3pt 6pt;border-width:1px;" +
-          "border-style:solid;border-color:#808080;background-color:#fafafa;overflow:hidden;" +
+          "td.label {text-align:right;padding:3pt 3pt 3pt 0pt}\n" +
+          "td.field {min-width:11em;max-width:15em;padding:3pt 6pt 3pt 6pt;border-width:1px;" +
+          "border-style:solid;border-color:" + BORDER_WH + ";background-color:" + BACKGROUND_WH + ";overflow:hidden;" +
           "white-space:nowrap;box-sizing:border-box}\n" +
-          "div.balance {font-weight:500;display:inline-block;padding:2pt 5pt;border-width:1px;" +
-          "border-style:solid;border-color:#808080;border-radius:5pt;background-color:#fafafa}\n" +
-          "div.header {font-weight:500;visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
-          "span.pinfix {color:#fafafa}\n" +
+          "div.balance {display:inline-block;padding:2pt 5pt;border-width:1px;" +
+          "border-style:solid;border-color:" + BORDER_WH + ";border-radius:5pt;background-color:" + BACKGROUND_WH + "}\n" +
+          "div.header {font-size:" + HEADER_FONT_SIZE + ";visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
+          "span.pinfix {color:" + BACKGROUND_WH + "}\n" +
           "span.marquee {color:brown;display:inline-block;position:relative;top:1pt;white-space:nowrap;animation-name:rollingtext;" +
           "animation-duration:10s;animation-timing-function:linear;" +
           "animation-iteration-count:infinite;font-size:10pt}\n" +
@@ -111,7 +116,7 @@ public class SaturnActivity extends BaseProxyActivity {
           "white-space:nowrap;box-sizing:border-box}\n" +
           "div.balance {font-weight:500;display:inline-block;padding:2pt 5pt;border-width:1pt;" +
           "border-style:solid;border-color:#b0b0b0;border-radius:5pt;background-color:black}\n" +
-"div.header {font-weight:500;visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
+          "div.header {font-size:" + HEADER_FONT_SIZE + ";visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
           "span.pinfix {color:black}\n" +
           "span.marquee {color:orange;display:inline-block;position:relative;top:1pt;white-space:nowrap;animation-name:rollingtext;" +
           "animation-duration:10s;animation-timing-function:linear;" +
@@ -272,7 +277,7 @@ public class SaturnActivity extends BaseProxyActivity {
                  "simple.style.left = ((Saturn.width() - simple.offsetWidth) / 2) + 'px';\n" +
                  "simple.style.visibility='visible';\n",
                  "<table id='simple' style='visibility:hidden;position:absolute'>" +
-                 "<tr><td style='padding:20pt'>" +
+                 "<tr><td style='padding:20pt;font-size:" + HEADER_FONT_SIZE + "'>" +
                  simpleHtml +
                  "</td></tr></table>");
     }
@@ -533,7 +538,7 @@ public class SaturnActivity extends BaseProxyActivity {
         currentForm = FORM.COLLECTION;
         StringBuffer js = new StringBuffer("var header = document.getElementById('header');\n");
         StringBuffer html = 
-            new StringBuffer("<div id='header' class='header'>Select Payment Card</div>");
+            new StringBuffer("<div id='header' class='header'>Select Payment Account</div>");
         int width = displayMetrics.widthPixels;
         int index = 0;
         for (SaturnActivity.Account account : accountCollection) {

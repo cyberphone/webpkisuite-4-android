@@ -77,10 +77,14 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
     }
 
     StringBuffer header(String party, String message) {
+        if (!SaturnActivity.whiteTheme) {
+            message = message.replace("color:blue", "color:lightgreen")
+                             .replace("color:red", "color:orange");
+        }
         return new StringBuffer("<table id='msg' style='visibility:hidden;position:absolute;width:100%'>" +
-                                "<tr><td style='text-align:center'>Message from <b><i>")
+                                "<tr><td style='text-align:center'>Message from <i>")
             .append(HTMLEncoder.encode(party))
-            .append("</i></b></td></tr><tr><td style='padding:20pt 20pt 0 20pt'>")
+            .append("</i></td></tr><tr><td style='padding:20pt 20pt 0 20pt'>")
             .append(message)
             .append("</td></tr>");
     }
