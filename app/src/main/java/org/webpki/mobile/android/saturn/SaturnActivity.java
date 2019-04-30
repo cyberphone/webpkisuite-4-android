@@ -549,7 +549,7 @@ public class SaturnActivity extends BaseProxyActivity {
                   .append(landscapeMode ? 
                           "(Saturn.height() - " + card + ".offsetHeight) / 2;\n" 
                                         :
-                          "(Saturn.height() - Math.floor(" + card + ".offsetHeight * 2.3)) / 2;\n");
+                          "(Saturn.height() - Math.floor(" + card + ".offsetHeight * 2)) / 2;\n");
                 js.append("header.style.top = (next - header.offsetHeight) / 2 + 'px';\n");
             }
             js.append(card + ".style.top = next;\n");
