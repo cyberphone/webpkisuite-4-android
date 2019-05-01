@@ -302,14 +302,14 @@ public class SaturnActivity extends BaseProxyActivity {
             htmlBodyPrefix = new StringBuffer("}\n" +
                                               "</script>" +
                                               "</head><body onload=\"positionElements()\">" +
-                                              "<img src='data:image/svg+xml;base64,")
-                .append(Base64.encodeToString(ArrayUtil.getByteArrayFromInputStream(getResources()
-                                                  .openRawResource(R.raw.saturnlogo)),
-                                              Base64.NO_WRAP))
-                .append("' style='height:")
+                                              "<svg style='height:")
                 .append((int)((Math.max(displayMetrics.heightPixels, displayMetrics.widthPixels)  * 5) / factor))
-                .append("px'>").toString();
-            simpleDisplay("Initializing...");
+                .append("px'")
+                .append(new String(ArrayUtil.getByteArrayFromInputStream(getResources()
+                            .openRawResource(whiteTheme ?
+                                 R.raw.saturnlogo_white : R.raw.saturnlogo_space)),"utf-8").substring(4))
+                    .toString();
+           simpleDisplay("Initializing...");
         } catch (Exception e) {
             unconditionalAbort("Saturn didn't initialize!");
             return;
