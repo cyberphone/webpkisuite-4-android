@@ -337,7 +337,8 @@ public class SaturnActivity extends BaseProxyActivity {
             .append(clickOption)
             .append(" style=\"width:")
             .append((width * 100) / factor)
-            .append("px\" viewBox=\"0 0 318 190\" xmlns=\"http://www.w3.org/2000/svg\">" +
+            .append("px\" viewBox=\"0 0 318 190\" xmlns=\"http://www.w3.org/2000/svg\">")
+            .append(whiteTheme ?
                     "<defs>" +
                     " <clipPath id=\"cardClip\">" +
                     "  <rect rx=\"15\" ry=\"15\" height=\"180\" width=\"300\" y=\"0\" x=\"0\"/>" +
@@ -360,9 +361,23 @@ public class SaturnActivity extends BaseProxyActivity {
                     "</defs>" +
                     "<rect filter=\"url(#dropShaddow)\" rx=\"16\" ry=\"16\" " +
                     "height=\"182\" width=\"302\" y=\"4\" x=\"12\" fill=\"#c0c0c0\"/>" +
-                    "<svg x=\"9\" y=\"1\" clip-path=\"url(#cardClip)\"")
+                    "<svg x=\"9\" y=\"1\" clip-path=\"url(#cardClip)\""
+                                       :
+                    "<defs>" +
+                    " <clipPath id=\"cardClip\">" +
+                    "  <rect rx=\"15\" ry=\"15\" height=\"178\" width=\"298\" y=\"0\" x=\"0\"/>" +
+                    " </clipPath>" +
+                    " <filter id=\"dropShaddow\">" +
+                    "  <feGaussianBlur stdDeviation=\"2.8\"/>" +
+                    " </filter>" +
+                    "</defs>" +
+                    "<rect filter=\"url(#dropShaddow)\" rx=\"16\" ry=\"16\" " +
+                    "height=\"181\" width=\"303\" y=\"4\" x=\"6\" fill=\"white\"/>" +
+                    "<svg x=\"9\" y=\"5\" clip-path=\"url(#cardClip)\">")
+
             .append(account.cardSvgIcon.substring(account.cardSvgIcon.indexOf('>')))
-            .append(
+
+            .append(whiteTheme ?
                     "<rect x=\"10\" y=\"2\" " +
                     "width=\"298\" height=\"178\" " +
                     "rx=\"14.7\" ry=\"14.7\" " +
@@ -370,11 +385,17 @@ public class SaturnActivity extends BaseProxyActivity {
                     "stroke=\"url(#innerCardBorder)\" stroke-width=\"2.7\"/>" +
                     "<rect x=\"8.5\" y=\"0.5\" " +
                     "width=\"301\" height=\"181\" " +
-                    "rx=\"16\" ry=\"16\" fill=\"none\" stroke=\"url(#outerCardBorder)\"/>" +
-                    "</svg></td></tr><tr><td style='text-align:center'>" +
-                    "<div class='balance'>")
-            .append("Balance: <span style='letter-spacing:1pt'>\u20ac\u200a2,304</span>")
-            .append("</div></td></tr></table>").toString();
+                    "rx=\"16\" ry=\"16\" fill=\"none\" stroke=\"url(#outerCardBorder)\"/>"
+                             :
+                    "<rect x=\"9.5\" y=\"6\" width=\"296\" height=\"176\" " +
+                    "rx=\"16\" ry=\"16\" fill=\"none\" stroke=\"#808080\"/>" +
+                    "<rect x=\"8.5\" y=\"4.5\" width=\"299\" height=\"179\" " +
+                    "rx=\"16\" ry=\"16\" fill=\"none\" stroke=\"#e0e0e0\"/>")
+
+            .append("</svg></td></tr><tr><td style='text-align:center'>" +
+                    "<div class='balance'>" +
+                    "Balance: <span style='letter-spacing:1pt'>\u20ac\u200a2,304</span>" +
+                    "</div></td></tr></table>").toString();
     }
 
     void ShowPaymentRequest() throws IOException {
