@@ -389,7 +389,7 @@ public class SaturnActivity extends BaseProxyActivity {
                     "<rect x=\"10.5\" y=\"11\" width=\"296\" height=\"176\" " +
                     "rx=\"16\" ry=\"16\" fill=\"none\" stroke=\"#162c44\"/>" +
                     "<rect x=\"9.5\" y=\"9.5\" width=\"299\" height=\"179\" " +
-                    "rx=\"16\" ry=\"16\" fill=\"none\" stroke=\"#e0e0e0\"/>")
+                    "rx=\"17\" ry=\"17\" fill=\"none\" stroke=\"#e0e0e0\"/>")
 
             .append("</svg></td></tr><tr><td style='text-align:center'>" +
                     "<div class='balance'>" +
