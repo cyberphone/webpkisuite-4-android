@@ -96,6 +96,7 @@ public class SaturnActivity extends BaseProxyActivity {
           "border-style:solid;border-color:" + BORDER_WH + ";border-radius:5pt;background-color:" + BACKGROUND_WH + "}\n" +
           "div.header {font-size:" + HEADER_FONT_SIZE + ";visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
           "span.pinfix {color:" + BACKGROUND_WH + "}\n" +
+          "span.money {font-weight:500;letter-spacing:1pt}\n" +
           "span.marquee {color:brown;display:inline-block;position:relative;top:1pt;white-space:nowrap;animation-name:rollingtext;" +
           "animation-duration:10s;animation-timing-function:linear;" +
           "animation-iteration-count:infinite;font-size:10pt}\n" +
@@ -118,6 +119,7 @@ public class SaturnActivity extends BaseProxyActivity {
           "border-style:solid;border-color:#b0b0b0;border-radius:5pt;background-color:black}\n" +
           "div.header {font-size:" + HEADER_FONT_SIZE + ";visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
           "span.pinfix {color:black}\n" +
+          "span.money {font-weight:500;letter-spacing:1pt}\n" +
           "span.marquee {color:orange;display:inline-block;position:relative;top:1pt;white-space:nowrap;animation-name:rollingtext;" +
           "animation-duration:10s;animation-timing-function:linear;" +
           "animation-iteration-count:infinite;font-size:10pt}\n" +
@@ -146,8 +148,6 @@ public class SaturnActivity extends BaseProxyActivity {
     UserResponseItem[] challengeResults;
 
     byte[] privateMessageEncryptionKey;
-
-    String keyboardSvg;
 
     JSONObjectWriter authorizationData;
 
@@ -297,8 +297,6 @@ public class SaturnActivity extends BaseProxyActivity {
         factor = (int)(displayMetrics.density * 100);
         landscapeMode = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
         try {
-            keyboardSvg = new String(ArrayUtil.getByteArrayFromInputStream(getResources()
-                    .openRawResource(R.raw.pinkeyboard)), "utf-8");
             htmlBodyPrefix = new StringBuffer("}\n" +
                                               "</script>" +
                                               "</head><body onload=\"positionElements()\">" +
@@ -393,7 +391,7 @@ public class SaturnActivity extends BaseProxyActivity {
 
             .append("</svg></td></tr><tr><td style='text-align:center'>" +
                     "<div class='balance'>" +
-                    "Balance: <span style='letter-spacing:1pt'>\u20ac\u200a2,304</span>" +
+                    "Balance: <span class='money'>\u20ac\u200a2,304</span>" +
                     "</div></td></tr></table>").toString();
     }
 
@@ -521,7 +519,7 @@ public class SaturnActivity extends BaseProxyActivity {
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
             "<tr><td class='label'>Amount</td><td id='amountfield' " +
-            "class='field' onClick=\"Saturn.toast('Amount to pay')\"><span style='letter-spacing:1pt'>")
+            "class='field' onClick=\"Saturn.toast('Amount to pay')\"><span class='money'>")
           .append(selectedCard.paymentRequest.getCurrency().amountToDisplayString(selectedCard.paymentRequest.getAmount(), true))
           .append("</span>")
           .append(selectedCard.paymentRequest.getNonDirectPayment() == NonDirectPayments.GAS_STATION ?
@@ -539,7 +537,7 @@ public class SaturnActivity extends BaseProxyActivity {
                 .append("px;height:")
                 .append(landscapeMode ? (width * ((50 * 162) / 416)) / factor : (width * ((88 * 162) / 416)) / factor)
                 .append("'>")
-                .append(keyboardSvg)
+                .append(ThemeHolder.getKeyBoard())
                 .append("</div>");
         } else {
             html.append("<td><input id='alphanum' style='font-size:inherit;width:100%' autofocus type='password' size='12' maxlength='16' value='")

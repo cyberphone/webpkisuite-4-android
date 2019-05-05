@@ -51,4 +51,90 @@ public class ThemeHolder {
         } catch (IOException e) {
         }
     }
+
+    static String addButtonCore(int outerWidth, int outerHeight, int xOffset, int yOffset) {
+        return new StringBuilder("<rect x=\"")
+            .append(xOffset)
+            .append("\" y=\"")
+            .append(yOffset)
+            .append("\" width=\"")
+            .append(outerWidth)
+            .append("\" height=\"")
+            .append(outerHeight)
+            .append("\" opacity=\"0\" fill=\"black\"/>" +
+                    "<rect x=\"")
+            .append(xOffset + 6)
+            .append("\" y=\"")
+            .append(yOffset + 6)
+            .append("\" width=\"")
+            .append(outerWidth - 12)
+            .append("\" height=\"")
+            .append(outerHeight - 13)
+            .append("\" rx=\"10\" ry=\"10\" stroke-width=\"2\" stroke=\"")
+            .append(whiteTheme ? "#989898" : "orange")
+            .append("\" fill=\"#a5a5a5\"/>" +
+                    "<rect x=\"")
+            .append(xOffset + 8)
+            .append("\" y=\"")
+            .append(yOffset + 8)
+            .append("\" width=\"")
+            .append(outerWidth - 16)
+            .append("\" height=\"")
+            .append(outerHeight - 17)
+            .append("\" rx=\"8\" ry=\"8\" fill=\"#fcfcfc\" filter=\"url(#actorsBlur)\"/>").toString();
+    }
+
+    static String addDigit(int value, int xOffset, int yOffset) {
+        return new StringBuilder("<a xlink:href=\"javascript:addDigit('")
+            .append(value)
+            .append("')\">")
+            .append(addButtonCore(56, 48, xOffset, yOffset))
+            .append("<text x=\"")
+            .append(xOffset + 28.5)
+            .append("\" y=\"")
+            .append(yOffset + 33)
+            .append("\" font-family=\"Roboto\" font-size=\"26\" " +
+                    "text-anchor=\"middle\" font-weight=\"bold\">")
+            .append(value)
+            .append("</text></a>").toString();
+    }
+
+    public static String getKeyBoard() {
+        StringBuilder s = new StringBuilder("<svg viewBox=\"0 0 416 162\" " +
+                "xmlns=\"http://www.w3.org/2000/svg\" " +
+                "xmlns:xlink=\"http://www.w3.org/1999/xlink\">" +
+                "<defs>" +
+                "<filter height=\"150%\" width=\"150%\" y=\"-25%\" x=\"-25%\" id=\"actorsBlur\">" +
+                "  <feGaussianBlur stdDeviation=\"3\"/>" +
+                "</filter>" +
+                "</defs>");
+
+        for (int i = 0, x = 0; i < 10; i++) {
+            if (i == 4 || i == 7) {
+                x = 0;
+            }
+            s.append(addDigit(i, x, i < 4 ? 0 : i > 6 ? 114 : 57));
+            x += 80;
+        }
+
+        s.append("<a xlink:href=\"javascript:deleteDigit()\">")
+        .append(addButtonCore(56, 48, (80 * 3) + 120, 0))
+        .append("<text x=\"")
+        .append(((80 * 3) + 120)  + 28.5)
+        .append("\" y=\"")
+        .append(36)
+        .append("\" font-family=\"Roboto\" font-size=\"50\" " +
+                "text-anchor=\"middle\" fill=\"#be1018\">&#171;</text></a>");
+
+        s.append("<a xlink:href=\"javascript:validatePin()\">")
+        .append(addButtonCore(136, 70, 80 * 3 + 120 + 56 - 136, 92))
+        .append("<text x=\"")
+        .append((80 * 3) + 120 + 56 - 136  + 68)
+        .append("\" y=\"")
+        .append(92 + 44)
+        .append("\" font-family=\"Roboto\" font-size=\"26\" " +
+                "text-anchor=\"middle\" font-weight=\"bold\" fill=\"#009900\">Validate</text></a>");
+
+        return s.append("</svg></div>").toString();
+    }
 }
