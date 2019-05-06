@@ -28,6 +28,7 @@ import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
+import android.view.Gravity;
 import android.view.View;
 
 import android.view.inputmethod.InputMethodManager;
@@ -89,7 +90,7 @@ public class SaturnActivity extends BaseProxyActivity {
     static final String HTML_HEADER_WHITE = "<html><head><style type='text/css'>\n" +
           "body {margin:0;font-size:12pt;color:#000000;font-family:Roboto;background-color:white}\n" +
           "td.label {text-align:right;padding:3pt 3pt 3pt 0pt}\n" +
-          "td.field {min-width:11em;max-width:15em;padding:3pt 6pt 3pt 6pt;border-width:1px;" +
+          "td.field {min-width:11em;padding:3pt 6pt 3pt 6pt;border-width:1px;" +
           "border-style:solid;border-color:" + BORDER_WH + ";background-color:" + BACKGROUND_WH + ";overflow:hidden;" +
           "white-space:nowrap;box-sizing:border-box}\n" +
           "div.balance {display:inline-block;padding:2pt 5pt;border-width:1px;" +
@@ -112,7 +113,7 @@ public class SaturnActivity extends BaseProxyActivity {
           "body {margin:0;font-size:12pt;color:white;font-family:Roboto;" +
           "background:linear-gradient(to bottom right, #162c44, #6d7a8e, #162c44);background-attachment:fixed}\n" +
           "td.label {font-weight:500;text-align:right;padding:3pt 3pt 3pt 0pt}\n" +
-          "td.field {font-weight:500;min-width:11em;max-width:15em;padding:3pt 6pt 3pt 6pt;border-width:1pt;" +
+          "td.field {font-weight:500;min-width:11em;padding:3pt 6pt 3pt 6pt;border-width:1pt;" +
           "border-style:solid;border-color:#b0b0b0;background-color:black;overflow:hidden;" +
           "white-space:nowrap;box-sizing:border-box}\n" +
           "div.balance {font-weight:500;display:inline-block;padding:2pt 5pt;border-width:1pt;" +
@@ -390,7 +391,7 @@ public class SaturnActivity extends BaseProxyActivity {
                     "rx=\"17\" ry=\"17\" fill=\"none\" stroke=\"#e0e0e0\"/>")
 
             .append("</svg></td></tr><tr><td style='text-align:center'>" +
-                    "<div class='balance'>" +
+                    "<div class='balance' onClick=\"Saturn.toast('Not implemented in the demo...')\">" +
                     "Balance: <span class='money'>\u20ac\u200a2,304</span>" +
                     "</div></td></tr></table>").toString();
     }
@@ -414,14 +415,15 @@ public class SaturnActivity extends BaseProxyActivity {
         if (landscapeMode) {
             if (numericPin) {
                 js.append(
-                    "var gutter = Math.floor((Saturn.width() - kbd.offsetWidth - card.offsetWidth) / 3);\n" +
-                    "card.style.right = gutter + 'px';\n" +
-                    "card.style.top = gutter + 'px';\n" +
-                    "kbd.style.left = gutter + 'px';\n" +
-                    "var kbdTop = Math.floor(Saturn.height() - gutter - kbd.offsetHeight);\n" +
+                    "var wGutter = Math.floor((Saturn.width() - kbd.offsetWidth - card.offsetWidth) / 3);\n" +
+                    "card.style.right = wGutter + 'px';\n" +
+                    "card.style.top = (Saturn.height() - card.offsetHeight)/3 + 'px';\n" +
+                    "kbd.style.left = wGutter + 'px';\n" +
+                    "var hGutter = Math.floor((Saturn.height() - kbd.offsetHeight - paydata.offsetHeight) / 3);\n" +
+                    "var kbdTop = Math.floor(Saturn.height() - hGutter - kbd.offsetHeight);\n" +
                     "kbd.style.top = kbdTop + 'px';\n" +
-                    "paydata.style.left = gutter + 'px';\n" +
-                    "paydata.style.top = Math.floor(((document.getElementById('cardimage').offsetHeight - paydata.offsetHeight) / 2) + gutter) + 'px';\n"+
+                    "paydata.style.left = wGutter + 'px';\n" +
+                    "paydata.style.top = hGutter + 'px';\n"+
                     "kbd.style.visibility='visible';\n");
             } else {
                 js.append(
@@ -432,10 +434,13 @@ public class SaturnActivity extends BaseProxyActivity {
                     "paydata.style.top = Math.floor((Saturn.height() - paydata.offsetHeight) / 2) + 'px';\n");
             }
         } else {
+            js.append(
+                "card.style.left = ((Saturn.width() - card.offsetWidth) / 2) + 'px';\n" +
+                "var pGutter = ((Saturn.width() - paydata.offsetWidth - payeelabel.offsetWidth) / 2);\n" +
+                "if (pGutter < 10) pGutter = 10;\n" +
+                "paydata.style.left = pGutter + 'px';\n");
             if (numericPin) {
                 js.append(
-                    "card.style.left = ((Saturn.width() - card.offsetWidth) / 2) + 'px';\n" +
-                    "paydata.style.left = ((Saturn.width() - paydata.offsetWidth - payeelabel.offsetWidth) / 2) + 'px';\n" +
                     "var kbdTop = Saturn.height() - Math.floor(kbd.offsetHeight * 1.20);\n" +
                     "kbd.style.top = kbdTop + 'px';\n" +
                     "kbd.style.left = ((Saturn.width() - kbd.offsetWidth) / 2) + 'px';\n" +
@@ -445,8 +450,6 @@ public class SaturnActivity extends BaseProxyActivity {
                     "kbd.style.visibility='visible';\n");
             } else {
                 js.append(
-                    "card.style.left = ((Saturn.width() - card.offsetWidth) / 2) + 'px';\n" +
-                    "paydata.style.left = ((Saturn.width() - paydata.offsetWidth - payeelabel.offsetWidth) / 2) + 'px';\n" +
                     "var gutter = Math.floor((Saturn.height() - card.offsetHeight - paydata.offsetHeight) / 8);\n" +
                     "card.style.top = (gutter * 3) + 'px';\n" +
                     "paydata.style.top = (gutter * 5 + card.offsetHeight) + 'px';\n");
@@ -464,15 +467,11 @@ public class SaturnActivity extends BaseProxyActivity {
             js.append(
                 "var pin = '" + HTMLEncoder.encode(pin) + "';\n" +
                 "function showPin() {\n" +
-                "if (pin.length == 0) {\n" +
-                "pinfield.innerHTML = \"<span style='color:#a0a0a0'>Please enter PIN</span>\";\n" +
-                "} else {\n"+
                 "var pwd = \"<span style='font-size:10pt;position:relative;top:-1pt'>\";\n" +
                 "for (var i = 0; i < pin.length; i++) {\n" +
-                "pwd += '\u25cf\u2009';\n" +
+                "pwd += '\u25cf\u2007';\n" +
                 "}\n" +
                 "pinfield.innerHTML = pwd + \"</span><span class='pinfix'>K</span>\";\n" +
-                "}\n" +
                 "}\n" +
                 "function addDigit(digit) {\n" +
                 "if (pin.length < 16) {\n" +
@@ -509,7 +508,7 @@ public class SaturnActivity extends BaseProxyActivity {
                 "return false;\n");
         }
         StringBuffer html = new StringBuffer(
-            "<table id='paydata' style='visibility:hidden;position:absolute'>");
+            "<table id='paydata' style='visibility:hidden;position:absolute;z-index:5'>");
         if (!numericPin) {
             html.append("<form onsubmit=\"return validatePin()\">");
         }
@@ -713,7 +712,9 @@ public class SaturnActivity extends BaseProxyActivity {
 
     @JavascriptInterface
     public void toast(String message) {
-        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+        Toast toast = Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
+        toast.show();
     }
 
     @JavascriptInterface

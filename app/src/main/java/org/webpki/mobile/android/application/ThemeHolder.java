@@ -32,7 +32,7 @@ public class ThemeHolder {
 
     public static boolean isWhiteTheme(Context caller) {
         if (whiteTheme == null) {
-            whiteTheme = true;
+            whiteTheme = false;
             try {
                 FileInputStream fis = caller.openFileInput(THEME_FILE);
                 whiteTheme = fis.read() == 1;
