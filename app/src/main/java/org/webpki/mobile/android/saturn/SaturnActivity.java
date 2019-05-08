@@ -43,6 +43,8 @@ import org.webpki.mobile.android.R;
 
 import java.io.IOException;
 
+import java.math.BigDecimal;
+
 import java.security.PublicKey;
 
 import java.util.Vector;
@@ -175,6 +177,8 @@ public class SaturnActivity extends BaseProxyActivity {
         String optionalKeyId;
         int optionalBalanceKeyHandle;
 
+        BigDecimal tempBalanceFix;
+
         Account(PaymentRequest paymentRequest,
                 // The core...
                 String paymentMethod,
@@ -190,7 +194,8 @@ public class SaturnActivity extends BaseProxyActivity {
                 KeyEncryptionAlgorithms keyEncryptionAlgorithm,
                 DataEncryptionAlgorithms dataEncryptionAlgorithm,
                 PublicKey encryptionKey,
-                String optionalKeyId) {
+                String optionalKeyId,
+                BigDecimal tempBalanceFix) {
             this.paymentRequest = paymentRequest;
             this.paymentMethod = paymentMethod;
             this.accountId = accountId;
@@ -203,6 +208,8 @@ public class SaturnActivity extends BaseProxyActivity {
             this.dataEncryptionAlgorithm = dataEncryptionAlgorithm;
             this.encryptionKey = encryptionKey;
             this.optionalKeyId = optionalKeyId;
+
+            this.tempBalanceFix = tempBalanceFix;
         }
     }
 
@@ -327,6 +334,15 @@ public class SaturnActivity extends BaseProxyActivity {
             card.accountId;
     }
 
+    String getBalance(Account account) {
+        try {
+            return account.paymentRequest.getCurrency()
+                    .amountToDisplayString(account.tempBalanceFix, true);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     String htmlOneCard(Account account, int width, String card, String clickOption) {
         return new StringBuffer("<table id='")
             .append(card)
@@ -392,7 +408,9 @@ public class SaturnActivity extends BaseProxyActivity {
 
             .append("</svg></td></tr><tr><td style='text-align:center'>" +
                     "<div class='balance' onClick=\"Saturn.toast('Not implemented in the demo...')\">" +
-                    "Balance: <span class='money'>\u20ac\u200a2,304</span>" +
+                    "Balance: <span class='money'>")
+            .append(getBalance(account))
+            .append("</span>" +
                     "</div></td></tr></table>").toString();
     }
 

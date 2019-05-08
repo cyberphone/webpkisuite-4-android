@@ -139,7 +139,8 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                         cardData.getKeyEncryptionAlgorithm(),
                         cardData.getDataEncryptionAlgorithm(),
                         cardData.getEncryptionKey(),
-                        cardData.getOptionalKeyId()
+                        cardData.getOptionalKeyId(),
+                        cardData.getTempBalanceFix()
                     );
                     byte[] hash = cardData.getOptionalAccountStatusKeyHash();
 
