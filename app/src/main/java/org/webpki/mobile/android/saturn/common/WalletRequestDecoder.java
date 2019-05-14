@@ -48,8 +48,14 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
 
     Vector<PaymentNetwork> paymentNetworks = new Vector<PaymentNetwork>();
 
+    String noMatchingMethodsUrl;
+
     public PaymentNetwork[] getPaymentNetworks() {
         return paymentNetworks.toArray(new PaymentNetwork[0]);
+    }
+
+    public String getOptionalNoMatchingMethodsUrl() {
+        return noMatchingMethodsUrl;
     }
 
     @Override
@@ -66,6 +72,7 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
             previous = paymentRequest;
             paymentNetworks.add(new PaymentNetwork(paymentRequest, paymentMethods));
         } while (ar.hasMore());
+        noMatchingMethodsUrl = rd.getStringConditional(NO_MATCHING_METHODS_URL_JSON);
     }
 
     @Override
