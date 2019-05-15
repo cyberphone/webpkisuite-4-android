@@ -290,6 +290,20 @@ public class SaturnActivity extends BaseProxyActivity {
                  "</td></tr></table>");
     }
 
+    public void messageDisplay(String message) {
+        currentForm = FORM.SIMPLE;
+        loadHtml("var message = document.getElementById('message');\n" +
+                 "message.style.top = ((Saturn.height() - message.offsetHeight) / 2) + 'px';\n" +
+                 "message.style.visibility='visible';\n",
+                 "<div id='message' " +
+                 "style='visibility:hidden;position:absolute;box-shadow:0pt 0pt 8pt white;" +
+                 "border-color:#162c44;border-style:solid;border-radius:10pt;" +
+                 "left:10pt;right:10pt;top:250pt;background-color:white;color:black;" +
+                 "padding:15pt 10pt'>" +
+                         message +
+                 "</div>");
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     public void onCreate(Bundle savedInstanceState) {
