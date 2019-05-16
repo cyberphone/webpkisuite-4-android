@@ -98,6 +98,9 @@ public class SaturnActivity extends BaseProxyActivity {
           "div.balance {display:inline-block;padding:2pt 5pt;border-width:1px;" +
           "border-style:solid;border-color:" + BORDER_WH + ";border-radius:5pt;background-color:" + BACKGROUND_WH + "}\n" +
           "div.header {font-size:" + HEADER_FONT_SIZE + ";visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
+          "div.message {visibility:hidden;position:absolute;box-shadow:3pt 3pt 3pt lightgrey;" +
+          "border-width:1px;border-color:grey;border-style:solid;border-radius:10pt;" +
+          "left:10pt;right:10pt;background-color:#ffffea;color:black;padding:15pt 10pt}" +
           "span.pinfix {color:" + BACKGROUND_WH + "}\n" +
           "span.money {font-weight:500;letter-spacing:1pt}\n" +
           "span.marquee {color:brown;display:inline-block;position:relative;top:1pt;white-space:nowrap;animation-name:rollingtext;" +
@@ -121,6 +124,9 @@ public class SaturnActivity extends BaseProxyActivity {
           "div.balance {font-weight:500;display:inline-block;padding:2pt 5pt;border-width:1pt;" +
           "border-style:solid;border-color:#b0b0b0;border-radius:5pt;background-color:black}\n" +
           "div.header {font-size:" + HEADER_FONT_SIZE + ";visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
+          "div.message {visibility:hidden;position:absolute;box-shadow:0pt 0pt 8pt white;" +
+          "border-width:1pt;border-color:#162c44;border-style:solid;border-radius:10pt;" +
+          "left:10pt;right:10pt;background-color:white;color:black;padding:15pt 10pt}" +
           "span.pinfix {color:black}\n" +
           "span.money {font-weight:500;letter-spacing:1pt}\n" +
           "span.marquee {color:orange;display:inline-block;position:relative;top:1pt;white-space:nowrap;animation-name:rollingtext;" +
@@ -295,11 +301,7 @@ public class SaturnActivity extends BaseProxyActivity {
         loadHtml("var message = document.getElementById('message');\n" +
                  "message.style.top = ((Saturn.height() - message.offsetHeight) / 2) + 'px';\n" +
                  "message.style.visibility='visible';\n",
-                 "<div id='message' " +
-                 "style='visibility:hidden;position:absolute;box-shadow:0pt 0pt 8pt white;" +
-                 "border-color:#162c44;border-style:solid;border-radius:10pt;" +
-                 "left:10pt;right:10pt;top:250pt;background-color:white;color:black;" +
-                 "padding:15pt 10pt'>" +
+                 "<div id='message' class='message'>" +
                          message +
                  "</div>");
     }

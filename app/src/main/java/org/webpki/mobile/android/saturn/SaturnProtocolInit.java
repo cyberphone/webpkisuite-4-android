@@ -94,9 +94,11 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                     saturnActivity.messageDisplay(
                         "You do not seem to have any matching payment cards." +
                                 (noMatchingMethodsUrl == null ? "" :
-                        "<div style='padding:10pt 0 2pt 0'>For a selection of test cards, you can enroll such at the Saturn " +
-                        "proof-of-concept site:</div><div style='word-break:break-all'><a style='font-size:10pt;font-weight:bold;text-decoration:none;color:blue' href='" +
-                        noMatchingMethodsUrl + "' target='_blank'>" + noMatchingMethodsUrl + "</a>.</div>"));
+                        "<div style='padding:10pt 0 2pt 0'>To remedy this situation, <b>" +
+                         saturnActivity.getRequestingHost() + "</b> suggests browsing to:" +
+                        "</div><div style='word-break:break-all'>" +
+                        "<a style='text-decoration:none;color:blue' href='" +
+                        noMatchingMethodsUrl + "' target='_blank'>" + noMatchingMethodsUrl + "</a></div>"));
                 } else if (saturnActivity.accountCollection.size () == 1) {
                     saturnActivity.selectCard("0");
                 } else {
