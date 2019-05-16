@@ -296,11 +296,12 @@ public class SaturnActivity extends BaseProxyActivity {
                  "</td></tr></table>");
     }
 
-    public void messageDisplay(String message) {
+    public void messageDisplay(String js, String message) {
         currentForm = FORM.SIMPLE;
         loadHtml("var message = document.getElementById('message');\n" +
                  "message.style.top = ((Saturn.height() - message.offsetHeight) / 2) + 'px';\n" +
-                 "message.style.visibility='visible';\n",
+                 "message.style.visibility='visible';\n" +
+                 js,
                  "<div id='message' class='message'>" +
                          message +
                  "</div>");

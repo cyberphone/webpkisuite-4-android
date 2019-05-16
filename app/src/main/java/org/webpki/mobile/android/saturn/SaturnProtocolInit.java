@@ -91,7 +91,7 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
             try {
                 if (saturnActivity.accountCollection.isEmpty()) {
                     String noMatchingMethodsUrl = saturnActivity.walletRequest.getOptionalNoMatchingMethodsUrl();
-                    saturnActivity.messageDisplay(
+                    saturnActivity.messageDisplay("",
                         "You do not seem to have any matching payment cards." +
                                 (noMatchingMethodsUrl == null ? "" :
                         "<div style='padding:10pt 0 2pt 0'>To remedy this situation, <b>" +

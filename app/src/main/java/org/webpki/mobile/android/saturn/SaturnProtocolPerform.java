@@ -77,16 +77,11 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
     }
 
     StringBuffer header(String party, String message) {
-        if (!SaturnActivity.whiteTheme) {
-            message = message.replace("color:blue", "color:lightgreen")
-                             .replace("color:red", "color:orange");
-        }
-        return new StringBuffer("<table id='msg' style='visibility:hidden;position:absolute;width:100%'>" +
-                                "<tr><td style='text-align:center'>Message from <i>")
+        return new StringBuffer("<div style='text-align:center'>Message from <i>")
             .append(HTMLEncoder.encode(party))
-            .append("</i></td></tr><tr><td style='padding:20pt 20pt 0 20pt'>")
+            .append("</i></div><div style='padding-top:15pt'>")
             .append(message)
-            .append("</td></tr>");
+            .append("</div>");
     }
 
     @Override
@@ -99,10 +94,7 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
             saturnActivity.showFailLog();
         } else if (alertUser) {
             StringBuffer html = new StringBuffer();
-            StringBuffer js = 
-                new StringBuffer("var msg = document.getElementById('msg');\n" +
-                                 "msg.style.top = ((Saturn.height() - msg.offsetHeight) / 2) + 'px';\n" +
-                                 "msg.style.visibility='visible';\n");
+            StringBuffer js = new StringBuffer();
 
             if (merchantHtmlAlert == null) {
                 html.append(header(encryptedMessage.getRequester(), encryptedMessage.getText()));
@@ -121,7 +113,7 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
                     html.append("<form onsubmit=\"return Saturn.getChallengeJSON(getChallengeData())\">");
                     String autofocus = "autofocus ";
                     for (UserChallengeItem challengeField : encryptedMessage.getOptionalUserChallengeItems()) {
-                        html.append("<tr><td style='padding:10pt 20pt 0 20pt'>");
+                        html.append("<div style='padding-top:15pt'>");
                         if (challengeField.getOptionalLabel() != null) {
                             html.append(challengeField.getOptionalLabel())
                                 .append(":<br>");
@@ -136,11 +128,11 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
                             .append(challengeField.getId())
                             .append("' size='")
                             .append((int)challengeField.getOptionalLength())
-                            .append("'></td></tr>");
+                            .append("'></div>");
                         autofocus = "";
                     }
-                    html.append("<tr><td style='text-align:center;padding-top:20pt'>" +
-                                "<input type='submit' style='font-size:inherit' value='Submit'></td></tr>" +
+                    html.append("<div style='text-align:center;padding-top:15pt'>" +
+                                "<input type='submit' style='font-size:inherit' value='Submit'></div>" +
                                 "</form>");
                 }
              } else {
@@ -149,7 +141,7 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
                                     merchantHtmlAlert));
             }
             saturnActivity.currentForm = SaturnActivity.FORM.SIMPLE;
-            saturnActivity.loadHtml(js.toString(), html.append("</table>").toString());
+            saturnActivity.messageDisplay(js.toString(), html.toString());
        } else {
             String url = saturnActivity.getRedirectURL();
             if (url.equals(BaseProperties.SATURN_LOCAL_SUCCESS_URI)) {
