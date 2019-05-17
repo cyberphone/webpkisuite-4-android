@@ -650,7 +650,12 @@ public class SaturnActivity extends BaseProxyActivity {
              do {
                  JSONObjectReader challengeObject = challengeArray.getObject();
                  String id = challengeObject.getProperties()[0];
-                 temp.add(new UserResponseItem(id, challengeObject.getString(id)));
+                 String data = challengeObject.getString(id);
+                 if (data.isEmpty()) {
+                     toast("Please provide some data");
+                     return false;
+                 }
+                 temp.add(new UserResponseItem(id, data));
             } while (challengeArray.hasMore());
             challengeResults = temp.toArray(new UserResponseItem[0]);
             hideSoftKeyBoard();

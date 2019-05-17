@@ -133,7 +133,10 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
                         autofocus = "";
                     }
                     html.append("<div style='text-align:center;padding-top:15pt'>" +
-                                "<input type='submit' style='font-size:inherit' value='Submit'></div>" +
+                                "<input type='submit' style='font-size:inherit;text-align:center;padding:3pt 10pt;border-width:1px;" +
+                                "border-style:solid;border-color:#a0a0a0;box-shadow:3pt 3pt 3pt #d0d0d0;" +
+                                "background:linear-gradient(to bottom, #eaeaea 14%,#fcfcfc 52%,#e5e5e5 89%);" +
+                                "border-radius:3pt;margin-left:auto;margin-right:auto' value='Submit'></div>" +
                                 "</form>");
                 }
              } else {
