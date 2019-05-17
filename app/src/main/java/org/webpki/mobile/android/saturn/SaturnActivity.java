@@ -227,7 +227,7 @@ public class SaturnActivity extends BaseProxyActivity {
             public void run() {
                 saturnView.loadUrl("about:blank");
                 try {
-                    String html = Base64.encodeToString(new StringBuffer(
+                    String html = Base64.encodeToString(new StringBuilder(
                             whiteTheme ? HTML_HEADER_WHITE : HTML_HEADER_SPACE)
                             .append(positionScript)
                             .append(htmlBodyPrefix)
@@ -322,7 +322,7 @@ public class SaturnActivity extends BaseProxyActivity {
         factor = (int)(displayMetrics.density * 100);
         landscapeMode = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
         try {
-            htmlBodyPrefix = new StringBuffer("}\n" +
+            htmlBodyPrefix = new StringBuilder("}\n" +
                                               "</script>" +
                                               "</head><body onload=\"positionElements()\">" +
                                               "<svg style='height:")
@@ -361,7 +361,7 @@ public class SaturnActivity extends BaseProxyActivity {
     }
 
     String htmlOneCard(Account account, int width, String card, String clickOption) {
-        return new StringBuffer("<table id='")
+        return new StringBuilder("<table id='")
             .append(card)
             .append("' style='visibility:hidden;position:absolute'><tr><td id='")
             .append(card)
@@ -435,7 +435,7 @@ public class SaturnActivity extends BaseProxyActivity {
         currentForm = FORM.PAYMENTREQUEST;
         boolean numericPin = sks.getKeyProtectionInfo(selectedCard.signatureKeyHandle).getPinFormat() == PassphraseFormat.NUMERIC;
         int width = displayMetrics.widthPixels;
-        StringBuffer js = new StringBuffer(
+        StringBuilder js = new StringBuilder(
             "var card = document.getElementById('card');\n" +
             "var paydata = document.getElementById('paydata');\n");
         if (numericPin) {
@@ -542,7 +542,7 @@ public class SaturnActivity extends BaseProxyActivity {
                 "}\n" +
                 "return false;\n");
         }
-        StringBuffer html = new StringBuffer(
+        StringBuilder html = new StringBuilder(
             "<table id='paydata' style='visibility:hidden;position:absolute;z-index:5'>");
         if (!numericPin) {
             html.append("<form onsubmit=\"return validatePin()\">");
@@ -588,9 +588,9 @@ public class SaturnActivity extends BaseProxyActivity {
 
     void showCardCollection() {
         currentForm = FORM.COLLECTION;
-        StringBuffer js = new StringBuffer("var header = document.getElementById('header');\n");
-        StringBuffer html = 
-            new StringBuffer("<div id='header' class='header'>Select Payment Account</div>");
+        StringBuilder js = new StringBuilder("var header = document.getElementById('header');\n");
+        StringBuilder html =
+            new StringBuilder("<div id='header' class='header'>Select Payment Account</div>");
         int width = displayMetrics.widthPixels;
         int index = 0;
         for (SaturnActivity.Account account : accountCollection) {

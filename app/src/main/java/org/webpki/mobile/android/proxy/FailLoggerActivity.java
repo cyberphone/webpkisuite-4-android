@@ -36,7 +36,7 @@ public class FailLoggerActivity extends Activity {
         setContentView(R.layout.activity_fail_logger);
         WebView log_view = (WebView) findViewById(R.id.failedData);
         Intent intent = getIntent();
-        StringBuffer log_message = new StringBuffer("<html><body><pre>");
+        StringBuilder log_message = new StringBuilder("<html><body><pre>");
         for (char c : intent.getStringExtra(LOG_MESSAGE).toCharArray()) {
             if (c == '\n') {
                 log_message.append("%0A");

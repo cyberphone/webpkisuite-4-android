@@ -52,7 +52,7 @@ public class CertificateViewActivity extends Activity {
     }
 
 
-    private void add(StringBuffer s, String header, String data) {
+    private void add(StringBuilder s, String header, String data) {
         s.append("<tr valign=\"middle\" bgcolor=\"#e0e0e8\"><td>")
          .append(header)
          .append("</td><td><code>")
@@ -61,9 +61,9 @@ public class CertificateViewActivity extends Activity {
     }
 
 
-    private void printURIs(StringBuffer s, String header, String[] inuris) throws IOException {
+    private void printURIs(StringBuilder s, String header, String[] inuris) throws IOException {
         if (inuris != null) {
-            StringBuffer arg = new StringBuffer();
+            StringBuilder arg = new StringBuilder();
             boolean break_it = false;
             for (String uri : inuris) {
                 if (break_it) {
@@ -79,7 +79,7 @@ public class CertificateViewActivity extends Activity {
 
 
     private String formatCodeString(String hex_with_spaces) {
-        StringBuffer dump = new StringBuffer();
+        StringBuilder dump = new StringBuilder();
         for (char c : hex_with_spaces.toCharArray()) {
             if (c == '\n') {
                 dump.append("<br>");
@@ -102,7 +102,7 @@ public class CertificateViewActivity extends Activity {
         setContentView(R.layout.activity_cert_view);
         WebView log_view = (WebView) findViewById(R.id.certData);
         Intent intent = getIntent();
-        StringBuffer cert_text = new StringBuffer("<html><body><table cellspacing=\"5\" cellpadding=\"5\">");
+        StringBuilder cert_text = new StringBuilder("<html><body><table cellspacing=\"5\" cellpadding=\"5\">");
         try {
             CertificateInfo cert_info = new CertificateInfo(CertificateUtil.getCertificateFromBlob(intent.getByteArrayExtra(CERTIFICATE_BLOB)));
             add(cert_text, "Issuer", HTMLEncoder.encode(cert_info.getIssuer()));
@@ -131,7 +131,7 @@ public class CertificateViewActivity extends Activity {
             add(cert_text, "Public&nbsp;key", binaryDump(cert_info.getPublicKeyData(), false));
             cert_text.append("</table>");
         } catch (Exception e) {
-            cert_text = new StringBuffer("<html><body><font color=\"red\">FAILED: ").append(e.getMessage());
+            cert_text = new StringBuilder("<html><body><font color=\"red\">FAILED: ").append(e.getMessage());
         }
         log_view.loadData(cert_text.append("</body></html>").toString(), "text/html; charset=UTF-8", null);
     }

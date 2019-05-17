@@ -80,7 +80,7 @@ public abstract class BaseProxyActivity extends Activity {
 
     private ProgressDialog progress_display;
 
-    private StringBuffer logger = new StringBuffer();
+    private StringBuilder logger = new StringBuilder();
 
     private HTTPSWrapper https_wrapper;
 

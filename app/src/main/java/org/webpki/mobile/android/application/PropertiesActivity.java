@@ -170,7 +170,7 @@ public class PropertiesActivity extends ListActivity {
                 device_id_builder.setTitle("Device ID");
                 device_id_builder.setIcon(android.R.drawable.ic_menu_info_details);
                 try {
-                    StringBuffer devid = new StringBuffer(DeviceID.getDeviceId(sks.getDeviceInfo().getCertificatePath()[0], false));
+                    StringBuilder devid = new StringBuilder(DeviceID.getDeviceId(sks.getDeviceInfo().getCertificatePath()[0], false));
                     for (int i = 0, j = 4; i < 4; i++, j += 5) {
                         devid.insert(j, '-');
                     }

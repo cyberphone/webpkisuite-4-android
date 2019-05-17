@@ -76,8 +76,9 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
         return false;
     }
 
-    StringBuffer header(String party, String message) {
-        return new StringBuffer("<div style='text-align:center'>Message from <i>")
+    StringBuilder header(String party, String message) {
+//TODO "message" MUST be checked for valid subset of HTML
+        return new StringBuilder("<div style='text-align:center'>Message from <i>")
             .append(HTMLEncoder.encode(party))
             .append("</i></div><div style='padding-top:15pt'>")
             .append(message)
@@ -93,8 +94,8 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
         if (alertUser == null) {
             saturnActivity.showFailLog();
         } else if (alertUser) {
-            StringBuffer html = new StringBuffer();
-            StringBuffer js = new StringBuffer();
+            StringBuilder html = new StringBuilder();
+            StringBuilder js = new StringBuilder();
 
             if (merchantHtmlAlert == null) {
                 html.append(header(encryptedMessage.getRequester(), encryptedMessage.getText()));

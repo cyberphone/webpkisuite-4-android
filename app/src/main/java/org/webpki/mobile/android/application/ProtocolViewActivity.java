@@ -47,7 +47,7 @@ public class ProtocolViewActivity extends Activity {
         log_view.getSettings().setSupportZoom(true);
         log_view.getSettings().setBuiltInZoomControls(true);
         Intent intent = getIntent();
-        StringBuffer log_message = new StringBuffer("<html><body style=\"font-size:8pt;font-family:arial,verdana,helvetica;word-break:break-all\">");
+        StringBuilder log_message = new StringBuilder("<html><body style=\"font-size:8pt;font-family:arial,verdana,helvetica;word-break:break-all\">");
         try {
             int count = 0;
             boolean received = true;

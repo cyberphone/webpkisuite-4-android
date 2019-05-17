@@ -181,7 +181,7 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
                 pin2.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI | EditorInfo.IME_ACTION_GO);
                 pin_err = (TextView) keygen2_activity.findViewById(R.id.errorPIN);
                 TextView set_pin_text = (TextView) keygen2_activity.findViewById(R.id.setPINtext);
-                StringBuffer lead_text = new StringBuffer("Set ");
+                StringBuilder lead_text = new StringBuilder("Set ");
                 if (upd.getPINPolicy().getGrouping() == Grouping.SIGNATURE_PLUS_STANDARD) {
                     lead_text.append(upd.getAppUsage() == AppUsage.SIGNATURE ? "signature " : "standard ");
                 } else if (upd.getPINPolicy().getGrouping() == Grouping.UNIQUE) {
