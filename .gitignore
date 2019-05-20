@@ -3,6 +3,7 @@ target
 .gradle
 build
 .idea
+**/*.iml
 maven-repository
 local.properties
 mvn-clone
