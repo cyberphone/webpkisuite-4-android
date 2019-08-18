@@ -50,9 +50,14 @@ import org.webpki.json.JSONDecoderCache;
 import org.webpki.json.JSONEncoder;
 import org.webpki.json.JSONOutputFormats;
 
+import org.webpki.mobile.android.keygen2.KeyGen2Activity;
+
 import org.webpki.mobile.android.saturn.SaturnActivity;
 
+import org.webpki.mobile.android.webauth.WebAuthActivity;
+
 import org.webpki.net.HTTPSWrapper;
+import org.webpki.net.MobileProxyParameters;
 
 import org.webpki.mobile.android.sks.AndroidSKSImplementation;
 import org.webpki.mobile.android.sks.HardwareKeyStore;
@@ -81,7 +86,9 @@ public abstract class BaseProxyActivity extends Activity {
             new LinkedHashMap<String,Class<? extends BaseProxyActivity>>();
 
     static {
-        executors.put("saturn", SaturnActivity.class);
+        executors.put(MobileProxyParameters.HOST_SATURN, SaturnActivity.class);
+        executors.put(MobileProxyParameters.HOST_KEYGEN2, KeyGen2Activity.class);
+        executors.put(MobileProxyParameters.HOST_MOBILEID, WebAuthActivity.class);
     }
 
     public static Class<? extends BaseProxyActivity> getExecutor(Uri url) {
@@ -316,13 +323,13 @@ public abstract class BaseProxyActivity extends Activity {
     }
 
     boolean qr_mode;
-    protected boolean qrInvoked() {
+    protected boolean qrCodeInvoked() {
         return qr_mode;
     }
 
-    boolean pr_mode;
-    protected boolean prInvoked() {
-        return pr_mode;
+    boolean w3cpay_mode;
+    protected boolean w3cPayInvoked() {
+        return w3cpay_mode;
     }
 
     public void showFailLog() {
@@ -379,10 +386,10 @@ public abstract class BaseProxyActivity extends Activity {
         if (uri == null) {
             throw new IOException("No URI");
         }
-        pr_mode = uri.getScheme().startsWith("w3c");
+        w3cpay_mode = uri.getScheme().equals(MobileProxyParameters.SCHEME_W3CPAY);
         transaction_url = getQueryParameter(uri, "url");
         String boot_url = getQueryParameter(uri, "init");
-        qr_mode = uri.getScheme().startsWith("qr");
+        qr_mode = uri.getScheme().equals(MobileProxyParameters.SCHEME_QRCODE);
         requesting_host = new URL(boot_url).getHost();
         List<String> arg = uri.getQueryParameters("cookie");
         if (!arg.isEmpty()) {

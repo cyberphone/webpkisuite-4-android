@@ -243,9 +243,9 @@ public class SaturnActivity extends BaseProxyActivity {
 
     @Override
     public void launchBrowser(String url) {
-        if (qrInvoked()) {
+        if (qrCodeInvoked()) {
             new QRCancel(this, url).execute();
-        } else if (prInvoked()) {
+        } else if (w3cPayInvoked()) {
             Intent result = new Intent();
             Bundle extras = new Bundle();
             extras.putString("methodName", "https://192.168.1.79:8442/w3cpay/method");
