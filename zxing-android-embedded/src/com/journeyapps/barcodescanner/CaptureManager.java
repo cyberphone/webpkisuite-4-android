@@ -58,7 +58,7 @@ public class CaptureManager {
 
     private static int cameraPermissionReqCode = 250;
 
-    private Activity activity;
+    private CaptureActivity activity;
     private DecoratedBarcodeView barcodeView;
     private int orientationLock = ActivityInfo.SCREEN_ORIENTATION_SENSOR;
     private static final String SAVED_ORIENTATION_LOCK = "SAVED_ORIENTATION_LOCK";
@@ -118,7 +118,7 @@ public class CaptureManager {
         }
     };
 
-    public CaptureManager(Activity activity, DecoratedBarcodeView barcodeView) {
+    public CaptureManager(CaptureActivity activity, DecoratedBarcodeView barcodeView) {
         this.activity = activity;
         this.barcodeView = barcodeView;
         barcodeView.getBarcodeView().addStateListener(stateListener);
@@ -387,9 +387,7 @@ public class CaptureManager {
         if (raw.startsWith("webpki.org=")) {
             try  {
                 raw = URLDecoder.decode(raw.substring(11), "UTF-8");
-                Intent intent = new Intent(Intent.ACTION_VIEW).setData(Uri.parse(raw));
-                activity.startActivity(intent);
-                finish();
+                activity.webPkiEvent(raw);
                 return;
             } catch (IOException e) {
             }

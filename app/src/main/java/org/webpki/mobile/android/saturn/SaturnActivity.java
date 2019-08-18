@@ -20,6 +20,7 @@ import android.annotation.SuppressLint;
 
 import android.content.Context;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 
 import android.os.Bundle;
@@ -244,6 +245,14 @@ public class SaturnActivity extends BaseProxyActivity {
     public void launchBrowser(String url) {
         if (qrInvoked()) {
             new QRCancel(this, url).execute();
+        } else if (prInvoked()) {
+            Intent result = new Intent();
+            Bundle extras = new Bundle();
+            extras.putString("methodName", "https://192.168.1.79:8442/w3cpay/method");
+            extras.putString("details", "{\"goto\": \"" + url + "\"}");
+            result.putExtras(extras);
+            setResult(RESULT_OK, result);
+            finish();
         } else {
             super.launchBrowser(url);
         }

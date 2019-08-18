@@ -17,7 +17,19 @@
 
 package org.webpki.mobile.android.application;
 
+import android.content.Intent;
+
+import android.net.Uri;
+
+import android.os.AsyncTask;
+
+import android.util.Log;
+
 import com.journeyapps.barcodescanner.CaptureActivity;
+
+import org.webpki.mobile.android.proxy.BaseProxyActivity;
+
+import org.webpki.net.HTTPSWrapper;
 
 /**
  * This activity opens the camera and does the actual scanning on a background thread. It draws a
@@ -29,6 +41,48 @@ import com.journeyapps.barcodescanner.CaptureActivity;
  * @uathor Anders Rundgren (adapted BarcodScanner from ZXING)
  */
 public final class QRIDActivity extends CaptureActivity {
+    
+    static class QRTrigger extends AsyncTask<Void, Void, Boolean> {
+        private String url;
+        private QRIDActivity activity;
+        Uri proxyUrl;
 
+        public QRTrigger (String url, QRIDActivity activity) {
+             this.url = url;
+             this.activity = activity;
+        }
+
+        @Override
+        protected Boolean doInBackground (Void... params) {
+            try {
+                HTTPSWrapper wrapper = new HTTPSWrapper();
+                wrapper.setTimeout(5000);
+                wrapper.setRequireSuccess(true);
+                wrapper.makeGetRequest(url);
+                proxyUrl = Uri.parse(wrapper.getDataUTF8());
+                Intent intent = new Intent(activity.getApplicationContext(), BaseProxyActivity.getExecutor(proxyUrl));
+                intent.setData(proxyUrl);
+                activity.startActivity(intent);
+            } catch (Exception e) {
+                Log.e("QQQ", url, e);
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            Log.i("QQQ", "OK=" + success);
+            if (success) {
+                BaseProxyActivity.getExecutor(proxyUrl);
+            }
+            activity.finish();
+        }
+    }
+
+    @Override
+    protected void webPkiEvent(String url) {
+        new QRTrigger(url, this).execute();
+    }
 }
 

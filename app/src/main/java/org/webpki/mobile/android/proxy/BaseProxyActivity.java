@@ -29,6 +29,7 @@ import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Vector;
 
@@ -48,6 +49,8 @@ import org.webpki.json.JSONDecoder;
 import org.webpki.json.JSONDecoderCache;
 import org.webpki.json.JSONEncoder;
 import org.webpki.json.JSONOutputFormats;
+
+import org.webpki.mobile.android.saturn.SaturnActivity;
 
 import org.webpki.net.HTTPSWrapper;
 
@@ -73,6 +76,21 @@ public abstract class BaseProxyActivity extends Activity {
     public static final String PROGRESS_AUTHENTICATING = "Authenticating...";
 
     public static final String CONTINUE_EXECUTION      = "CONTINUE_EXECUTION";  // Return constant to AsyncTasks
+
+    static LinkedHashMap<String,Class<? extends BaseProxyActivity>> executors =
+            new LinkedHashMap<String,Class<? extends BaseProxyActivity>>();
+
+    static {
+        executors.put("saturn", SaturnActivity.class);
+    }
+
+    public static Class<? extends BaseProxyActivity> getExecutor(Uri url) {
+        Class<? extends BaseProxyActivity> executor = executors.get(url.getHost());
+        if (executor == null) {
+            Log.e("Missing executor", url.getHost());
+        }
+        return executor;
+    }
 
     private static final String JSON_CONTENT = "application/json";
 
@@ -302,6 +320,11 @@ public abstract class BaseProxyActivity extends Activity {
         return qr_mode;
     }
 
+    boolean pr_mode;
+    protected boolean prInvoked() {
+        return pr_mode;
+    }
+
     public void showFailLog() {
         noMoreWorkToDo();
         Intent intent = new Intent(this, FailLoggerActivity.class);
@@ -356,9 +379,10 @@ public abstract class BaseProxyActivity extends Activity {
         if (uri == null) {
             throw new IOException("No URI");
         }
+        pr_mode = uri.getScheme().startsWith("w3c");
         transaction_url = getQueryParameter(uri, "url");
         String boot_url = getQueryParameter(uri, "init");
-        qr_mode = uri.getQueryParameter("qr") != null;
+        qr_mode = uri.getScheme().startsWith("qr");
         requesting_host = new URL(boot_url).getHost();
         List<String> arg = uri.getQueryParameters("cookie");
         if (!arg.isEmpty()) {

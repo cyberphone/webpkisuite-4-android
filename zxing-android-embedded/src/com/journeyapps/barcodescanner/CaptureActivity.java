@@ -25,6 +25,10 @@ public class CaptureActivity extends Activity {
         capture.decode();
     }
 
+    protected void webPkiEvent(String url) {
+
+    }
+
     /**
      * Override to use a different layout.
      *

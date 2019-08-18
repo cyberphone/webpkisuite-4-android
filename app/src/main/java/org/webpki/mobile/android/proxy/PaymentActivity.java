@@ -28,8 +28,6 @@ import android.os.Parcelable;
 
 import android.util.Log;
 
-import org.webpki.mobile.android.saturn.SaturnActivity;
-
 import org.webpki.mobile.android.R;
 
 import java.io.ByteArrayInputStream;
@@ -40,16 +38,8 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 
 public class PaymentActivity extends Activity {
-
-    static LinkedHashMap<String,Class<? extends BaseProxyActivity>> executors =
-            new LinkedHashMap<String,Class<? extends BaseProxyActivity>>();
-
-    static {
-        executors.put("saturn", SaturnActivity.class);
-    }
 
     private Handler mWaitHandler = new Handler();
 
@@ -119,11 +109,7 @@ public class PaymentActivity extends Activity {
         }
         Log.i("KKK", url.getHost());
         Log.i("KKK", eeCertificate.toString());
-        final Class<? extends Activity> executor = executors.get(url.getHost());
-        if (executor == null) {
-            bad("no executor found");
-            return;
-        }
+        final Class<? extends BaseProxyActivity> executor = BaseProxyActivity.getExecutor(url);
         mWaitHandler.post(new Runnable() {
 
             @Override
