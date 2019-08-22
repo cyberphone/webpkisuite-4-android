@@ -499,7 +499,7 @@ public class SaturnActivity extends BaseProxyActivity {
                     "paydata.style.top = (gutter * 5 + card.offsetHeight) + 'px';\n");
             }
         }
-        if (selectedCard.paymentRequest.getNonDirectPayment() == NonDirectPayments.GAS_STATION) {
+        if (walletRequest.isGasStationPayment()) {
             js.append("document.getElementById('amountfield').innerHTML += " +
                     "\"<span class='marquee'><i>Reserved</i>, actual payment will match fuel quantity</span>\";\n");
         }
@@ -565,8 +565,7 @@ public class SaturnActivity extends BaseProxyActivity {
             "class='field' onClick=\"Saturn.toast('Amount to pay')\"><span class='money'>")
           .append(selectedCard.paymentRequest.getCurrency().amountToDisplayString(selectedCard.paymentRequest.getAmount(), true))
           .append("</span>")
-          .append(selectedCard.paymentRequest.getNonDirectPayment() == NonDirectPayments.GAS_STATION ?
-                  "<br>\u200b":"")
+          .append(walletRequest.isGasStationPayment() ? "<br>\u200b" : "")
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
             "<tr><td class='label'>PIN</td>");

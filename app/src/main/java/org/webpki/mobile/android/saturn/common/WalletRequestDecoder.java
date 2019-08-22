@@ -50,8 +50,14 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
 
     String noMatchingMethodsUrl;
 
+    boolean gasStationPayment;
+
     public PaymentNetwork[] getPaymentNetworks() {
         return paymentNetworks.toArray(new PaymentNetwork[0]);
+    }
+
+    public boolean isGasStationPayment() {
+        return gasStationPayment;
     }
 
     public String getOptionalNoMatchingMethodsUrl() {
@@ -72,6 +78,7 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
             previous = paymentRequest;
             paymentNetworks.add(new PaymentNetwork(paymentRequest, paymentMethods));
         } while (ar.hasMore());
+        gasStationPayment = previous.getNonDirectPayment() == NonDirectPayments.GAS_STATION;
         noMatchingMethodsUrl = rd.getStringConditional(NO_MATCHING_METHODS_URL_JSON);
     }
 

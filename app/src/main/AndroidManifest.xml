@@ -89,7 +89,7 @@
                 <action android:name="org.chromium.intent.action.PAY" />
             </intent-filter>
             <meta-data android:name="org.chromium.default_payment_method_name"
-                       android:value="https://192.168.1.79:8442/w3cpay/method"/>
+                       android:value="https://mobilepki.org/w3cpay/method"/>
         </activity>
         <activity
             android:taskAffinity=".proxy.FailLoggerActivity"

@@ -403,7 +403,8 @@ public abstract class BaseProxyActivity extends Activity {
         String version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
         if (versionSpan.substring(0, versionSpan.indexOf('-')).compareTo(version) > 0 ||
             versionSpan.substring(versionSpan.indexOf('-') + 1).compareTo(version) < 0) {
-            throw new IOException("App version:" + version + " required:" + versionSpan);
+            throw new IOException("\n\nActual app version:" + version +
+                                  "\nRequired version:" + versionSpan + "\n");
         }
         https_wrapper.makeGetRequest(boot_url);
         if (https_wrapper.getResponseCode() == HttpURLConnection.HTTP_OK) {

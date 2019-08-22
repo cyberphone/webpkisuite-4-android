@@ -150,9 +150,12 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
             String url = saturnActivity.getRedirectURL();
             if (url.equals(BaseProperties.SATURN_LOCAL_SUCCESS_URI)) {
                 saturnActivity.done = true;
-                saturnActivity.simpleDisplay("The operation was successful!");
+                saturnActivity.simpleDisplay(saturnActivity.walletRequest.isGasStationPayment() ?
+                        "The operation was successful!<br>Now follow the instructions at the pump."
+                                   :
+                        "The operation was successful!");
                 saturnActivity.closeProxy();
-             } else {    
+             } else {
                 saturnActivity.launchBrowser(url);
             }
         }
