@@ -142,15 +142,11 @@ public abstract class BaseProxyActivity extends Activity {
                 .setCancelable(false)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        // The user decided that this is not what he/she wants...
+                        // Something went terribly wrong...
                         dialog.cancel();
                         user_aborted = true;
                         abortTearDown();
-                        if (cancelUrl == null) {
-                            instance.finish();
-                        } else {
-                            launchBrowser(cancelUrl);
-                        }
+                        launchBrowser(cancelUrl);
                     }
                 });
         // Create and show alert dialog
@@ -168,11 +164,7 @@ public abstract class BaseProxyActivity extends Activity {
                         dialog.cancel();
                         user_aborted = true;
                         abortTearDown();
-                        if (cancelUrl == null) {
-                            instance.finish();
-                        } else {
-                            launchBrowser(cancelUrl);
-                        }
+                        launchBrowser(cancelUrl);
                     }
                 });
         alert_dialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -185,7 +177,6 @@ public abstract class BaseProxyActivity extends Activity {
                 }
             }
         });
-
         // Create and show alert dialog
         alert_dialog.create().show();
     }
@@ -255,7 +246,6 @@ public abstract class BaseProxyActivity extends Activity {
             } catch (Exception e) {
                 Log.e(getProtocolName(), "Couldn't write protocol log");
             }
-
         }
         HardwareKeyStore.serializeSKS(getProtocolName(), this);
     }
@@ -398,7 +388,7 @@ public abstract class BaseProxyActivity extends Activity {
         logOK("Invocation URL=" + transaction_url + ", Cookie: " + (arg.isEmpty() ? "N/A" : cookies.elementAt(0)));
         logOK(uri.toString());
         addOptionalCookies(transaction_url);
-        cancelUrl = uri.getQueryParameter("cncl");
+        cancelUrl = getQueryParameter(uri, "cncl");
         String versionSpan = getQueryParameter(uri, "ver");
         String version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
         if (versionSpan.substring(0, versionSpan.indexOf('-')).compareTo(version) > 0 ||
