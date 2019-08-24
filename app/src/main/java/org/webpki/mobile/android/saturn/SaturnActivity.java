@@ -248,7 +248,7 @@ public class SaturnActivity extends BaseProxyActivity {
         } else if (w3cPayInvoked()) {
             Intent result = new Intent();
             Bundle extras = new Bundle();
-            extras.putString("methodName", "https://192.168.1.79:8442/w3cpay/method");
+            extras.putString("methodName", "https://mobilepki.org/w3cpay/method");
             extras.putString("details", "{\"goto\": \"" + url + "\"}");
             result.putExtras(extras);
             setResult(RESULT_OK, result);
