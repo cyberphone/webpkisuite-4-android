@@ -82,7 +82,7 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
 
     @Override
     protected void onPostExecute(Boolean success) {
-        if (saturnActivity.userHasAborted() || saturnActivity.initWasRejected()) {
+        if (saturnActivity.userHasAborted()) {
             return;
         }
         saturnActivity.noMoreWorkToDo();

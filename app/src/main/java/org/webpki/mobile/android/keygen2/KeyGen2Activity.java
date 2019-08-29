@@ -31,13 +31,13 @@ import org.webpki.keygen2.ProvisioningInitializationRequestDecoder;
 public class KeyGen2Activity extends BaseProxyActivity {
     public static final String KEYGEN2 = "KeyGen2";
 
-    InvocationRequestDecoder invocation_request;
+    InvocationRequestDecoder invocationRequest;
 
-    ProvisioningInitializationRequestDecoder prov_init_request;
+    ProvisioningInitializationRequestDecoder provInitRequest;
 
-    KeyCreationRequestDecoder key_creation_request;
+    KeyCreationRequestDecoder keyCreationRequest;
 
-    int provisioning_handle;
+    int provisioningHandle;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -57,9 +57,9 @@ public class KeyGen2Activity extends BaseProxyActivity {
 
     @Override
     protected void abortTearDown() {
-        if (provisioning_handle != 0) {
+        if (provisioningHandle != 0) {
             try {
-                sks.abortProvisioningSession(provisioning_handle);
+                sks.abortProvisioningSession(provisioningHandle);
             } catch (Exception e) {
                 Log.e(KEYGEN2, "Failed to abort SKS session");
             }

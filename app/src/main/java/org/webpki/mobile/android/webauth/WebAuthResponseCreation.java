@@ -64,7 +64,7 @@ public class WebAuthResponseCreation extends AsyncTask<Void, String, String> {
                         @Override
                         public X509Certificate[] getCertificatePath() throws IOException {
                             X509Certificate[] certificate_path = webauth_activity.sks.getKeyAttributes(key_handle).getCertificatePath();
-                            if (webauth_activity.authentication_request.wantsExtendedCertPath()) {
+                            if (webauth_activity.authenticationRequest.wantsExtendedCertPath()) {
                                 return certificate_path;
                             }
                             return new X509Certificate[]{certificate_path[0]};
@@ -79,10 +79,10 @@ public class WebAuthResponseCreation extends AsyncTask<Void, String, String> {
                                                                        sign_alg.getDigestAlgorithm().digest(data));
                         }
                     });
-            signer.setSignatureAlgorithm(webauth_activity.matching_keys.get(key_handle));
+            signer.setSignatureAlgorithm(webauth_activity.matchingKeys.get(key_handle));
             AuthenticationResponseEncoder authentication_response =
                     new AuthenticationResponseEncoder(signer,
-                                                      webauth_activity.authentication_request,
+                                                      webauth_activity.authenticationRequest,
                                                       new GregorianCalendar(),
                                                       webauth_activity.getServerCertificate());
             webauth_activity.postJSONData(webauth_activity.getTransactionURL(),

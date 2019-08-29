@@ -32,9 +32,9 @@ import org.webpki.webauth.AuthenticationRequestDecoder;
 public class WebAuthActivity extends BaseProxyActivity {
     public static final String WEBAUTH = "WebAuth";
 
-    AuthenticationRequestDecoder authentication_request;
+    AuthenticationRequestDecoder authenticationRequest;
 
-    LinkedHashMap<Integer, AsymSignatureAlgorithms> matching_keys = new LinkedHashMap<Integer, AsymSignatureAlgorithms>();
+    LinkedHashMap<Integer, AsymSignatureAlgorithms> matchingKeys = new LinkedHashMap<Integer, AsymSignatureAlgorithms>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

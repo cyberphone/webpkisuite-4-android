@@ -45,62 +45,62 @@ import org.webpki.sks.PatternRestriction;
  * If keys are only managed, this class will not be instantiated.
  */
 public class KeyGen2KeyCreation extends AsyncTask<Void, String, String> {
-    private KeyGen2Activity keygen2_activity;
+    private KeyGen2Activity keyGen2Activity;
 
-    public KeyGen2KeyCreation(KeyGen2Activity keygen2_activity) {
-        this.keygen2_activity = keygen2_activity;
+    public KeyGen2KeyCreation(KeyGen2Activity keyGen2Activity) {
+        this.keyGen2Activity = keyGen2Activity;
     }
 
-    private void postProvisioning(ProvisioningFinalizationRequestDecoder.PostOperation post_operation, int handle) throws IOException, GeneralSecurityException {
-        EnumeratedProvisioningSession old_provisioning_session = new EnumeratedProvisioningSession();
+    private void postProvisioning(ProvisioningFinalizationRequestDecoder.PostOperation postOperation, int handle) throws IOException, GeneralSecurityException {
+        EnumeratedProvisioningSession oldProvisioningSession = new EnumeratedProvisioningSession();
         while (true) {
-            if ((old_provisioning_session = keygen2_activity.sks.enumerateProvisioningSessions(old_provisioning_session.getProvisioningHandle(), false)) == null) {
+            if ((oldProvisioningSession = keyGen2Activity.sks.enumerateProvisioningSessions(oldProvisioningSession.getProvisioningHandle(), false)) == null) {
                 throw new IOException("Old provisioning session not found:" +
-                        post_operation.getClientSessionId() +
+                        postOperation.getClientSessionId() +
                         "/" +
-                        post_operation.getServerSessionId());
+                        postOperation.getServerSessionId());
             }
-            if (old_provisioning_session.getClientSessionId().equals(post_operation.getClientSessionId()) &&
-                old_provisioning_session.getServerSessionId().equals(post_operation.getServerSessionId())) {
+            if (oldProvisioningSession.getClientSessionId().equals(postOperation.getClientSessionId()) &&
+                oldProvisioningSession.getServerSessionId().equals(postOperation.getServerSessionId())) {
                 break;
             }
         }
         EnumeratedKey ek = new EnumeratedKey();
         while (true) {
-            if ((ek = keygen2_activity.sks.enumerateKeys(ek.getKeyHandle())) == null) {
+            if ((ek = keyGen2Activity.sks.enumerateKeys(ek.getKeyHandle())) == null) {
                 throw new IOException("Old key not found");
             }
-            if (ek.getProvisioningHandle() == old_provisioning_session.getProvisioningHandle()) {
-                KeyAttributes ka = keygen2_activity.sks.getKeyAttributes(ek.getKeyHandle());
+            if (ek.getProvisioningHandle() == oldProvisioningSession.getProvisioningHandle()) {
+                KeyAttributes ka = keyGen2Activity.sks.getKeyAttributes(ek.getKeyHandle());
                 if (ArrayUtil.compare(HashAlgorithms.SHA256.digest(ka.getCertificatePath()[0].getEncoded()),
-                        post_operation.getCertificateFingerprint())) {
-                    switch (post_operation.getPostOperation()) {
+                        postOperation.getCertificateFingerprint())) {
+                    switch (postOperation.getPostOperation()) {
                         case ProvisioningFinalizationRequestDecoder.PostOperation.CLONE_KEY_PROTECTION:
-                            keygen2_activity.sks.postCloneKeyProtection(handle,
-                                                                        ek.getKeyHandle(),
-                                                                        post_operation.getAuthorization(),
-                                                                        post_operation.getMac());
+                            keyGen2Activity.sks.postCloneKeyProtection(handle,
+                                                                       ek.getKeyHandle(),
+                                                                       postOperation.getAuthorization(),
+                                                                       postOperation.getMac());
                             break;
 
                         case ProvisioningFinalizationRequestDecoder.PostOperation.UPDATE_KEY:
-                            keygen2_activity.sks.postUpdateKey(handle,
-                                                               ek.getKeyHandle(),
-                                                               post_operation.getAuthorization(),
-                                                               post_operation.getMac());
+                            keyGen2Activity.sks.postUpdateKey(handle,
+                                                              ek.getKeyHandle(),
+                                                              postOperation.getAuthorization(),
+                                                              postOperation.getMac());
                             break;
 
                         case ProvisioningFinalizationRequestDecoder.PostOperation.UNLOCK_KEY:
-                            keygen2_activity.sks.postUnlockKey(handle,
-                                                               ek.getKeyHandle(),
-                                                               post_operation.getAuthorization(),
-                                                               post_operation.getMac());
+                            keyGen2Activity.sks.postUnlockKey(handle,
+                                                              ek.getKeyHandle(),
+                                                              postOperation.getAuthorization(),
+                                                              postOperation.getMac());
                             break;
 
                         default:
-                            keygen2_activity.sks.postDeleteKey(handle,
-                                                               ek.getKeyHandle(),
-                                                               post_operation.getAuthorization(),
-                                                               post_operation.getMac());
+                            keyGen2Activity.sks.postDeleteKey(handle,
+                                                              ek.getKeyHandle(),
+                                                              postOperation.getAuthorization(),
+                                                              postOperation.getMac());
                     }
                     return;
                 }
@@ -113,85 +113,85 @@ public class KeyGen2KeyCreation extends AsyncTask<Void, String, String> {
         try {
             publishProgress(BaseProxyActivity.PROGRESS_KEYGEN);
 
-            KeyCreationResponseEncoder key_creation_response = new KeyCreationResponseEncoder(keygen2_activity.key_creation_request);
+            KeyCreationResponseEncoder keyCreationResponse = new KeyCreationResponseEncoder(keyGen2Activity.keyCreationRequest);
 
-            int pin_policy_handle = 0;
-            int puk_policy_handle = 0;
-            for (KeyCreationRequestDecoder.KeyObject key : keygen2_activity.key_creation_request.getKeyObjects()) {
+            int pinPolicyHandle = 0;
+            int pukPolicyHandle = 0;
+            for (KeyCreationRequestDecoder.KeyObject key : keyGen2Activity.keyCreationRequest.getKeyObjects()) {
                 if (key.getPINPolicy() == null) {
-                    pin_policy_handle = 0;
-                    puk_policy_handle = 0;
+                    pinPolicyHandle = 0;
+                    pukPolicyHandle = 0;
                 } else {
                     if (key.isStartOfPINPolicy()) {
                         if (key.isStartOfPUKPolicy()) {
-                            KeyCreationRequestDecoder.PUKPolicy puk_policy = key.getPINPolicy().getPUKPolicy();
-                            puk_policy_handle = keygen2_activity.sks.createPukPolicy(keygen2_activity.provisioning_handle,
-                                                                                     puk_policy.getID(),
-                                                                                     puk_policy.getEncryptedValue(),
-                                                                                     puk_policy.getFormat().getSksValue(),
-                                                                                     puk_policy.getRetryLimit(),
-                                                                                     puk_policy.getMac());
+                            KeyCreationRequestDecoder.PUKPolicy pukPolicy = key.getPINPolicy().getPUKPolicy();
+                            pukPolicyHandle = keyGen2Activity.sks.createPukPolicy(keyGen2Activity.provisioningHandle,
+                                                                                  pukPolicy.getID(),
+                                                                                  pukPolicy.getEncryptedValue(),
+                                                                                  pukPolicy.getFormat().getSksValue(),
+                                                                                  pukPolicy.getRetryLimit(),
+                                                                                  pukPolicy.getMac());
                         }
-                        KeyCreationRequestDecoder.PINPolicy pin_policy = key.getPINPolicy();
-                        pin_policy_handle = keygen2_activity.sks.createPinPolicy(keygen2_activity.provisioning_handle,
-                                                                                 pin_policy.getID(),
-                                                                                 puk_policy_handle,
-                                                                                 pin_policy.getUserDefinedFlag(),
-                                                                                 pin_policy.getUserModifiableFlag(),
-                                                                                 pin_policy.getFormat().getSksValue(),
-                                                                                 pin_policy.getRetryLimit(),
-                                                                                 pin_policy.getGrouping().getSksValue(),
-                                                                                 PatternRestriction.getSksValue(pin_policy.getPatternRestrictions()),
-                                                                                 pin_policy.getMinLength(),
-                                                                                 pin_policy.getMaxLength(),
-                                                                                 pin_policy.getInputMethod().getSksValue(),
-                                                                                 pin_policy.getMac());
+                        KeyCreationRequestDecoder.PINPolicy pinPolicy = key.getPINPolicy();
+                        pinPolicyHandle = keyGen2Activity.sks.createPinPolicy(keyGen2Activity.provisioningHandle,
+                                                                              pinPolicy.getID(),
+                                                                              pukPolicyHandle,
+                                                                              pinPolicy.getUserDefinedFlag(),
+                                                                              pinPolicy.getUserModifiableFlag(),
+                                                                              pinPolicy.getFormat().getSksValue(),
+                                                                              pinPolicy.getRetryLimit(),
+                                                                              pinPolicy.getGrouping().getSksValue(),
+                                                                              PatternRestriction.getSksValue(pinPolicy.getPatternRestrictions()),
+                                                                              pinPolicy.getMinLength(),
+                                                                              pinPolicy.getMaxLength(),
+                                                                              pinPolicy.getInputMethod().getSksValue(),
+                                                                              pinPolicy.getMac());
                     }
                 }
-                KeyData key_data = keygen2_activity.sks.createKeyEntry(keygen2_activity.provisioning_handle,
-                                                                       key.getID(),
-                                                                       keygen2_activity.key_creation_request.getKeyEntryAlgorithm(),
-                                                                       key.getServerSeed(),
-                                                                       key.isDevicePINProtected(),
-                                                                       pin_policy_handle,
-                                                                       key.getSKSPINValue(),
-                                                                       key.getEnablePINCachingFlag(),
-                                                                       key.getBiometricProtection().getSksValue(),
-                                                                       key.getExportProtection().getSksValue(),
-                                                                       key.getDeleteProtection().getSksValue(),
-                                                                       key.getAppUsage().getSksValue(),
-                                                                       key.getFriendlyName(),
-                                                                       key.getKeySpecifier().getKeyAlgorithm().getAlgorithmId(AlgorithmPreferences.SKS),
-                                                                       key.getKeySpecifier().getKeyParameters(),
-                                                                       key.getEndorsedAlgorithms(),
-                                                                       key.getMac());
-                key_creation_response.addPublicKey(key_data.getPublicKey(), key_data.getAttestation(), key.getID());
+                KeyData keyData = keyGen2Activity.sks.createKeyEntry(keyGen2Activity.provisioningHandle,
+                                                                     key.getID(),
+                                                                     keyGen2Activity.keyCreationRequest.getKeyEntryAlgorithm(),
+                                                                     key.getServerSeed(),
+                                                                     key.isDevicePINProtected(),
+                                                                     pinPolicyHandle,
+                                                                     key.getSKSPINValue(),
+                                                                     key.getEnablePINCachingFlag(),
+                                                                     key.getBiometricProtection().getSksValue(),
+                                                                     key.getExportProtection().getSksValue(),
+                                                                     key.getDeleteProtection().getSksValue(),
+                                                                     key.getAppUsage().getSksValue(),
+                                                                     key.getFriendlyName(),
+                                                                     key.getKeySpecifier().getKeyAlgorithm().getAlgorithmId(AlgorithmPreferences.SKS),
+                                                                     key.getKeySpecifier().getKeyParameters(),
+                                                                     key.getEndorsedAlgorithms(),
+                                                                     key.getMac());
+                keyCreationResponse.addPublicKey(keyData.getPublicKey(), keyData.getAttestation(), key.getID());
             }
 
-            keygen2_activity.postJSONData(keygen2_activity.getTransactionURL(),
-                                          key_creation_response,
-                                          BaseProxyActivity.RedirectPermitted.FORBIDDEN);
+            keyGen2Activity.postJSONData(keyGen2Activity.getTransactionURL(),
+                                         keyCreationResponse,
+                                         BaseProxyActivity.RedirectPermitted.FORBIDDEN);
 
             publishProgress(BaseProxyActivity.PROGRESS_DEPLOY_CERTS);
 
-            ProvisioningFinalizationRequestDecoder prov_final_request = (ProvisioningFinalizationRequestDecoder) keygen2_activity.parseJSONResponse();
+            ProvisioningFinalizationRequestDecoder provFinalRequest = (ProvisioningFinalizationRequestDecoder) keyGen2Activity.parseJSONResponse();
 
             //////////////////////////////////////////////////////////////////////////
-            // Note: we could have used the saved provisioning_handle but that
+            // Note: we could have used the saved provisioningHandle but that
             // would not work for certifications that are delayed. The following
             // code is working for fully interactive and delayed scenarios by
             // using SKS as state-holder
             //////////////////////////////////////////////////////////////////////////
             EnumeratedProvisioningSession eps = new EnumeratedProvisioningSession();
             while (true) {
-                if ((eps = keygen2_activity.sks.enumerateProvisioningSessions(eps.getProvisioningHandle(), true)) == null) {
+                if ((eps = keyGen2Activity.sks.enumerateProvisioningSessions(eps.getProvisioningHandle(), true)) == null) {
                     throw new IOException("Provisioning session not found:" +
-                            prov_final_request.getClientSessionId() +
+                            provFinalRequest.getClientSessionId() +
                             "/" +
-                            prov_final_request.getServerSessionId());
+                            provFinalRequest.getServerSessionId());
                 }
-                if (eps.getClientSessionId().equals(prov_final_request.getClientSessionId()) &&
-                    eps.getServerSessionId().equals(prov_final_request.getServerSessionId())) {
+                if (eps.getClientSessionId().equals(provFinalRequest.getClientSessionId()) &&
+                    eps.getServerSessionId().equals(provFinalRequest.getServerSessionId())) {
                     break;
                 }
             }
@@ -199,64 +199,64 @@ public class KeyGen2KeyCreation extends AsyncTask<Void, String, String> {
             //////////////////////////////////////////////////////////////////////////
             // Final check, do these keys match the request?
             //////////////////////////////////////////////////////////////////////////
-            for (ProvisioningFinalizationRequestDecoder.IssuedCredential key : prov_final_request.getIssuedCredentials()) {
-                int key_handle = keygen2_activity.sks.getKeyHandle(eps.getProvisioningHandle(),
-                                                                   key.getId());
-                keygen2_activity.sks.setCertificatePath(key_handle,
-                                                        key.getCertificatePath(),
-                                                        key.getMac());
+            for (ProvisioningFinalizationRequestDecoder.IssuedCredential key : provFinalRequest.getIssuedCredentials()) {
+                int keyHandle = keyGen2Activity.sks.getKeyHandle(eps.getProvisioningHandle(),
+                                                                 key.getId());
+                keyGen2Activity.sks.setCertificatePath(keyHandle,
+                                                       key.getCertificatePath(),
+                                                       key.getMac());
 
                 //////////////////////////////////////////////////////////////////////////
                 // There may be a symmetric key
                 //////////////////////////////////////////////////////////////////////////
                 if (key.getOptionalSymmetricKey() != null) {
-                    keygen2_activity.sks.importSymmetricKey(key_handle,
-                                                            key.getOptionalSymmetricKey(),
-                                                            key.getSymmetricKeyMac());
+                    keyGen2Activity.sks.importSymmetricKey(keyHandle,
+                                                           key.getOptionalSymmetricKey(),
+                                                           key.getSymmetricKeyMac());
                 }
 
                 //////////////////////////////////////////////////////////////////////////
                 // There may be a private key
                 //////////////////////////////////////////////////////////////////////////
                 if (key.getOptionalPrivateKey() != null) {
-                    keygen2_activity.sks.importPrivateKey(key_handle,
-                                                          key.getOptionalPrivateKey(),
-                                                          key.getPrivateKeyMac());
+                    keyGen2Activity.sks.importPrivateKey(keyHandle,
+                                                         key.getOptionalPrivateKey(),
+                                                         key.getPrivateKeyMac());
                 }
 
                 //////////////////////////////////////////////////////////////////////////
                 // There may be extensions
                 //////////////////////////////////////////////////////////////////////////
                 for (ProvisioningFinalizationRequestDecoder.Extension extension : key.getExtensions()) {
-                    keygen2_activity.sks.addExtension(key_handle,
-                                                      extension.getExtensionType(),
-                                                      extension.getSubType(),
-                                                      extension.getQualifier(),
-                                                      extension.getExtensionData(),
-                                                      extension.getMac());
+                    keyGen2Activity.sks.addExtension(keyHandle,
+                                                     extension.getExtensionType(),
+                                                     extension.getSubType(),
+                                                     extension.getQualifier(),
+                                                     extension.getExtensionData(),
+                                                     extension.getMac());
                 }
 
                 //////////////////////////////////////////////////////////////////////////
                 // There may be an postUpdateKey or postCloneKeyProtection
                 //////////////////////////////////////////////////////////////////////////
-                ProvisioningFinalizationRequestDecoder.PostOperation post_operation = key.getPostOperation();
-                if (post_operation != null) {
-                    postProvisioning(post_operation, key_handle);
+                ProvisioningFinalizationRequestDecoder.PostOperation postOperation = key.getPostOperation();
+                if (postOperation != null) {
+                    postProvisioning(postOperation, keyHandle);
                 }
             }
 
             //////////////////////////////////////////////////////////////////////////
             // There may be any number of postUnlockKey
             //////////////////////////////////////////////////////////////////////////
-            for (ProvisioningFinalizationRequestDecoder.PostOperation post_unl : prov_final_request.getPostUnlockKeys()) {
+            for (ProvisioningFinalizationRequestDecoder.PostOperation post_unl : provFinalRequest.getPostUnlockKeys()) {
                 postProvisioning(post_unl, eps.getProvisioningHandle());
             }
 
             //////////////////////////////////////////////////////////////////////////
             // There may be any number of postDeleteKey
             //////////////////////////////////////////////////////////////////////////
-            for (ProvisioningFinalizationRequestDecoder.PostOperation post_del : prov_final_request.getPostDeleteKeys()) {
-                postProvisioning(post_del, eps.getProvisioningHandle());
+            for (ProvisioningFinalizationRequestDecoder.PostOperation postDelete : provFinalRequest.getPostDeleteKeys()) {
+                postProvisioning(postDelete, eps.getProvisioningHandle());
             }
 
             publishProgress(BaseProxyActivity.PROGRESS_FINAL);
@@ -264,33 +264,33 @@ public class KeyGen2KeyCreation extends AsyncTask<Void, String, String> {
             //////////////////////////////////////////////////////////////////////////
             // Create final and attested message
             //////////////////////////////////////////////////////////////////////////
-            keygen2_activity.postJSONData(keygen2_activity.getTransactionURL(),
-                    new ProvisioningFinalizationResponseEncoder(prov_final_request,
-                            keygen2_activity.sks.closeProvisioningSession(eps.getProvisioningHandle(),
-                                                                          prov_final_request.getCloseSessionNonce(),
-                                                                          prov_final_request.getCloseSessionMac())),
+            keyGen2Activity.postJSONData(keyGen2Activity.getTransactionURL(),
+                    new ProvisioningFinalizationResponseEncoder(provFinalRequest,
+                            keyGen2Activity.sks.closeProvisioningSession(eps.getProvisioningHandle(),
+                                                                         provFinalRequest.getCloseSessionNonce(),
+                                                                         provFinalRequest.getCloseSessionMac())),
                     BaseProxyActivity.RedirectPermitted.REQUIRED);
-            return keygen2_activity.getRedirectURL();
+            return keyGen2Activity.getRedirectURL();
         } catch (Exception e) {
-            keygen2_activity.logException(e);
+            keyGen2Activity.logException(e);
         }
         return null;
     }
 
     @Override
     public void onProgressUpdate(String... message) {
-        keygen2_activity.showHeavyWork(message[0]);
+        keyGen2Activity.showHeavyWork(message[0]);
     }
 
     @Override
     protected void onPostExecute(String result) {
-        if (keygen2_activity.userHasAborted()) {
+        if (keyGen2Activity.userHasAborted()) {
             return;
         }
         if (result != null) {
-            keygen2_activity.launchBrowser(result);
+            keyGen2Activity.launchBrowser(result);
         } else {
-            keygen2_activity.showFailLog();
+            keyGen2Activity.showFailLog();
         }
     }
 }

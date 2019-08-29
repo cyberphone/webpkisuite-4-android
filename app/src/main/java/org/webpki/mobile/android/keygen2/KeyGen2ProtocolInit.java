@@ -47,7 +47,7 @@ public class KeyGen2ProtocolInit extends AsyncTask<Void, String, Boolean> {
             keygen2_activity.addDecoder(KeyCreationRequestDecoder.class);
             keygen2_activity.addDecoder(CredentialDiscoveryRequestDecoder.class);
             keygen2_activity.addDecoder(ProvisioningFinalizationRequestDecoder.class);
-            keygen2_activity.invocation_request = (InvocationRequestDecoder) keygen2_activity.getInitialRequest();
+            keygen2_activity.invocationRequest = (InvocationRequestDecoder) keygen2_activity.getInitialRequest();
             return true;
         } catch (Exception e) {
             keygen2_activity.logException(e);
@@ -57,7 +57,7 @@ public class KeyGen2ProtocolInit extends AsyncTask<Void, String, Boolean> {
 
     @Override
     protected void onPostExecute(Boolean success) {
-        if (keygen2_activity.userHasAborted() || keygen2_activity.initWasRejected()) {
+        if (keygen2_activity.userHasAborted()) {
             return;
         }
         keygen2_activity.noMoreWorkToDo();

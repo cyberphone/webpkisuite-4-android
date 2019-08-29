@@ -101,33 +101,31 @@ public abstract class BaseProxyActivity extends Activity {
 
     private static final String JSON_CONTENT = "application/json";
 
-    private JSONDecoderCache schema_cache;
+    private JSONDecoderCache schemaCache;
 
-    private ProgressDialog progress_display;
+    private ProgressDialog progressDisplay;
 
     private StringBuilder logger = new StringBuilder();
 
-    private HTTPSWrapper https_wrapper;
+    private HTTPSWrapper httpsWrapper;
 
     public AndroidSKSImplementation sks;
 
-    private String transaction_url;
+    private String transactionUrl;
 
-    private String requesting_host;
+    private String requestingHost;
 
-    private X509Certificate server_certificate;
+    private X509Certificate serverCertificate;
 
-    private String redirect_url;
+    private String redirectUrl;
 
-    private boolean user_aborted;
-
-    private boolean init_rejected;
+    private boolean userAborted;
 
     private Vector<String> cookies = new Vector<String>();
 
-    public Vector<byte[]> protocol_log;
+    public Vector<byte[]> protocolLog;
 
-    private byte[] initial_request_object;
+    private byte[] initialRequestObject;
 
     protected abstract String getProtocolName();
 
@@ -144,7 +142,7 @@ public abstract class BaseProxyActivity extends Activity {
                     public void onClick(DialogInterface dialog, int id) {
                         // Something went terribly wrong...
                         dialog.cancel();
-                        user_aborted = true;
+                        userAborted = true;
                         abortTearDown();
                         launchBrowser(cancelUrl);
                     }
@@ -162,7 +160,7 @@ public abstract class BaseProxyActivity extends Activity {
                     public void onClick(DialogInterface dialog, int id) {
                         // The user decided that this is not what he/she wants...
                         dialog.cancel();
-                        user_aborted = true;
+                        userAborted = true;
                         abortTearDown();
                         launchBrowser(cancelUrl);
                     }
@@ -171,8 +169,8 @@ public abstract class BaseProxyActivity extends Activity {
             public void onClick(DialogInterface dialog, int id) {
                 // The user apparently changed his/her mind and wants to continue...
                 dialog.cancel();
-                if (message != null && progress_display != null) {
-                    progress_display = null;
+                if (message != null && progressDisplay != null) {
+                    progressDisplay = null;
                     showHeavyWork(message);
                 }
             }
@@ -182,54 +180,47 @@ public abstract class BaseProxyActivity extends Activity {
     }
 
     public String getTransactionURL() {
-        return transaction_url;
+        return transactionUrl;
     }
 
     public String getRequestingHost() {
-        return requesting_host;
+        return requestingHost;
     }
 
     public void showHeavyWork(final String message) {
-        if (!user_aborted) {
-            if (progress_display == null) {
-                progress_display = new ProgressDialog(this);
-                progress_display.setMessage(message);
-                progress_display.setCanceledOnTouchOutside(false);
-                progress_display.setCancelable(false);
-                progress_display.setButton(DialogInterface.BUTTON_POSITIVE, "Cancel", new DialogInterface.OnClickListener() {
+        if (!userAborted) {
+            if (progressDisplay == null) {
+                progressDisplay = new ProgressDialog(this);
+                progressDisplay.setMessage(message);
+                progressDisplay.setCanceledOnTouchOutside(false);
+                progressDisplay.setCancelable(false);
+                progressDisplay.setButton(DialogInterface.BUTTON_POSITIVE, "Cancel", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                         conditionalAbort(message);
                     }
                 });
-                progress_display.show();
+                progressDisplay.show();
             } else {
-                progress_display.setMessage(message);
+                progressDisplay.setMessage(message);
             }
         }
     }
 
     public void noMoreWorkToDo() {
-        if (progress_display != null) {
-            progress_display.dismiss();
-            progress_display = null;
+        if (progressDisplay != null) {
+            progressDisplay.dismiss();
+            progressDisplay = null;
         }
     }
 
     private void addOptionalCookies(String url) throws IOException {
         for (String cookie : cookies) {
-            https_wrapper.setHeader("Cookie", cookie);
+            httpsWrapper.setHeader("Cookie", cookie);
         }
     }
 
     public boolean userHasAborted() {
-        return user_aborted;
-    }
-
-    public boolean initWasRejected() {
-        if (init_rejected) {
-            launchBrowser(redirect_url);
-        }
-        return init_rejected;
+        return userAborted;
     }
 
     public void initSKS() {
@@ -237,10 +228,10 @@ public abstract class BaseProxyActivity extends Activity {
     }
 
     public void closeProxy() {
-        if (protocol_log != null) {
+        if (protocolLog != null) {
             try {
                 ObjectOutputStream oos = new ObjectOutputStream(openFileOutput(getProtocolName(), Context.MODE_PRIVATE));
-                oos.writeObject(protocol_log);
+                oos.writeObject(protocolLog);
                 oos.close();
                 Log.i(getProtocolName(), "Wrote protocol log");
             } catch (Exception e) {
@@ -263,12 +254,12 @@ public abstract class BaseProxyActivity extends Activity {
                                 RedirectPermitted redirectPermitted) throws IOException {
         logOK("Writing \"" + json_object.getQualifier() + "\" object to: " + url);
         addOptionalCookies(url);
-        https_wrapper.setHeader("Content-Type", JSON_CONTENT);
+        httpsWrapper.setHeader("Content-Type", JSON_CONTENT);
         byte[] posted_data = json_object.serializeJSONDocument(JSONOutputFormats.PRETTY_PRINT);
-        protocol_log.add(posted_data);
-        https_wrapper.makePostRequest(url, posted_data);
-        if (https_wrapper.getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP) {
-            if ((redirect_url = https_wrapper.getHeaderValue("Location")) == null) {
+        protocolLog.add(posted_data);
+        httpsWrapper.makePostRequest(url, posted_data);
+        if (httpsWrapper.getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP) {
+            if ((redirectUrl = httpsWrapper.getHeaderValue("Location")) == null) {
                 throw new IOException("Malformed redirect");
             }
             if (redirectPermitted == RedirectPermitted.FORBIDDEN) {
@@ -276,8 +267,8 @@ public abstract class BaseProxyActivity extends Activity {
             }
             return true;
         } else {
-            if (https_wrapper.getResponseCode() != HttpURLConnection.HTTP_OK) {
-                throw new IOException(https_wrapper.getResponseMessage());
+            if (httpsWrapper.getResponseCode() != HttpURLConnection.HTTP_OK) {
+                throw new IOException(httpsWrapper.getResponseMessage());
             }
             checkContentType();
             if (redirectPermitted == RedirectPermitted.REQUIRED) {
@@ -288,13 +279,13 @@ public abstract class BaseProxyActivity extends Activity {
     }
 
     private void checkContentType() throws IOException {
-        if (!https_wrapper.getContentType().equals(JSON_CONTENT)) {
-            throw new IOException("Unexpected content: " + https_wrapper.getContentType());
+        if (!httpsWrapper.getContentType().equals(JSON_CONTENT)) {
+            throw new IOException("Unexpected content: " + httpsWrapper.getContentType());
         }
     }
 
     public String getRedirectURL() {
-        return redirect_url;
+        return redirectUrl;
     }
 
     public void logOK(String message) {
@@ -332,27 +323,27 @@ public abstract class BaseProxyActivity extends Activity {
     }
 
     public void addDecoder(Class<? extends JSONDecoder> decoder_class) throws IOException {
-        schema_cache.addToCache(decoder_class);
+        schemaCache.addToCache(decoder_class);
         logOK("Added JSON decoder for: " + decoder_class.getName());
     }
 
     private JSONDecoder parseJSON(byte[] json_data) throws IOException {
-        protocol_log.add(json_data);
-        JSONDecoder json_object = schema_cache.parse(json_data);
+        protocolLog.add(json_data);
+        JSONDecoder json_object = schemaCache.parse(json_data);
         logOK("Successfully read \"" + json_object.getQualifier() + "\" object");
         return json_object;
     }
 
     public JSONDecoder parseJSONResponse() throws IOException {
-        return parseJSON(https_wrapper.getData());
+        return parseJSON(httpsWrapper.getData());
     }
 
     public X509Certificate getServerCertificate() {
-        return server_certificate;
+        return serverCertificate;
     }
 
     public JSONDecoder getInitialRequest() throws IOException {
-        return parseJSON(initial_request_object);
+        return parseJSON(initialRequestObject);
     }
 
     String cancelUrl;
@@ -367,48 +358,43 @@ public abstract class BaseProxyActivity extends Activity {
     
     public void getProtocolInvocationData() throws Exception {
         logOK(getProtocolName() + " protocol run: " + new SimpleDateFormat("yyyy-MM-dd' 'HH:mm:ss").format(new Date()));
-        protocol_log = new Vector<byte[]>();
-        https_wrapper = new HTTPSWrapper();
+        protocolLog = new Vector<byte[]>();
+        httpsWrapper = new HTTPSWrapper();
         initSKS();
-        schema_cache = new JSONDecoderCache();
+        schemaCache = new JSONDecoderCache();
         Intent intent = getIntent();
         Uri uri = intent.getData();
         if (uri == null) {
             throw new IOException("No URI");
         }
-        w3cpay_mode = uri.getScheme().equals(MobileProxyParameters.SCHEME_W3CPAY);
-        transaction_url = getQueryParameter(uri, "url");
-        String boot_url = getQueryParameter(uri, "init");
+        transactionUrl = getQueryParameter(uri, MobileProxyParameters.PUP_MAIN_URL);
+        String boot_url = getQueryParameter(uri, MobileProxyParameters.PUP_INIT_URL);
+        cancelUrl = getQueryParameter(uri, MobileProxyParameters.PUP_CANCEL_URL);
         qr_mode = uri.getScheme().equals(MobileProxyParameters.SCHEME_QRCODE);
-        requesting_host = new URL(boot_url).getHost();
-        List<String> arg = uri.getQueryParameters("cookie");
+        w3cpay_mode = uri.getScheme().equals(MobileProxyParameters.SCHEME_W3CPAY);
+        requestingHost = new URL(boot_url).getHost();
+        List<String> arg = uri.getQueryParameters(MobileProxyParameters.PUP_COOKIE);
         if (!arg.isEmpty()) {
             cookies.add(arg.get(0));
         }
-        logOK("Invocation URL=" + transaction_url + ", Cookie: " + (arg.isEmpty() ? "N/A" : cookies.elementAt(0)));
+        logOK("Invocation URL=" + transactionUrl + ", Cookie: " + (arg.isEmpty() ? "N/A" : cookies.elementAt(0)));
         logOK(uri.toString());
-        addOptionalCookies(transaction_url);
-        cancelUrl = getQueryParameter(uri, "cncl");
-        String versionSpan = getQueryParameter(uri, "ver");
+        addOptionalCookies(transactionUrl);
+        String versionSpan = getQueryParameter(uri, MobileProxyParameters.PUP_VERSIONS);
         String version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
         if (versionSpan.substring(0, versionSpan.indexOf('-')).compareTo(version) > 0 ||
             versionSpan.substring(versionSpan.indexOf('-') + 1).compareTo(version) < 0) {
             throw new IOException("\n\nActual app version:" + version +
                                   "\nRequired version:" + versionSpan + "\n");
         }
-        https_wrapper.makeGetRequest(boot_url);
-        if (https_wrapper.getResponseCode() == HttpURLConnection.HTTP_OK) {
-            initial_request_object = https_wrapper.getData();
-            server_certificate = https_wrapper.getServerCertificates()[0];
-            checkContentType();
-        } else if (https_wrapper.getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP) {
-            if ((redirect_url = https_wrapper.getHeaderValue("Location")) == null) {
-                throw new IOException("Malformed redirect");
-            }
-            init_rejected = true;
-        } else {
-            throw new IOException(https_wrapper.getResponseMessage());
-        }
+        httpsWrapper.setFollowRedirects(true);
+        httpsWrapper.setRequireSuccess(true);
+        httpsWrapper.makeGetRequest(boot_url);
+        initialRequestObject = httpsWrapper.getData();
+        serverCertificate = httpsWrapper.getServerCertificates()[0];
+        checkContentType();
+        httpsWrapper.setFollowRedirects(false);
+        httpsWrapper.setRequireSuccess(false);
     }
 
     public void showAlert(String message) {

@@ -59,30 +59,30 @@ import org.webpki.mobile.android.sks.HardwareKeyStore;
 import org.webpki.mobile.android.util.CredentialListDataFactory;
 
 public class WebAuthProtocolInit extends AsyncTask<Void, String, Boolean> {
-    private WebAuthActivity webauth_activity;
+    private WebAuthActivity webAuthActivity;
 
     AndroidSKSImplementation sks;
 
-    public WebAuthProtocolInit(WebAuthActivity webauth_activity) {
-        this.webauth_activity = webauth_activity;
+    public WebAuthProtocolInit(WebAuthActivity webAuthActivity) {
+        this.webAuthActivity = webAuthActivity;
     }
 
     @Override
     protected Boolean doInBackground(Void... params) {
         try {
-            webauth_activity.getProtocolInvocationData();
-            webauth_activity.addDecoder(AuthenticationRequestDecoder.class);
-            webauth_activity.authentication_request = (AuthenticationRequestDecoder) webauth_activity.getInitialRequest();
+            webAuthActivity.getProtocolInvocationData();
+            webAuthActivity.addDecoder(AuthenticationRequestDecoder.class);
+            webAuthActivity.authenticationRequest = (AuthenticationRequestDecoder) webAuthActivity.getInitialRequest();
             EnumeratedKey ek = new EnumeratedKey();
-            sks = HardwareKeyStore.createSKS(WebAuthActivity.WEBAUTH, webauth_activity, false);
+            sks = HardwareKeyStore.createSKS(WebAuthActivity.WEBAUTH, webAuthActivity, false);
 
             ////////////////////////////////////////////////////////////////////////////////////
             // Maybe the requester wants better protected keys...
             ////////////////////////////////////////////////////////////////////////////////////
-            if (webauth_activity.authentication_request.getOptionalKeyContainerList() != null &&
-                    !webauth_activity.authentication_request.getOptionalKeyContainerList().contains(KeyContainerTypes.SOFTWARE)) {
+            if (webAuthActivity.authenticationRequest.getOptionalKeyContainerList() != null &&
+                    !webAuthActivity.authenticationRequest.getOptionalKeyContainerList().contains(KeyContainerTypes.SOFTWARE)) {
                 throw new IOException("The requester asked for another key container type: " +
-                        webauth_activity.authentication_request.getOptionalKeyContainerList().toString());
+                        webAuthActivity.authenticationRequest.getOptionalKeyContainerList().toString());
             }
 
             ////////////////////////////////////////////////////////////////////////////////////
@@ -103,7 +103,7 @@ public class WebAuthProtocolInit extends AsyncTask<Void, String, Boolean> {
                 boolean did_it = false;
                 boolean rsa_flag = cert_path[0].getPublicKey() instanceof RSAPublicKey;
                 AsymSignatureAlgorithms signature_algorithm = null;
-                for (AsymSignatureAlgorithms sig_alg : webauth_activity.authentication_request.getSignatureAlgorithms()) {
+                for (AsymSignatureAlgorithms sig_alg : webAuthActivity.authenticationRequest.getSignatureAlgorithms()) {
                     if (rsa_flag == sig_alg.isRsa() && HardwareKeyStore.isSupported(sig_alg.getAlgorithmId(AlgorithmPreferences.SKS))) {
                         signature_algorithm = sig_alg;
                         did_it = true;
@@ -113,12 +113,12 @@ public class WebAuthProtocolInit extends AsyncTask<Void, String, Boolean> {
                 if (!did_it) {
                     continue;
                 }
-                if (webauth_activity.authentication_request.getCertificateFilters().length > 0) {
+                if (webAuthActivity.authenticationRequest.getCertificateFilters().length > 0) {
                     did_it = false;
                     ////////////////////////////////////////////////////////////////////////////////////
                     // The requester wants to discriminate keys further...
                     ////////////////////////////////////////////////////////////////////////////////////
-                    for (CertificateFilter cf : webauth_activity.authentication_request.getCertificateFilters()) {
+                    for (CertificateFilter cf : webAuthActivity.authenticationRequest.getCertificateFilters()) {
                         if (cf.matches(cert_path)) {
                             did_it = true;
                             break;
@@ -128,83 +128,83 @@ public class WebAuthProtocolInit extends AsyncTask<Void, String, Boolean> {
                         continue;
                     }
                 }
-                webauth_activity.matching_keys.put(ek.getKeyHandle(), signature_algorithm);
+                webAuthActivity.matchingKeys.put(ek.getKeyHandle(), signature_algorithm);
             }
             return true;
         } catch (Exception e) {
-            webauth_activity.logException(e);
+            webAuthActivity.logException(e);
         }
         return false;
     }
 
     int firstKey() {
-        return webauth_activity.matching_keys.keySet().iterator().next();
+        return webAuthActivity.matchingKeys.keySet().iterator().next();
     }
 
     @Override
     protected void onPostExecute(Boolean success) {
-        if (webauth_activity.userHasAborted() || webauth_activity.initWasRejected()) {
+        if (webAuthActivity.userHasAborted()) {
             return;
         }
-        webauth_activity.noMoreWorkToDo();
+        webAuthActivity.noMoreWorkToDo();
         if (success) {
             ///////////////////////////////////////////////////////////////////////////////////
             // Successfully received the request, now show the domain name of the requester
             ///////////////////////////////////////////////////////////////////////////////////
-            ((TextView) webauth_activity.findViewById(R.id.partyInfo)).setText(webauth_activity.getRequestingHost());
-            ((TextView) webauth_activity.findViewById(R.id.partyInfo)).setOnClickListener(new View.OnClickListener() {
+            ((TextView) webAuthActivity.findViewById(R.id.partyInfo)).setText(webAuthActivity.getRequestingHost());
+            ((TextView) webAuthActivity.findViewById(R.id.partyInfo)).setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(webauth_activity, "Requesting Party Properties - Not yet implemented!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(webAuthActivity, "Requesting Party Properties - Not yet implemented!", Toast.LENGTH_LONG).show();
                 }
             });
 
-            final Button ok = (Button) webauth_activity.findViewById(R.id.OKbutton);
-            final Button cancel = (Button) webauth_activity.findViewById(R.id.cancelButton);
+            final Button ok = (Button) webAuthActivity.findViewById(R.id.OKbutton);
+            final Button cancel = (Button) webAuthActivity.findViewById(R.id.cancelButton);
             ok.requestFocus();
             ok.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    webauth_activity.logOK("The user hit OK");
+                    webAuthActivity.logOK("The user hit OK");
 
                     ///////////////////////////////////////////////////////////////////////////////////
                     // We have no keys at all or no keys that matches the filter criterions, abort
                     ///////////////////////////////////////////////////////////////////////////////////
-                    if (webauth_activity.matching_keys.isEmpty()) {
-                        webauth_activity.showAlert("You have no matching credentials");
+                    if (webAuthActivity.matchingKeys.isEmpty()) {
+                        webAuthActivity.showAlert("You have no matching credentials");
                         return;
                     }
                     try {
                         ///////////////////////////////////////////////////////////////////////////////////
                         // Seem we got something here to authenticate with!
                         ///////////////////////////////////////////////////////////////////////////////////
-                        if (((CheckBox) webauth_activity.findViewById(R.id.grantCheckBox)).isChecked()) {
-                            sks.setGrant(firstKey(), webauth_activity.getRequestingHost(), true);
+                        if (((CheckBox) webAuthActivity.findViewById(R.id.grantCheckBox)).isChecked()) {
+                            sks.setGrant(firstKey(), webAuthActivity.getRequestingHost(), true);
                         }
-                        webauth_activity.setContentView(R.layout.activity_webauth_pin);
-                        ((LinearLayout) webauth_activity.findViewById(R.id.credential_element)).setOnClickListener(new View.OnClickListener() {
+                        webAuthActivity.setContentView(R.layout.activity_webauth_pin);
+                        ((LinearLayout) webAuthActivity.findViewById(R.id.credential_element)).setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                Toast.makeText(webauth_activity, "Credential Properties - Not yet implemented!", Toast.LENGTH_LONG).show();
+                                Toast.makeText(webAuthActivity, "Credential Properties - Not yet implemented!", Toast.LENGTH_LONG).show();
                             }
                         });
-                        CredentialListDataFactory credential_data_factory = new CredentialListDataFactory(webauth_activity, sks);
-                        ((ImageView) webauth_activity.findViewById(R.id.auth_cred_logo)).setImageBitmap(credential_data_factory.getListIcon(firstKey()));
+                        CredentialListDataFactory credential_data_factory = new CredentialListDataFactory(webAuthActivity, sks);
+                        ((ImageView) webAuthActivity.findViewById(R.id.auth_cred_logo)).setImageBitmap(credential_data_factory.getListIcon(firstKey()));
                         String friendly_name = credential_data_factory.getFriendlyName(firstKey());
-                        ((TextView) webauth_activity.findViewById(R.id.auth_cred_domain)).setText(friendly_name == null ? credential_data_factory.getDomain(firstKey()) : friendly_name);
+                        ((TextView) webAuthActivity.findViewById(R.id.auth_cred_domain)).setText(friendly_name == null ? credential_data_factory.getDomain(firstKey()) : friendly_name);
                         if (android.os.Build.VERSION.SDK_INT < 16) {
-                            webauth_activity.findViewById(R.id.pinWindow).setVisibility(View.GONE);
-                            webauth_activity.findViewById(R.id.pinWindow).setVisibility(View.VISIBLE);
+                            webAuthActivity.findViewById(R.id.pinWindow).setVisibility(View.GONE);
+                            webAuthActivity.findViewById(R.id.pinWindow).setVisibility(View.VISIBLE);
                         }
-                        final Button ok = (Button) webauth_activity.findViewById(R.id.OKbutton);
-                        Button cancel = (Button) webauth_activity.findViewById(R.id.cancelButton);
-                        final EditText pin = (EditText) webauth_activity.findViewById(R.id.editpin1);
+                        final Button ok = (Button) webAuthActivity.findViewById(R.id.OKbutton);
+                        Button cancel = (Button) webAuthActivity.findViewById(R.id.cancelButton);
+                        final EditText pin = (EditText) webAuthActivity.findViewById(R.id.editpin1);
                         pin.setSelected(true);
                         pin.requestFocus();
                         ok.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                new WebAuthResponseCreation(webauth_activity,
+                                new WebAuthResponseCreation(webAuthActivity,
                                                             pin.getText().toString(),
                                                             firstKey()).execute();
                             }
@@ -212,7 +212,7 @@ public class WebAuthProtocolInit extends AsyncTask<Void, String, Boolean> {
                         cancel.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                webauth_activity.conditionalAbort(null);
+                                webAuthActivity.conditionalAbort(null);
                             }
                         });
                         pin.setOnEditorActionListener(new OnEditorActionListener() {
@@ -232,20 +232,20 @@ public class WebAuthProtocolInit extends AsyncTask<Void, String, Boolean> {
             cancel.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    webauth_activity.conditionalAbort(null);
+                    webAuthActivity.conditionalAbort(null);
                 }
             });
             try {
-                if (!webauth_activity.matching_keys.isEmpty() &&
-                        sks.isGranted(firstKey(), webauth_activity.getRequestingHost())) {
-                    ((CheckBox) webauth_activity.findViewById(R.id.grantCheckBox)).setChecked(true);
+                if (!webAuthActivity.matchingKeys.isEmpty() &&
+                        sks.isGranted(firstKey(), webAuthActivity.getRequestingHost())) {
+                    ((CheckBox) webAuthActivity.findViewById(R.id.grantCheckBox)).setChecked(true);
                     ok.performClick();
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         } else {
-            webauth_activity.showFailLog();
+            webAuthActivity.showFailLog();
         }
     }
 }
