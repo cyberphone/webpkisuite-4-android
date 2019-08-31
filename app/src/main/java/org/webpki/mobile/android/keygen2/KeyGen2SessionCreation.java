@@ -74,44 +74,44 @@ import org.webpki.sks.DeviceInfo;
  * Optionally credentials are looked-up and PINs are set.
  */
 public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
-    private KeyGen2Activity keygen2_activity;
+    private KeyGen2Activity keyGen2Activity;
 
     private int pin_count;
 
     private class PINDialog {
         private EditText pin1;
         private EditText pin2;
-        private TextView pin_err;
-        private boolean equal_pins;
+        private TextView pinErrView;
+        private boolean equalPins;
 
         KeyCreationRequestDecoder.UserPINDescriptor upd;
 
         private void upperCasePIN(EditText pin) {
-            InputFilter[] old_filter = pin.getEditableText().getFilters();
-            InputFilter[] new_filter = new InputFilter[old_filter.length + 1];
-            for (int i = 0; i < old_filter.length; i++) {
-                new_filter[i] = old_filter[i];
+            InputFilter[] oldFilter = pin.getEditableText().getFilters();
+            InputFilter[] newFilter = new InputFilter[oldFilter.length + 1];
+            for (int i = 0; i < oldFilter.length; i++) {
+                newFilter[i] = oldFilter[i];
             }
-            new_filter[old_filter.length] = new InputFilter.AllCaps();
-            pin.getEditableText().setFilters(new_filter);
+            newFilter[oldFilter.length] = new InputFilter.AllCaps();
+            pin.getEditableText().setFilters(newFilter);
         }
 
         private boolean checkPIN(boolean set_value) {
             String pin = pin1.getText().toString();
-            equal_pins = pin1.getText().toString().equals(pin2.getText().toString());
-            KeyCreationRequestDecoder.UserPINError res = upd.setPIN(pin, set_value && equal_pins);
+            equalPins = pin1.getText().toString().equals(pin2.getText().toString());
+            KeyCreationRequestDecoder.UserPINError res = upd.setPIN(pin, set_value && equalPins);
             if (res == null) {
-                pin_err.setText("");
+                pinErrView.setText("");
                 return true;
             } else {
-                KeyCreationRequestDecoder.PINPolicy pin_policy = upd.getPINPolicy();
+                KeyCreationRequestDecoder.PINPolicy pinPolicy = upd.getPINPolicy();
                 String error = "PIN syntax error";
                 if (res.lengthError) {
-                    int multiplier = pin_policy.getFormat() == PassphraseFormat.BINARY ? 2 : 1;
-                    error = "PINs must be " + (pin_policy.getMinLength() * multiplier) + "-" + (pin_policy.getMaxLength() * multiplier) +
-                            (pin_policy.getFormat() == PassphraseFormat.NUMERIC ? " digits" : " characters");
+                    int multiplier = pinPolicy.getFormat() == PassphraseFormat.BINARY ? 2 : 1;
+                    error = "PINs must be " + (pinPolicy.getMinLength() * multiplier) + "-" + (pinPolicy.getMaxLength() * multiplier) +
+                            (pinPolicy.getFormat() == PassphraseFormat.NUMERIC ? " digits" : " characters");
                 } else if (res.syntaxError) {
-                    switch (pin_policy.getFormat()) {
+                    switch (pinPolicy.getFormat()) {
                         case NUMERIC:
                             error = "PINs must only contain 0-9";
                             break;
@@ -146,29 +146,29 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
                             break;
 
                         case MISSING_GROUP:
-                            error = "PINs must be a mix of A-Z " + (pin_policy.getFormat() == PassphraseFormat.ALPHANUMERIC ?
+                            error = "PINs must be a mix of A-Z " + (pinPolicy.getFormat() == PassphraseFormat.ALPHANUMERIC ?
                                     "0-9" : "a-z 0-9\nand control characters");
                             break;
                     }
                 } else if (res.uniqueError) {
                     error = "PINs for " + upd.getAppUsage().getProtocolName() + " and " + res.uniqueErrorAppUsage.getProtocolName() + " must not be equal";
                 }
-                pin_err.setText(error);
+                pinErrView.setText(error);
             }
             return false;
         }
 
         PINDialog(final Iterator<KeyCreationRequestDecoder.UserPINDescriptor> iter) {
             if (iter.hasNext()) {
-                keygen2_activity.noMoreWorkToDo();
+                keyGen2Activity.noMoreWorkToDo();
                 upd = iter.next();
-                keygen2_activity.setContentView(R.layout.activity_keygen2_pin);
+                keyGen2Activity.setContentView(R.layout.activity_keygen2_pin);
 
-                final Button ok = (Button) keygen2_activity.findViewById(R.id.OKbutton);
-                Button cancel = (Button) keygen2_activity.findViewById(R.id.cancelButton);
+                final Button ok = (Button) keyGen2Activity.findViewById(R.id.OKbutton);
+                Button cancel = (Button) keyGen2Activity.findViewById(R.id.cancelButton);
 
-                pin1 = (EditText) keygen2_activity.findViewById(R.id.editpin1);
-                pin2 = (EditText) keygen2_activity.findViewById(R.id.editpin2);
+                pin1 = (EditText) keyGen2Activity.findViewById(R.id.editpin1);
+                pin2 = (EditText) keyGen2Activity.findViewById(R.id.editpin2);
                 if (upd.getPINPolicy().getFormat() != PassphraseFormat.NUMERIC) {
                     pin1.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
                     pin2.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
@@ -179,8 +179,8 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
                 }
                 pin1.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI | EditorInfo.IME_ACTION_NEXT);
                 pin2.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI | EditorInfo.IME_ACTION_GO);
-                pin_err = (TextView) keygen2_activity.findViewById(R.id.errorPIN);
-                TextView set_pin_text = (TextView) keygen2_activity.findViewById(R.id.setPINtext);
+                pinErrView = (TextView) keyGen2Activity.findViewById(R.id.errorPIN);
+                TextView set_pin_text = (TextView) keyGen2Activity.findViewById(R.id.setPINtext);
                 StringBuilder lead_text = new StringBuilder("Set ");
                 if (upd.getPINPolicy().getGrouping() == Grouping.SIGNATURE_PLUS_STANDARD) {
                     lead_text.append(upd.getAppUsage() == AppUsage.SIGNATURE ? "signature " : "standard ");
@@ -191,7 +191,7 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
                     }
                 }
                 lead_text.append("PIN");
-                if (keygen2_activity.keyCreationRequest.getUserPINDescriptors().size() > 1) {
+                if (keyGen2Activity.keyCreationRequest.getUserPINDescriptors().size() > 1) {
                     lead_text.append(" #").append(++pin_count);
                 }
                 set_pin_text.setText(lead_text);
@@ -214,20 +214,20 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
                     @Override
                     public void onClick(View v) {
                         if (checkPIN(true)) {
-                            if (equal_pins) {
+                            if (equalPins) {
                                 new PINDialog(iter);
                             } else {
-                                keygen2_activity.showAlert("The retyped PIN doesn't match the original");
+                                keyGen2Activity.showAlert("The retyped PIN doesn't match the original");
                             }
                         } else {
-                            keygen2_activity.showAlert("Please correct PIN");
+                            keyGen2Activity.showAlert("Please correct PIN");
                         }
                     }
                 });
                 cancel.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        keygen2_activity.conditionalAbort(null);
+                        keyGen2Activity.conditionalAbort(null);
                     }
                 });
                 pin2.setOnEditorActionListener(new OnEditorActionListener() {
@@ -241,23 +241,23 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
                 });
             } else {
                 hideSoftKeyBoard();
-                keygen2_activity.findViewById(R.id.primaryWindow).setVisibility(View.INVISIBLE);
-                new KeyGen2KeyCreation(keygen2_activity).execute();
+                keyGen2Activity.findViewById(R.id.primaryWindow).setVisibility(View.INVISIBLE);
+                new KeyGen2KeyCreation(keyGen2Activity).execute();
             }
         }
     }
 
     public void hideSoftKeyBoard() {
         // Check if no view has focus:
-        View view = this.keygen2_activity.getCurrentFocus();
+        View view = this.keyGen2Activity.getCurrentFocus();
         if (view != null) {
-            InputMethodManager imm = (InputMethodManager) this.keygen2_activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+            InputMethodManager imm = (InputMethodManager) this.keyGen2Activity.getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
     }
 
     public KeyGen2SessionCreation(KeyGen2Activity keygen2_activity) {
-        this.keygen2_activity = keygen2_activity;
+        this.keyGen2Activity = keygen2_activity;
     }
 
     @Override
@@ -265,68 +265,68 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
         try {
             publishProgress(BaseProxyActivity.PROGRESS_SESSION);
 
-            DeviceInfo device_info = keygen2_activity.sks.getDeviceInfo();
-            InvocationResponseEncoder invocation_response = new InvocationResponseEncoder(keygen2_activity.invocationRequest);
+            DeviceInfo device_info = keyGen2Activity.sks.getDeviceInfo();
+            InvocationResponseEncoder invocation_response = new InvocationResponseEncoder(keyGen2Activity.invocationRequest);
 
-            if (keygen2_activity.invocationRequest.getQueriedCapabilities().contains(KeyGen2URIs.LOGOTYPES.LIST)) {
+            if (keyGen2Activity.invocationRequest.getQueriedCapabilities().contains(KeyGen2URIs.LOGOTYPES.LIST)) {
                 BitmapFactory.Options bmo = new BitmapFactory.Options();
                 bmo.inScaled = false;
-                Bitmap default_icon = BitmapFactory.decodeResource(keygen2_activity.getResources(), R.drawable.certview_logo_na, bmo);
+                Bitmap default_icon = BitmapFactory.decodeResource(keyGen2Activity.getResources(), R.drawable.certview_logo_na, bmo);
                 default_icon.setDensity(Bitmap.DENSITY_NONE);
                 invocation_response.addImagePreference(KeyGen2URIs.LOGOTYPES.LIST, "image/png", default_icon.getWidth(), default_icon.getHeight());
             }
 
-            keygen2_activity.postJSONData(keygen2_activity.getTransactionURL(),
+            keyGen2Activity.postJSONData(keyGen2Activity.getTransactionURL(),
                                           invocation_response,
                                           BaseProxyActivity.RedirectPermitted.FORBIDDEN);
 
-            keygen2_activity.provInitRequest = (ProvisioningInitializationRequestDecoder) keygen2_activity.parseJSONResponse();
+            keyGen2Activity.provInitRequest = (ProvisioningInitializationRequestDecoder) keyGen2Activity.parseJSONResponse();
             GregorianCalendar client_time = new GregorianCalendar();
             ProvisioningSession session =
-                    keygen2_activity.sks.createProvisioningSession(keygen2_activity.provInitRequest.getSessionKeyAlgorithm(),
-                                                                   keygen2_activity.invocationRequest.getPrivacyEnabledFlag(),
-                                                                   keygen2_activity.provInitRequest.getServerSessionId(),
-                                                                   keygen2_activity.provInitRequest.getServerEphemeralKey(),
-                                                                   keygen2_activity.getTransactionURL(), // IssuerURI
-                                                                   keygen2_activity.provInitRequest.getKeyManagementKey(),
-                                                                   (int) (client_time.getTimeInMillis() / 1000),
-                                                                   keygen2_activity.provInitRequest.getSessionLifeTime(),
-                                                                   keygen2_activity.provInitRequest.getSessionKeyLimit(),
-                                                                   keygen2_activity.getServerCertificate().getEncoded());
+                    keyGen2Activity.sks.createProvisioningSession(keyGen2Activity.provInitRequest.getSessionKeyAlgorithm(),
+                                                                  keyGen2Activity.invocationRequest.getPrivacyEnabledFlag(),
+                                                                  keyGen2Activity.provInitRequest.getServerSessionId(),
+                                                                  keyGen2Activity.provInitRequest.getServerEphemeralKey(),
+                                                                  keyGen2Activity.getTransactionURL(), // IssuerURI
+                                                                  keyGen2Activity.provInitRequest.getKeyManagementKey(),
+                                                                  (int) (client_time.getTimeInMillis() / 1000),
+                                                                  keyGen2Activity.provInitRequest.getSessionLifeTime(),
+                                                                  keyGen2Activity.provInitRequest.getSessionKeyLimit(),
+                                                                  keyGen2Activity.getServerCertificate().getEncoded());
 
-            keygen2_activity.provisioningHandle = session.getProvisioningHandle();
+            keyGen2Activity.provisioningHandle = session.getProvisioningHandle();
 
             ProvisioningInitializationResponseEncoder prov_sess_response =
-                    new ProvisioningInitializationResponseEncoder(keygen2_activity.provInitRequest,
+                    new ProvisioningInitializationResponseEncoder(keyGen2Activity.provInitRequest,
                                                                   session.getClientEphemeralKey(),
                                                                   session.getClientSessionId(),
                                                                   client_time,
                                                                   session.getAttestation(),
-                                                                  keygen2_activity.invocationRequest.getPrivacyEnabledFlag() ?
+                                                                  keyGen2Activity.invocationRequest.getPrivacyEnabledFlag() ?
                                                                       null : device_info.getCertificatePath());
 
-            keygen2_activity.postJSONData(keygen2_activity.getTransactionURL(),
+            keyGen2Activity.postJSONData(keyGen2Activity.getTransactionURL(),
                                           prov_sess_response,
                                           BaseProxyActivity.RedirectPermitted.FORBIDDEN);
-            JSONDecoder json_object = keygen2_activity.parseJSONResponse();
-            if (json_object instanceof CredentialDiscoveryRequestDecoder) {
+            JSONDecoder jsonObject = keyGen2Activity.parseJSONResponse();
+            if (jsonObject instanceof CredentialDiscoveryRequestDecoder) {
                 publishProgress(BaseProxyActivity.PROGRESS_LOOKUP);
 
-                CredentialDiscoveryRequestDecoder cred_disc_request = (CredentialDiscoveryRequestDecoder) json_object;
-                CredentialDiscoveryResponseEncoder cred_disc_response = new CredentialDiscoveryResponseEncoder(cred_disc_request);
+                CredentialDiscoveryRequestDecoder cred_disc_request = (CredentialDiscoveryRequestDecoder) jsonObject;
+                CredentialDiscoveryResponseEncoder credDiscResponse = new CredentialDiscoveryResponseEncoder(cred_disc_request);
                 for (CredentialDiscoveryRequestDecoder.LookupSpecifier ls : cred_disc_request.getLookupSpecifiers()) {
-                    CredentialDiscoveryResponseEncoder.LookupResult lr = cred_disc_response.addLookupResult(ls.getID());
+                    CredentialDiscoveryResponseEncoder.LookupResult lr = credDiscResponse.addLookupResult(ls.getID());
                     EnumeratedProvisioningSession eps = new EnumeratedProvisioningSession();
-                    while ((eps = keygen2_activity.sks.enumerateProvisioningSessions(eps.getProvisioningHandle(), false)) != null) {
+                    while ((eps = keyGen2Activity.sks.enumerateProvisioningSessions(eps.getProvisioningHandle(), false)) != null) {
                         if (ls.getKeyManagementKey().equals(eps.getKeyManagementKey()) &&
-                                keygen2_activity.invocationRequest.getPrivacyEnabledFlag() == eps.getPrivacyEnabled()) {
+                                keyGen2Activity.invocationRequest.getPrivacyEnabledFlag() == eps.getPrivacyEnabled()) {
                             EnumeratedKey ek = new EnumeratedKey();
-                            while ((ek = keygen2_activity.sks.enumerateKeys(ek.getKeyHandle())) != null) {
+                            while ((ek = keyGen2Activity.sks.enumerateKeys(ek.getKeyHandle())) != null) {
                                 if (ek.getProvisioningHandle() == eps.getProvisioningHandle()) {
-                                    KeyAttributes ka = keygen2_activity.sks.getKeyAttributes(ek.getKeyHandle());
+                                    KeyAttributes ka = keyGen2Activity.sks.getKeyAttributes(ek.getKeyHandle());
                                     X509Certificate[] cert_path = ka.getCertificatePath();
                                     if (ls.matches(cert_path)) {
-                                        KeyProtectionInfo kpi = keygen2_activity.sks.getKeyProtectionInfo(ek.getKeyHandle());
+                                        KeyProtectionInfo kpi = keyGen2Activity.sks.getKeyProtectionInfo(ek.getKeyHandle());
                                         if ((ls.getGrouping() == null || ls.getGrouping() == kpi.getPinGrouping()) &&
                                             (ls.getAppUsage() == null || ls.getAppUsage() == ka.getAppUsage())) {
                                             lr.addMatchingCredential(cert_path,
@@ -340,27 +340,27 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
                         }
                     }
                 }
-                keygen2_activity.postJSONData(keygen2_activity.getTransactionURL(),
-                                              cred_disc_response,
+                keyGen2Activity.postJSONData(keyGen2Activity.getTransactionURL(),
+                                              credDiscResponse,
                                               BaseProxyActivity.RedirectPermitted.FORBIDDEN);
-                json_object = keygen2_activity.parseJSONResponse();
+                jsonObject = keyGen2Activity.parseJSONResponse();
             }
-            keygen2_activity.keyCreationRequest = (KeyCreationRequestDecoder) json_object;
+            keyGen2Activity.keyCreationRequest = (KeyCreationRequestDecoder) jsonObject;
             return KeyGen2Activity.CONTINUE_EXECUTION;
         } catch (Exception e) {
-            keygen2_activity.logException(e);
+            keyGen2Activity.logException(e);
         }
         return null;
     }
 
     @Override
     public void onProgressUpdate(String... message) {
-        keygen2_activity.showHeavyWork(message[0]);
+        keyGen2Activity.showHeavyWork(message[0]);
     }
 
     @Override
     protected void onPostExecute(String result) {
-        if (keygen2_activity.userHasAborted()) {
+        if (keyGen2Activity.userHasAborted()) {
             return;
         }
         if (result != null) {
@@ -369,16 +369,16 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
                     ///////////////////////////////////////////////////////////////////////////
                     // Note: There may be zero PINs but the test in the constructor fixes that
                     ///////////////////////////////////////////////////////////////////////////
-                    new PINDialog(keygen2_activity.keyCreationRequest.getUserPINDescriptors().iterator());
+                    new PINDialog(keyGen2Activity.keyCreationRequest.getUserPINDescriptors().iterator());
                 } catch (Exception e) {
-                    keygen2_activity.logException(e);
-                    keygen2_activity.showFailLog();
+                    keyGen2Activity.logException(e);
+                    keyGen2Activity.showFailLog();
                 }
             } else {
-                keygen2_activity.launchBrowser(result);
+                keyGen2Activity.launchBrowser(result);
             }
         } else {
-            keygen2_activity.showFailLog();
+            keyGen2Activity.showFailLog();
         }
     }
 }

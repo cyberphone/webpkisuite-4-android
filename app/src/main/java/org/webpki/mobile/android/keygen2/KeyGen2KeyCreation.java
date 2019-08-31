@@ -51,10 +51,14 @@ public class KeyGen2KeyCreation extends AsyncTask<Void, String, String> {
         this.keyGen2Activity = keyGen2Activity;
     }
 
-    private void postProvisioning(ProvisioningFinalizationRequestDecoder.PostOperation postOperation, int handle) throws IOException, GeneralSecurityException {
+    private void postProvisioning(ProvisioningFinalizationRequestDecoder.PostOperation postOperation,
+                                  int handle)
+            throws IOException, GeneralSecurityException {
         EnumeratedProvisioningSession oldProvisioningSession = new EnumeratedProvisioningSession();
         while (true) {
-            if ((oldProvisioningSession = keyGen2Activity.sks.enumerateProvisioningSessions(oldProvisioningSession.getProvisioningHandle(), false)) == null) {
+            if ((oldProvisioningSession = keyGen2Activity.sks
+                    .enumerateProvisioningSessions(oldProvisioningSession
+                            .getProvisioningHandle(), false)) == null) {
                 throw new IOException("Old provisioning session not found:" +
                         postOperation.getClientSessionId() +
                         "/" +
@@ -248,14 +252,16 @@ public class KeyGen2KeyCreation extends AsyncTask<Void, String, String> {
             //////////////////////////////////////////////////////////////////////////
             // There may be any number of postUnlockKey
             //////////////////////////////////////////////////////////////////////////
-            for (ProvisioningFinalizationRequestDecoder.PostOperation post_unl : provFinalRequest.getPostUnlockKeys()) {
-                postProvisioning(post_unl, eps.getProvisioningHandle());
+            for (ProvisioningFinalizationRequestDecoder.PostOperation postUnlock
+                    : provFinalRequest.getPostUnlockKeys()) {
+                postProvisioning(postUnlock, eps.getProvisioningHandle());
             }
 
             //////////////////////////////////////////////////////////////////////////
             // There may be any number of postDeleteKey
             //////////////////////////////////////////////////////////////////////////
-            for (ProvisioningFinalizationRequestDecoder.PostOperation postDelete : provFinalRequest.getPostDeleteKeys()) {
+            for (ProvisioningFinalizationRequestDecoder.PostOperation postDelete
+                    : provFinalRequest.getPostDeleteKeys()) {
                 postProvisioning(postDelete, eps.getProvisioningHandle());
             }
 

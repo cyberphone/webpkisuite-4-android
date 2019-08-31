@@ -32,57 +32,57 @@ import org.webpki.keygen2.ProvisioningFinalizationRequestDecoder;
 import org.webpki.keygen2.ProvisioningInitializationRequestDecoder;
 
 public class KeyGen2ProtocolInit extends AsyncTask<Void, String, Boolean> {
-    private KeyGen2Activity keygen2_activity;
+    private KeyGen2Activity keyGen2Activity;
 
     public KeyGen2ProtocolInit(KeyGen2Activity keygen2_activity) {
-        this.keygen2_activity = keygen2_activity;
+        this.keyGen2Activity = keygen2_activity;
     }
 
     @Override
     protected Boolean doInBackground(Void... params) {
         try {
-            keygen2_activity.getProtocolInvocationData();
-            keygen2_activity.addDecoder(InvocationRequestDecoder.class);
-            keygen2_activity.addDecoder(ProvisioningInitializationRequestDecoder.class);
-            keygen2_activity.addDecoder(KeyCreationRequestDecoder.class);
-            keygen2_activity.addDecoder(CredentialDiscoveryRequestDecoder.class);
-            keygen2_activity.addDecoder(ProvisioningFinalizationRequestDecoder.class);
-            keygen2_activity.invocationRequest = (InvocationRequestDecoder) keygen2_activity.getInitialRequest();
+            keyGen2Activity.getProtocolInvocationData();
+            keyGen2Activity.addDecoder(InvocationRequestDecoder.class);
+            keyGen2Activity.addDecoder(ProvisioningInitializationRequestDecoder.class);
+            keyGen2Activity.addDecoder(KeyCreationRequestDecoder.class);
+            keyGen2Activity.addDecoder(CredentialDiscoveryRequestDecoder.class);
+            keyGen2Activity.addDecoder(ProvisioningFinalizationRequestDecoder.class);
+            keyGen2Activity.invocationRequest = (InvocationRequestDecoder) keyGen2Activity.getInitialRequest();
             return true;
         } catch (Exception e) {
-            keygen2_activity.logException(e);
+            keyGen2Activity.logException(e);
         }
         return false;
     }
 
     @Override
     protected void onPostExecute(Boolean success) {
-        if (keygen2_activity.userHasAborted()) {
+        if (keyGen2Activity.userHasAborted()) {
             return;
         }
-        keygen2_activity.noMoreWorkToDo();
+        keyGen2Activity.noMoreWorkToDo();
         if (success) {
-            ((TextView) keygen2_activity.findViewById(R.id.partyInfo)).setText(keygen2_activity.getRequestingHost());
-            keygen2_activity.findViewById(R.id.primaryWindow).setVisibility(View.VISIBLE);
-            final Button ok = (Button) keygen2_activity.findViewById(R.id.OKbutton);
-            final Button cancel = (Button) keygen2_activity.findViewById(R.id.cancelButton);
+            ((TextView) keyGen2Activity.findViewById(R.id.partyInfo)).setText(keyGen2Activity.getRequestingHost());
+            keyGen2Activity.findViewById(R.id.primaryWindow).setVisibility(View.VISIBLE);
+            final Button ok = (Button) keyGen2Activity.findViewById(R.id.OKbutton);
+            final Button cancel = (Button) keyGen2Activity.findViewById(R.id.cancelButton);
             ok.requestFocus();
             ok.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    keygen2_activity.findViewById(R.id.primaryWindow).setVisibility(View.INVISIBLE);
-                    keygen2_activity.logOK("The user hit OK");
-                    new KeyGen2SessionCreation(keygen2_activity).execute();
+                    keyGen2Activity.findViewById(R.id.primaryWindow).setVisibility(View.INVISIBLE);
+                    keyGen2Activity.logOK("The user hit OK");
+                    new KeyGen2SessionCreation(keyGen2Activity).execute();
                 }
             });
             cancel.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    keygen2_activity.conditionalAbort(null);
+                    keyGen2Activity.conditionalAbort(null);
                 }
             });
         } else {
-            keygen2_activity.showFailLog();
+            keyGen2Activity.showFailLog();
         }
     }
 }
