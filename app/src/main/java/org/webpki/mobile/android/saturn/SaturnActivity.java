@@ -64,6 +64,7 @@ import org.webpki.json.DataEncryptionAlgorithms;
 import org.webpki.json.KeyEncryptionAlgorithms;
 
 import org.webpki.mobile.android.application.ThemeHolder;
+
 import org.webpki.mobile.android.proxy.BaseProxyActivity;
 
 import org.webpki.mobile.android.saturn.common.AuthorizationData;
@@ -72,6 +73,8 @@ import org.webpki.mobile.android.saturn.common.PaymentRequest;
 import org.webpki.mobile.android.saturn.common.WalletRequestDecoder;
 
 import org.webpki.mobile.android.sks.HardwareKeyStore;
+
+import org.webpki.net.MobileProxyParameters;
 
 import org.webpki.sks.KeyProtectionInfo;
 import org.webpki.sks.PassphraseFormat;
@@ -248,7 +251,7 @@ public class SaturnActivity extends BaseProxyActivity {
             Intent result = new Intent();
             Bundle extras = new Bundle();
             extras.putString("methodName", "https://mobilepki.org/w3cpay/method");
-            extras.putString("details", "{\"goto\": \"" + url + "\"}");
+            extras.putString("details", "{\"" + MobileProxyParameters.W3CPAY_GOTO_URL + "\": \"" + url + "\"}");
             result.putExtras(extras);
             setResult(RESULT_OK, result);
             finish();

@@ -16,6 +16,7 @@
  */
 package org.webpki.mobile.android.keygen2;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import android.util.Log;
@@ -27,6 +28,8 @@ import org.webpki.mobile.android.proxy.BaseProxyActivity;
 import org.webpki.keygen2.KeyCreationRequestDecoder;
 import org.webpki.keygen2.InvocationRequestDecoder;
 import org.webpki.keygen2.ProvisioningInitializationRequestDecoder;
+
+import org.webpki.net.MobileProxyParameters;
 
 public class KeyGen2Activity extends BaseProxyActivity {
     public static final String KEYGEN2 = "KeyGen2";
@@ -74,5 +77,20 @@ public class KeyGen2Activity extends BaseProxyActivity {
     @Override
     protected String getAbortString() {
         return "Do you want to abort the current enrollment process?";
+    }
+
+    @Override
+    public void launchBrowser(String url) {
+        if (w3cPayInvoked()) {
+            Intent result = new Intent();
+            Bundle extras = new Bundle();
+            extras.putString("methodName", "https://mobilepki.org/w3cpay/method");
+            extras.putString("details", "{\"" + MobileProxyParameters.W3CPAY_GOTO_URL + "\": \"" + url + "\"}");
+            result.putExtras(extras);
+            setResult(RESULT_OK, result);
+            finish();
+        } else {
+            super.launchBrowser(url);
+        }
     }
 }
