@@ -387,6 +387,7 @@ public abstract class BaseProxyActivity extends Activity {
             throw new IOException("\n\nActual app version:" + version +
                                   "\nRequired version:" + versionSpan + "\n");
         }
+//TODO a new error handling please...
         httpsWrapper.setFollowRedirects(true);
         httpsWrapper.setRequireSuccess(true);
         httpsWrapper.makeGetRequest(boot_url);
