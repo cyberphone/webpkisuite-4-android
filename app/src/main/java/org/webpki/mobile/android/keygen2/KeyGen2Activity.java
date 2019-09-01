@@ -88,6 +88,7 @@ public class KeyGen2Activity extends BaseProxyActivity {
             extras.putString("details", "{\"" + MobileProxyParameters.W3CPAY_GOTO_URL + "\": \"" + url + "\"}");
             result.putExtras(extras);
             setResult(RESULT_OK, result);
+            closeProxy();
             finish();
         } else {
             super.launchBrowser(url);
