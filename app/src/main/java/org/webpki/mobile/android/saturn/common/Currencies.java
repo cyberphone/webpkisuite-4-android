@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2018 WebPKI.org (http://webpki.org).
+ *  Copyright 2015-2020 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -25,12 +25,15 @@ import java.util.regex.Pattern;
 
 public enum Currencies implements Serializable {
 
-    USD ("$\u200a",       true,  2), 
+    DKK ("\u2009Kr",      false, 2),
 /*
     EUR ("\u2009\u20ac",  false, 2),  // French notation
 */
     EUR ("\u20ac\u200a",  true,  2),  // English notation
-    GBP ("\u00a3\u200a",  true,  2);
+    GBP ("\u00a3\u200a",  true,  2),
+    NOK ("\u2009Kr",      false, 2),
+    SEK ("\u2009Kr",      false, 2),
+    USD ("$\u200a",       true,  2); 
 
     public String symbol;
     public boolean symbolFirst;

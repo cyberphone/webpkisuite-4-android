@@ -18,8 +18,6 @@ package org.webpki.mobile.android.saturn;
 
 import java.io.IOException;
 
-import java.net.URL;
-
 import android.os.AsyncTask;
 
 import org.webpki.keygen2.KeyGen2URIs;
@@ -69,7 +67,7 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                 // for the fictitious payment schemes this system is supporting but it
                 // might still not match the Payee's list of supported account types.
                 ek = collectPotentialAccount(ek,
-                                             new CardDataDecoder(ext.getExtensionData(
+                                             new CardDataDecoder("2", ext.getExtensionData(
                                                          SecureKeyStore.SUB_TYPE_EXTENSION)),
                                              saturnActivity.walletRequest);
             }
@@ -90,7 +88,7 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
             saturnActivity.setTitle("Requester: " + saturnActivity.getRequestingHost());
             try {
                 if (saturnActivity.accountCollection.isEmpty()) {
-                    String noMatchingMethodsUrl = saturnActivity.walletRequest.getOptionalNoMatchingMethodsUrl();
+                    String noMatchingMethodsUrl = saturnActivity.walletRequest.noMatchingMethodsUrl;
                     saturnActivity.messageDisplay("",
                         "You do not seem to have any matching payment cards." +
                                 (noMatchingMethodsUrl == null ? "" :
@@ -116,29 +114,29 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
     EnumeratedKey collectPotentialAccount(EnumeratedKey foundKey,
                                           CardDataDecoder cardData,
                                           WalletRequestDecoder wrd) throws IOException {
-        String paymentMethod = cardData.getPaymentMethod();
-        for (WalletRequestDecoder.PaymentNetwork paymentNetwork : wrd.getPaymentNetworks()) {
-            for (String acceptedPaymentMethod : paymentNetwork.getPaymentMethods()) {
+        if (cardData.isRecognized()) {
+            String paymentMethod = cardData.getPaymentMethod();
+            for (String acceptedPaymentMethod : wrd.paymentMethods) {
                 if (paymentMethod.equals(acceptedPaymentMethod)) {
                     Account account = new Account(
-                        paymentNetwork.getPaymentRequest(),
-                        cardData.getPaymentMethod(),
-                        cardData.getAccountId(),
-                        cardData.getAuthorityUrl(),
-                        // Card visuals
-                        true,
-                        new String(saturnActivity.sks.getExtension(foundKey.getKeyHandle(),
-                                                        KeyGen2URIs.LOGOTYPES.CARD)
-                           .getExtensionData(SecureKeyStore.SUB_TYPE_LOGOTYPE), "utf-8"),
-                        // Signature
-                        foundKey.getKeyHandle(),
-                        cardData.getSignatureAlgorithm(),
-                        // Encryption
-                        cardData.getKeyEncryptionAlgorithm(),
-                        cardData.getDataEncryptionAlgorithm(),
-                        cardData.getEncryptionKey(),
-                        cardData.getOptionalKeyId(),
-                        cardData.getTempBalanceFix()
+                            cardData.getPaymentMethod(),
+                            cardData.getCredentialId(),
+                            cardData.getAccountId(),
+                            cardData.getAuthorityUrl(),
+                            // Card visuals
+                            true,
+                            new String(saturnActivity.sks.getExtension(foundKey.getKeyHandle(),
+                                    KeyGen2URIs.LOGOTYPES.CARD)
+                                    .getExtensionData(SecureKeyStore.SUB_TYPE_LOGOTYPE), "utf-8"),
+                            // Signature
+                            foundKey.getKeyHandle(),
+                            cardData.getSignatureAlgorithm(),
+                            // Encryption
+                            cardData.getKeyEncryptionAlgorithm(),
+                            cardData.getDataEncryptionAlgorithm(),
+                            cardData.getEncryptionKey(),
+                            cardData.getOptionalKeyId(),
+                            cardData.getTempBalanceFix()
                     );
                     byte[] hash = cardData.getOptionalAccountStatusKeyHash();
 

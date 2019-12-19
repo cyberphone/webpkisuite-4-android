@@ -69,7 +69,6 @@ import org.webpki.mobile.android.proxy.BaseProxyActivity;
 
 import org.webpki.mobile.android.saturn.common.AuthorizationData;
 import org.webpki.mobile.android.saturn.common.UserResponseItem;
-import org.webpki.mobile.android.saturn.common.PaymentRequest;
 import org.webpki.mobile.android.saturn.common.WalletRequestDecoder;
 
 import org.webpki.mobile.android.sks.HardwareKeyStore;
@@ -172,8 +171,8 @@ public class SaturnActivity extends BaseProxyActivity {
     DisplayMetrics displayMetrics;
 
     static class Account {
-        PaymentRequest paymentRequest;
         String paymentMethod;
+        String credentialId;
         String accountId;
         String authorityUrl;
         boolean cardFormatAccountId;
@@ -188,9 +187,9 @@ public class SaturnActivity extends BaseProxyActivity {
 
         BigDecimal tempBalanceFix;
 
-        Account(PaymentRequest paymentRequest,
-                // The core...
+        Account(// The core...
                 String paymentMethod,
+                String credentialId,
                 String accountId,
                 String authorityUrl,
                 // Card visuals
@@ -205,8 +204,8 @@ public class SaturnActivity extends BaseProxyActivity {
                 PublicKey encryptionKey,
                 String optionalKeyId,
                 BigDecimal tempBalanceFix) {
-            this.paymentRequest = paymentRequest;
             this.paymentMethod = paymentMethod;
+            this.credentialId = credentialId;
             this.accountId = accountId;
             this.authorityUrl = authorityUrl;
             this.cardFormatAccountId = cardFormatAccountId;
@@ -365,7 +364,7 @@ public class SaturnActivity extends BaseProxyActivity {
 
     String getBalance(Account account) {
         try {
-            return account.paymentRequest.getCurrency()
+            return walletRequest.paymentRequest.getCurrency()
                     .amountToDisplayString(account.tempBalanceFix, true);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -502,7 +501,7 @@ public class SaturnActivity extends BaseProxyActivity {
                     "paydata.style.top = (gutter * 5 + card.offsetHeight) + 'px';\n");
             }
         }
-        if (walletRequest.isGasStationPayment()) {
+        if (walletRequest.gasStationPayment) {
             js.append("document.getElementById('amountfield').innerHTML += " +
                     "\"<span class='marquee'><i>Reserved</i>, actual payment will match fuel quantity</span>\";\n");
         }
@@ -561,14 +560,14 @@ public class SaturnActivity extends BaseProxyActivity {
         }
         html.append(
             "<tr><td id='payeelabel' class='label'>Payee</td><td id='payeefield' class='field' onClick=\"Saturn.toast('Name of merchant')\">")
-          .append(HTMLEncoder.encode(selectedCard.paymentRequest.getPayee().getCommonName()))
+          .append(HTMLEncoder.encode(walletRequest.paymentRequest.getPayeeCommonName()))
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
             "<tr><td class='label'>Amount</td><td id='amountfield' " +
             "class='field' onClick=\"Saturn.toast('Amount to pay')\"><span class='money'>")
-          .append(selectedCard.paymentRequest.getCurrency().amountToDisplayString(selectedCard.paymentRequest.getAmount(), true))
+          .append(walletRequest.paymentRequest.getCurrency().amountToDisplayString(walletRequest.paymentRequest.getAmount(), true))
           .append("</span>")
-          .append(walletRequest.isGasStationPayment() ? "<br>\u200b" : "")
+          .append(walletRequest.gasStationPayment ? "<br>\u200b" : "")
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
             "<tr><td class='label'>PIN</td>");
@@ -700,9 +699,10 @@ public class SaturnActivity extends BaseProxyActivity {
                 privateMessageEncryptionKey = CryptoRandom.generateRandom(selectedCard.dataEncryptionAlgorithm.getKeyLength());
                 // The response
                 authorizationData = AuthorizationData.encode(
-                    selectedCard.paymentRequest,
+                    walletRequest.paymentRequest,
                     getRequestingHost(),
                     selectedCard.paymentMethod,
+                    selectedCard.credentialId,
                     selectedCard.accountId,
                         privateMessageEncryptionKey,
                     selectedCard.dataEncryptionAlgorithm,

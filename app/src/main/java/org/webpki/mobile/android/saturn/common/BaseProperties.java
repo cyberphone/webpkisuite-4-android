@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2018 WebPKI.org (http://webpki.org).
+ *  Copyright 2015-2020 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package org.webpki.mobile.android.saturn.common;
 
 public interface BaseProperties {
 
-    String ATTESTATION_JSON                 = "attestation";                // Used for Authority Object signatures
+    String ATTESTATION_SIGNATURE_JSON       = "attestationSignature";       // Used for Authority Object signatures
 
     String COMMON_NAME_JSON                 = "commonName";                 // Common name of providers to be used in UIs
     String NAME_JSON                        = "name";
@@ -34,7 +34,6 @@ public interface BaseProperties {
 
     String USER_RESPONSE_ITEMS_JSON         = "userResponseItems";          // Result of ProviderUserResponse 
 
-    String PAYMENT_NETWORKS_JSON            = "paymentNetworks";            // Main request data for Payer
     String NO_MATCHING_METHODS_URL_JSON     = "noMatchingMethodsUrl";       // Optional tip by Payee to Payer in case nothing matches
     String PAYMENT_REQUEST_JSON             = "paymentRequest";
     String HTTP_VERSION_JSON                = "httpVersion";                // For per partner being able to use HTTP/2 and further
@@ -52,17 +51,20 @@ public interface BaseProperties {
     String LOG_DATA_JSON                    = "logData";                    // Insertion of external log data
     String REFERENCE_ID_JSON                = "referenceId";                // Unique reference in a message
     String PAYEE_JSON                       = "payee";                      // Payee object
+    String LOCAL_PAYEE_ID_JSON              = "localPayeeId";               // Provider's local ID of Payee
     String TEST_MODE_JSON                   = "testMode";                   // Test mode = no real money involved
     String ENCRYPTED_AUTHORIZATION_JSON     = "encryptedAuthorization";     // Encrypted Payer authorization data
     String PROVIDER_AUTHORITY_URL_JSON      = "providerAuthorityUrl";       // URL to payment provider authority object
     String HOSTING_PROVIDER_JSON            = "hostingProvider";            // Optional object in ProviderAuthority
     String HOME_PAGE_JSON                   = "homePage";                   // URL to the public Web of the entity
     String BACKEND_METHOD_SPECIFIC_JSON     = "backendMethodSpecific";      // Holding a payment backend method specific object
-    String PAYMENT_METHODS_JSON             = "paymentMethods";             // List of accepted payment methods (URIs)
-    String PAYMENT_METHOD_JSON              = "paymentMethod";              // Payment method (URI)
-    String AUTHORIZATION_SIGNATURE_JSON     = "authorizationSignature";     // User authorization signature
+    String PAYMENT_METHODS_JSON             = "paymentMethods";             // List of accepted payment methods (URLs)
+    String PAYMENT_METHOD_JSON              = "paymentMethod";              // Payment method (URL)
+    String AUTHORIZATION_SIGNATURE_JSON     = "authorizationSignature";     // User and bank authorization signature
+    String REQUEST_SIGNATURE_JSON           = "requestSignature";           // Payee signature
     String EXTENSIONS_JSON                  = "extensions";                 // Optional provider authority data
     String ACCOUNT_ID_JSON                  = "accountId";                  // Account identifier or PAN
+    String CREDENTIAL_ID_JSON               = "credentialId";               // Each virtual card has a unique ID
     String ACCOUNT_REFERENCE_JSON           = "accountReference";           // Account/Card number for payee (like ************5678)
     String ENCRYPTED_ACCOUNT_DATA_JSON      = "encryptedAccountData";       // Account data that (only) an acquirer needs
     String PAYEE_SOURCE_ACCOUNT_JSON        = "payeeSourceAccount";         // For refunds

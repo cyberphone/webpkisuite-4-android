@@ -141,7 +141,7 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
                 }
              } else {
                  html.append(header(saturnActivity.selectedCard == null ?
-                         "Unknown" : saturnActivity.selectedCard.paymentRequest.getPayee().getCommonName(),
+                         "Unknown" : saturnActivity.walletRequest.paymentRequest.getPayeeCommonName(),
                                     merchantHtmlAlert));
             }
             saturnActivity.currentForm = SaturnActivity.FORM.SIMPLE;
@@ -150,7 +150,7 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
             String url = saturnActivity.getRedirectURL();
             if (url.equals(BaseProperties.SATURN_LOCAL_SUCCESS_URI)) {
                 saturnActivity.done = true;
-                saturnActivity.simpleDisplay(saturnActivity.walletRequest.isGasStationPayment() ?
+                saturnActivity.simpleDisplay(saturnActivity.walletRequest.gasStationPayment ?
                         "The operation was successful!<br>Now follow the instructions at the pump."
                                    :
                         "The operation was successful!");

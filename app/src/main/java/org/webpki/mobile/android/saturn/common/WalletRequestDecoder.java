@@ -18,9 +18,6 @@ package org.webpki.mobile.android.saturn.common;
 
 import java.io.IOException;
 
-import java.util.Vector;
-
-import org.webpki.json.JSONArrayReader;
 import org.webpki.json.JSONDecoder;
 import org.webpki.json.JSONObjectReader;
 
@@ -28,57 +25,19 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
 
     private static final long serialVersionUID = 1L;
 
-    public class PaymentNetwork {
-        PaymentRequest paymentRequest;
-        String[] paymentMethods;
+    public String paymentMethods[];
 
-        private PaymentNetwork(PaymentRequest paymentRequest, String[] paymentMethods) {
-            this.paymentRequest = paymentRequest;
-            this.paymentMethods = paymentMethods;
-        }
+    public String noMatchingMethodsUrl;
 
-        public PaymentRequest getPaymentRequest() {
-            return paymentRequest;
-        }
+    public boolean gasStationPayment;
 
-        public String[] getPaymentMethods() {
-            return paymentMethods;
-        }
-    }
-
-    Vector<PaymentNetwork> paymentNetworks = new Vector<PaymentNetwork>();
-
-    String noMatchingMethodsUrl;
-
-    boolean gasStationPayment;
-
-    public PaymentNetwork[] getPaymentNetworks() {
-        return paymentNetworks.toArray(new PaymentNetwork[0]);
-    }
-
-    public boolean isGasStationPayment() {
-        return gasStationPayment;
-    }
-
-    public String getOptionalNoMatchingMethodsUrl() {
-        return noMatchingMethodsUrl;
-    }
+    public PaymentRequest paymentRequest;
 
     @Override
     protected void readJSONData(JSONObjectReader rd) throws IOException {
-        JSONArrayReader ar = rd.getArray(PAYMENT_NETWORKS_JSON);
-        PaymentRequest previous = null;
-        do {
-            JSONObjectReader paymentNetwork = ar.getObject();
-            String[] paymentMethods = paymentNetwork.getStringArray(PAYMENT_METHODS_JSON);
-            PaymentRequest paymentRequest = new PaymentRequest(paymentNetwork.getObject(PAYMENT_REQUEST_JSON));
-            if (previous != null) {
-                previous.consistencyCheck(paymentRequest);
-            }
-            previous = paymentRequest;
-            paymentNetworks.add(new PaymentNetwork(paymentRequest, paymentMethods));
-        } while (ar.hasMore());
-        gasStationPayment = previous.getNonDirectPayment() == NonDirectPayments.GAS_STATION;
+        paymentMethods = rd.getStringArray(PAYMENT_METHODS_JSON);
+        paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
+        gasStationPayment = paymentRequest.getNonDirectPayment() == NonDirectPayments.GAS_STATION;
         noMatchingMethodsUrl = rd.getStringConditional(NO_MATCHING_METHODS_URL_JSON);
     }
 
