@@ -48,7 +48,7 @@ import java.math.BigDecimal;
 
 import java.security.PublicKey;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.AsymKeySignerInterface;
@@ -221,7 +221,7 @@ public class SaturnActivity extends BaseProxyActivity {
         }
     }
 
-    Vector<Account> accountCollection = new Vector<Account>();
+    ArrayList<Account> accountCollection = new ArrayList<Account>();
 
     void loadHtml(final String positionScript, final String body) {
         runOnUiThread(new Runnable() {
@@ -639,7 +639,7 @@ public class SaturnActivity extends BaseProxyActivity {
     @JavascriptInterface
     public void selectCard(String index) throws IOException {
         pin = "";
-        selectedCard = accountCollection.elementAt(Integer.parseInt(index));
+        selectedCard = accountCollection.get(Integer.parseInt(index));
         ShowPaymentRequest();
     }
 
@@ -655,7 +655,7 @@ public class SaturnActivity extends BaseProxyActivity {
     @JavascriptInterface
     public boolean getChallengeJSON(String json) {
         try {
-            Vector<UserResponseItem> temp = new Vector<UserResponseItem>();
+            ArrayList<UserResponseItem> temp = new ArrayList<UserResponseItem>();
             JSONArrayReader challengeArray = JSONParser.parse(json).getJSONArrayReader();
              do {
                  JSONObjectReader challengeObject = challengeArray.getObject();

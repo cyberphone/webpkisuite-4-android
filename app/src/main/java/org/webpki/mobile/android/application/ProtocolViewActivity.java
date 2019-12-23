@@ -18,7 +18,7 @@ package org.webpki.mobile.android.application;
 
 import java.io.ObjectInputStream;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
@@ -51,7 +51,7 @@ public class ProtocolViewActivity extends Activity {
         try {
             int count = 0;
             boolean received = true;
-            for (byte[] part : (Vector<byte[]>) new ObjectInputStream(openFileInput(intent.getStringExtra(LOG_FILE))).readObject()) {
+            for (byte[] part : (ArrayList<byte[]>) new ObjectInputStream(openFileInput(intent.getStringExtra(LOG_FILE))).readObject()) {
                 if (count++ > 0) {
                     log_message.append("<br>&nbsp;<br>");
                 }

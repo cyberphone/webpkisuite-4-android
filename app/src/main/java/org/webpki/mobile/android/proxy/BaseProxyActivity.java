@@ -31,7 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Vector;
+import java.util.ArrayList;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -121,9 +121,9 @@ public abstract class BaseProxyActivity extends Activity {
 
     private boolean userAborted;
 
-    private Vector<String> cookies = new Vector<String>();
+    private ArrayList<String> cookies = new ArrayList<String>();
 
-    public Vector<byte[]> protocolLog;
+    public ArrayList<byte[]> protocolLog;
 
     private byte[] initialRequestObject;
 
@@ -358,7 +358,7 @@ public abstract class BaseProxyActivity extends Activity {
     
     public void getProtocolInvocationData() throws Exception {
         logOK(getProtocolName() + " protocol run: " + new SimpleDateFormat("yyyy-MM-dd' 'HH:mm:ss").format(new Date()));
-        protocolLog = new Vector<byte[]>();
+        protocolLog = new ArrayList<byte[]>();
         httpsWrapper = new HTTPSWrapper();
         initSKS();
         schemaCache = new JSONDecoderCache();
@@ -377,7 +377,7 @@ public abstract class BaseProxyActivity extends Activity {
         if (!arg.isEmpty()) {
             cookies.add(arg.get(0));
         }
-        logOK("Invocation URL=" + transactionUrl + ", Cookie: " + (arg.isEmpty() ? "N/A" : cookies.elementAt(0)));
+        logOK("Invocation URL=" + transactionUrl + ", Cookie: " + (arg.isEmpty() ? "N/A" : cookies.get(0)));
         logOK(uri.toString());
         addOptionalCookies(transactionUrl);
         String versionSpan = getQueryParameter(uri, MobileProxyParameters.PUP_VERSIONS);

@@ -269,7 +269,7 @@ class EncryptionCore {
      * @param key The encryption key
      * @param cipherText The data to be decrypted
      * @param iv Initialization Vector
-     * @param authData Additional input used for authentication puposes
+     * @param authData Additional input used for authentication purposes
      * @param tag Authentication tag
      * @return The data in clear
      * @throws GeneralSecurityException &nbsp;
