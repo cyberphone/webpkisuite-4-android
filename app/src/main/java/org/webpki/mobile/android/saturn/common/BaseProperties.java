@@ -21,13 +21,14 @@ public interface BaseProperties {
     String ATTESTATION_SIGNATURE_JSON       = "attestationSignature";       // Used for Authority Object signatures
 
     String COMMON_NAME_JSON                 = "commonName";                 // Common name of providers to be used in UIs
-    String NAME_JSON                        = "name";
 
     String REQUESTER_JSON                   = "requester";                  // ProviderUserResponse
     String TEXT_JSON                        = "text";                       // ProviderUserResponse
     String USER_CHALLENGE_ITEMS_JSON        = "userChallengeItems";         // ProviderUserResponse
+    String NAME_JSON                        = "name";                       // ProviderUserResponse
+    String VALUE_JSON                       = "value";                      // ProviderUserResponse
+    String TYPE_JSON                        = "type";                       // ProviderUserResponse
     String LABEL_JSON                       = "label";                      // ProviderUserResponse
-    String LENGTH_JSON                      = "length";                     // ProviderUserResponse
     String ENCRYPTED_MESSAGE_JSON           = "encryptedMessage";           // ProviderUserResponse
 
     String KEY_JSON                         = "key";                        // Wallet-originated encryption key
@@ -50,14 +51,13 @@ public interface BaseProperties {
     String CLIENT_GEO_LOCATION_JSON         = "clientGeoLocation";          // Optional security data that client devices may supply
     String LOG_DATA_JSON                    = "logData";                    // Insertion of external log data
     String REFERENCE_ID_JSON                = "referenceId";                // Unique reference in a message
-    String PAYEE_JSON                       = "payee";                      // Payee object
+    String PAYEE_JSON                       = "payee";                      // Payee object used in PaymentRequest
     String LOCAL_PAYEE_ID_JSON              = "localPayeeId";               // Provider's local ID of Payee
     String TEST_MODE_JSON                   = "testMode";                   // Test mode = no real money involved
     String ENCRYPTED_AUTHORIZATION_JSON     = "encryptedAuthorization";     // Encrypted Payer authorization data
     String PROVIDER_AUTHORITY_URL_JSON      = "providerAuthorityUrl";       // URL to payment provider authority object
     String HOSTING_PROVIDER_JSON            = "hostingProvider";            // Optional object in ProviderAuthority
     String HOME_PAGE_JSON                   = "homePage";                   // URL to the public Web of the entity
-    String BACKEND_METHOD_SPECIFIC_JSON     = "backendMethodSpecific";      // Holding a payment backend method specific object
     String PAYMENT_METHODS_JSON             = "paymentMethods";             // List of accepted payment methods (URLs)
     String PAYMENT_METHOD_JSON              = "paymentMethod";              // Payment method (URL)
     String AUTHORIZATION_SIGNATURE_JSON     = "authorizationSignature";     // User and bank authorization signature
@@ -67,6 +67,7 @@ public interface BaseProperties {
     String CREDENTIAL_ID_JSON               = "credentialId";               // Each virtual card has a unique ID
     String ACCOUNT_REFERENCE_JSON           = "accountReference";           // Account/Card number for payee (like ************5678)
     String ENCRYPTED_ACCOUNT_DATA_JSON      = "encryptedAccountData";       // Account data that (only) an acquirer needs
+    String PAYEE_RECEIVE_ACCOUNT_JSON       = "payeeReceiveAccount";        // Holding payee account data
     String PAYEE_SOURCE_ACCOUNT_JSON        = "payeeSourceAccount";         // For refunds
     String REQUEST_HASH_JSON                = "requestHash";                // Wallet authorization
     String DOMAIN_NAME_JSON                 = "domainName";
@@ -80,8 +81,6 @@ public interface BaseProperties {
     String ENCRYPTION_PARAMETERS_JSON       = "encryptionParameters";       //    -"-
     String SIGNATURE_PARAMETERS_JSON        = "signatureParameters";        // For "PayeeAuthority" signature key(s)
     String SOFTWARE_JSON                    = "software";
-    String ID_JSON                          = "id";
-    String TYPE_JSON                        = "type";
     String VERSION_JSON                     = "version";
 
     String SATURN_WEB_PAY_CONTEXT_URI       = "https://webpki.github.io/saturn/v3";

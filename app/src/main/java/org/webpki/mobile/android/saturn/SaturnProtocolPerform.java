@@ -105,9 +105,9 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
                               "  var data = [];\n");
                     for (UserChallengeItem challengeField : encryptedMessage.getOptionalUserChallengeItems()) {
                         js.append("  data.push({'")
-                          .append(challengeField.getId())
+                          .append(challengeField.getName())
                           .append("': document.getElementById('")
-                          .append(challengeField.getId())
+                          .append(challengeField.getName())
                           .append("').value});\n");
                     }
                     js.append("  return JSON.stringify(data);\n");
@@ -126,10 +126,8 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
                                     challengeField.getType() == UserChallengeItem.TYPE.NUMERIC_SECRET ?
                                 "password" : "text")
                             .append("' id='")
-                            .append(challengeField.getId())
-                            .append("' size='")
-                            .append((int)challengeField.getOptionalLength())
-                            .append("'></div>");
+                            .append(challengeField.getName())
+                            .append("' size='20'></div>");
                         autofocus = "";
                     }
                     html.append("<div style='text-align:center;padding-top:15pt'>" +

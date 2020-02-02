@@ -38,7 +38,8 @@ public class ProviderUserResponseDecoder extends JSONDecoder implements BaseProp
                                                 DataEncryptionAlgorithms dataEncryptionAlgorithm)
     throws IOException, GeneralSecurityException {
         if (encryptedData.getDataEncryptionAlgorithm() != dataEncryptionAlgorithm) {
-            throw new IOException("Unexpected data encryption algorithm:" + encryptedData.getDataEncryptionAlgorithm().toString());
+            throw new IOException("Unexpected data encryption algorithm:" +
+                                  encryptedData.getDataEncryptionAlgorithm().toString());
         }
         return new EncryptedMessage(JSONParser.parse(encryptedData.getDecryptedData(dataEncryptionKey)));
     }
@@ -47,7 +48,9 @@ public class ProviderUserResponseDecoder extends JSONDecoder implements BaseProp
     protected void readJSONData(JSONObjectReader rd) throws IOException {
         encryptedData =
                 rd.getObject(ENCRYPTED_MESSAGE_JSON)
-                        .getEncryptionObject(new JSONCryptoHelper.Options()).require(false);
+                        .getEncryptionObject(new JSONCryptoHelper.Options()
+                            .setPublicKeyOption(JSONCryptoHelper.PUBLIC_KEY_OPTIONS.PLAIN_ENCRYPTION)
+                            .setKeyIdOption(JSONCryptoHelper.KEY_ID_OPTIONS.FORBIDDEN));
     }
 
     @Override
