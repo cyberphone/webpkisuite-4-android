@@ -120,7 +120,7 @@ public class SaturnActivity extends BaseProxyActivity {
           "75% {opacity:1;text-indent:-30em} 76% {opacity:0;text-indent:-30em} 77% {opacity:0;text-indent:15em} " +
           "78% {opacity:1;text-indent:15em} 100% {opacity:1;text-indent:0em}}\n" +
           "</style>\n" +
-          "<script type='text/javascript'>\n" +
+          "<script>\n" +
           "'use strict';\n" +
           "function positionElements() {\n";
 
@@ -184,7 +184,7 @@ public class SaturnActivity extends BaseProxyActivity {
         String accountId;
         String authorityUrl;
         boolean cardFormatAccountId;
-        byte[] cardSvgIcon;
+        byte[] cardImage;
         AsymSignatureAlgorithms signatureAlgorithm;
         int signatureKeyHandle;
         DataEncryptionAlgorithms dataEncryptionAlgorithm;
@@ -202,7 +202,7 @@ public class SaturnActivity extends BaseProxyActivity {
                 String authorityUrl,
                 // Card visuals
                 boolean cardFormatAccountId,
-                byte[] cardSvgIcon,
+                byte[] cardImage,
                 // Signature
                 int signatureKeyHandle,
                 AsymSignatureAlgorithms signatureAlgorithm,
@@ -217,7 +217,7 @@ public class SaturnActivity extends BaseProxyActivity {
             this.accountId = accountId;
             this.authorityUrl = authorityUrl;
             this.cardFormatAccountId = cardFormatAccountId;
-            this.cardSvgIcon = cardSvgIcon;
+            this.cardImage = cardImage;
             this.signatureKeyHandle = signatureKeyHandle;
             this.signatureAlgorithm = signatureAlgorithm;
             this.keyEncryptionAlgorithm = keyEncryptionAlgorithm;
@@ -239,10 +239,11 @@ public class SaturnActivity extends BaseProxyActivity {
                 @Override
                 public WebResourceResponse handle(@NonNull String cardIndex) {
                     Log.i("RRR", cardIndex);
+                    selectedCard = Integer.parseInt(cardIndex);
                     return new WebResourceResponse("image/svg+xml",
-                            "utf-8",
-                            new ByteArrayInputStream(accountCollection
-                                    .get(Integer.parseInt(cardIndex)).cardSvgIcon));
+                                                   "utf-8",
+                                                   new ByteArrayInputStream(
+                                                           getSelectedCard().cardImage));
                 }
             })
             .addPathHandler("/main/", new WebViewAssetLoader.PathHandler() {
@@ -250,8 +251,8 @@ public class SaturnActivity extends BaseProxyActivity {
                 @Override
                 public WebResourceResponse handle(@NonNull String path) {
                     return new WebResourceResponse("text/html",
-                            "utf-8",
-                            new ByteArrayInputStream(currentHtml));
+                                                   "utf-8",
+                                                   new ByteArrayInputStream(currentHtml));
                 }
             })
             .build();
@@ -374,7 +375,7 @@ public class SaturnActivity extends BaseProxyActivity {
         try {
             htmlBodyPrefix = new StringBuilder("}\n" +
                                               "</script>" +
-                                              "</head><body onload=\"positionElements()\">" +
+                                              "</head><body onload='positionElements()'>" +
                                               "<svg style='height:")
                 .append((int)((Math.max(displayMetrics.heightPixels, displayMetrics.widthPixels)  * 5) / factor))
                 .append("px'")
@@ -411,66 +412,77 @@ public class SaturnActivity extends BaseProxyActivity {
     }
 
     String htmlOneCard(int width) {
+        int arrowWidth = (width * 4) / factor;
         return new StringBuilder("<table id='card' style='visibility:hidden;position:absolute'>"+
-                    "<tr><td><svg style=\"width:")
+                    "<tr><td id='leftArrow' style='visibility:hidden'>" +
+                    "<svg style='width:")
+            .append(arrowWidth)
+            .append("px' viewBox='0 0 110 320' xmlns='http://www.w3.org/2000/svg'>" +
+                    "<path d='M100 20 L100 300 L10 160 Z' fill='none' stroke='white' stroke-width='10'/>" +
+                    "</svg></td></td><td><svg style='width:")
             .append((width * 100) / factor)
-            .append("px\" ")
+            .append("px' ")
             .append(whiteTheme ?
-                    "viewBox=\"0 0 318 190\" xmlns=\"http://www.w3.org/2000/svg\">" +
+                    "viewBox='0 0 318 190' xmlns='http://www.w3.org/2000/svg'>" +
                     "<defs>" +
-                    " <clipPath id=\"cardClip\">" +
-                    "  <rect rx=\"15\" ry=\"15\" height=\"180\" width=\"300\" y=\"0\" x=\"0\"/>" +
+                    " <clipPath id='cardClip'>" +
+                    "  <rect rx='15' ry='15' height='180' width='300' y='0' x='0'/>" +
                     " </clipPath>" +
-                    " <filter id=\"dropShaddow\">" +
-                    "  <feGaussianBlur stdDeviation=\"2.4\"/>" +
+                    " <filter id='dropShaddow'>" +
+                    "  <feGaussianBlur stdDeviation='2.4'/>" +
                     " </filter>" +
-                    " <linearGradient y1=\"0\" x1=\"0\" y2=\"1\" x2=\"1\" id=\"innerCardBorder\">" +
-                    "  <stop offset=\"0\" stop-opacity=\"0.6\" stop-color=\"white\"/>" +
-                    "  <stop offset=\"0.48\" stop-opacity=\"0.6\" stop-color=\"white\"/>" +
-                    "  <stop offset=\"0.52\" stop-opacity=\"0.6\" stop-color=\"#b0b0b0\"/>" +
-                    "  <stop offset=\"1\" stop-opacity=\"0.6\" stop-color=\"#b0b0b0\"/>" +
+                    " <linearGradient y1='0' x1='0' y2='1' x2='1' id='innerCardBorder'>" +
+                    "  <stop offset='0' stop-opacity='0.6' stop-color='white'/>" +
+                    "  <stop offset='0.48' stop-opacity='0.6' stop-color='white'/>" +
+                    "  <stop offset='0.52' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
+                    "  <stop offset='1' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
                     " </linearGradient>" +
-                    " <linearGradient y1=\"0\" x1=\"0\" y2=\"1\" x2=\"1\" id=\"outerCardBorder\">" +
-                    "  <stop offset=\"0\" stop-color=\"#b0b0b0\"/>" +
-                    "  <stop offset=\"0.48\" stop-color=\"#b0b0b0\"/>" +
-                    "  <stop offset=\"0.52\" stop-color=\"#808080\"/>" +
-                    "  <stop offset=\"1\" stop-color=\"#808080\"/>" +
+                    " <linearGradient y1='0' x1='0' y2='1' x2='1' id='outerCardBorder'>" +
+                    "  <stop offset='0' stop-color='#b0b0b0'/>" +
+                    "  <stop offset='0.48' stop-color='#b0b0b0'/>" +
+                    "  <stop offset='0.52' stop-color='#808080'/>" +
+                    "  <stop offset='1' stop-color='#808080'/>" +
                     " </linearGradient>" +
                     "</defs>" +
-                    "<rect filter=\"url(#dropShaddow)\" rx=\"16\" ry=\"16\" " +
-                    "height=\"182\" width=\"302\" y=\"4\" x=\"12\" fill=\"#c0c0c0\"/>" +
-                    "<svg x=\"9\" y=\"1\" clip-path=\"url(#cardClip)\""
+                    "<rect filter='url(#dropShaddow)' rx='16' ry='16' " +
+                    "height='182' width='302' y='4' x='12' fill='#c0c0c0'/>" +
+                    "<svg x='9' y='1' clip-path='url(#cardClip)'>"
                                        :
-                    "viewBox=\"0 0 318 196\" xmlns=\"http://www.w3.org/2000/svg\">" +
+                    "viewBox='0 0 318 196' xmlns='http://www.w3.org/2000/svg'>" +
                     "<defs>" +
-                    " <clipPath id=\"cardClip\">" +
-                    "  <rect rx=\"15\" ry=\"15\" height=\"178\" width=\"298\" y=\"0\" x=\"0\"/>" +
+                    " <clipPath id='cardClip'>" +
+                    "  <rect rx='15' ry='15' height='178' width='298' y='0' x='0'/>" +
                     " </clipPath>" +
-                    " <filter id=\"dropShaddow\">" +
-                    "  <feGaussianBlur stdDeviation=\"3.5\"/>" +
+                    " <filter id='dropShaddow'>" +
+                    "  <feGaussianBlur stdDeviation='3.5'/>" +
                     " </filter>" +
                     "</defs>" +
-                    "<rect filter=\"url(#dropShaddow)\" rx=\"16\" ry=\"16\" " +
-                    "height=\"181\" width=\"303\" y=\"8.5\" x=\"7.5\" fill=\"white\"/>" +
-                    "<svg x=\"10\" y=\"10\" clip-path=\"url(#cardClip)\">" +
-                    "<image id=\"cardImage\" width=\"300\" height=\"180\" " +
-                    "style=\"opacity:1;cursor:pointer\" href=\"/card/")
+                    "<rect filter='url(#dropShaddow)' rx='16' ry='16' " +
+                    "height='181' width='303' y='8.5' x='7.5' fill='white'/>" +
+                    "<svg x='10' y='10' clip-path='url(#cardClip)'>")
+            .append("<image id='cardImage' width='300' height='180' " +
+                    "style='opacity:1;cursor:pointer' href='/card/")
             .append(selectedCard)
-            .append("\"/></svg>")
+            .append("'/></svg>")
 
             .append(whiteTheme ?
-                    "<rect x=\"10\" y=\"2\" width=\"298\" height=\"178\" " +
-                    "rx=\"14.7\" ry=\"14.7\" fill=\"none\" " +
-                    "stroke=\"url(#innerCardBorder)\" stroke-width=\"2.7\"/>" +
-                    "<rect x=\"8.5\" y=\"0.5\" width=\"301\" height=\"181\" " +
-                    "rx=\"16\" ry=\"16\" fill=\"none\" stroke=\"url(#outerCardBorder)\"/>"
+                    "<rect x='10' y='2' width='298' height='178' " +
+                    "rx='14.7' ry='14.7' fill='none' " +
+                    "stroke='url(#innerCardBorder)' stroke-width='2.7'/>" +
+                    "<rect x='8.5' y='0.5' width='301' height='181' " +
+                    "rx='16' ry='16' fill='none' stroke='url(#outerCardBorder)'/>"
                              :
-                    "<rect x=\"10.5\" y=\"11\" width=\"296.5\" height=\"176\" " +
-                    "rx=\"16\" ry=\"16\" fill=\"none\" stroke=\"#162c44\"/>" +
-                    "<rect x=\"9.5\" y=\"9.5\" width=\"299.5\" height=\"179\" " +
-                    "rx=\"17\" ry=\"17\" fill=\"none\" stroke=\"#e0e0e0\"/>")
+                    "<rect x='10.5' y='11' width='296.5' height='176' " +
+                    "rx='16' ry='16' fill='none' stroke='#162c44'/>" +
+                    "<rect x='9.5' y='9.5' width='299.5' height='179' " +
+                    "rx='17' ry='17' fill='none' stroke='#e0e0e0'/>")
 
-            .append("</svg></td></tr><tr><td style='text-align:center'>" +
+            .append("</svg></td><td id='rightArrow' style='visibility:hidden'>" +
+                    "<svg style='width:")
+            .append(arrowWidth)
+            .append("px' viewBox='0 0 110 320' xmlns='http://www.w3.org/2000/svg'>" +
+                    "<path d='M10 20 L10 300 L100 160 Z' fill='none' stroke='white' stroke-width='10'/>" +
+                    "</svg></td></tr><tr><td colspan='3' style='text-align:center'>" +
                     "<div class='balance' onClick=\"Saturn.toast('Not implemented in the demo...')\">" +
                     "Balance: <span class='money'>")
             .append(getBalance(getSelectedCard()))
@@ -553,6 +565,7 @@ public class SaturnActivity extends BaseProxyActivity {
         js.append(
             "card.style.visibility='visible';\n" +
             "paydata.style.visibility='visible';\n" +
+            "setArrows();\n" +
             "}\n" +
             "let swipeStartPosition = null;\n" +
 
@@ -563,16 +576,16 @@ public class SaturnActivity extends BaseProxyActivity {
             "        let dx = e.changedTouches[0].clientX - swipeStartPosition;\n" +
             "        swipeStartPosition = null\n" +
             "        if (Math.abs(dx) > 30) {\n" +
-            "            if (dx > 0 && cardIndex < " + (accountCollection.size() - 1) +
-                    ") {\n" +
+            "            if (dx > 0 && cardIndex < numberOfAccountsMinus1) {\n" +
             "                cardIndex++;\n" +
             "            } else if (dx < 0 && cardIndex > 0) {\n" +
             "                cardIndex--;\n" +
             "            } else {\n" +
             "                return;\n" +
             "            }\n" +
-            "            setCardData();\n" +
+            "            cardImage.setAttribute('href', '/card/' + cardIndex);\n" +
             "            setOpacity(0);\n" +
+            "            setArrows();\n" +
             "        } else {\n" +
             "            Saturn.toast('Swipe to the left or right to change account/card');\n" +
             "        }\n" +
@@ -587,9 +600,13 @@ public class SaturnActivity extends BaseProxyActivity {
              "}, 50);\n" +
              "}\n" +
              "}\n" +
-            "function setCardData() {\n" +
-            "cardImage.setAttribute('href', '/card/' + cardIndex);\n" +
+            "function setArrows() {\n" +
+            "document.getElementById('leftArrow').style.visibility = " +
+            "cardIndex == 0 ? 'hidden' : 'visible';\n" +
+            "document.getElementById('rightArrow').style.visibility = " +
+            "cardIndex == numberOfAccountsMinus1 ? 'hidden' : 'visible';\n" +
             "}\n" +
+            "const numberOfAccountsMinus1 = " + (accountCollection.size() - 1) + ";\n" +
             "var cardIndex = 0" + ";\n" +
             "var cardImage = null;\n");
         if (numericPin) {
@@ -639,7 +656,7 @@ public class SaturnActivity extends BaseProxyActivity {
         StringBuilder html = new StringBuilder(
             "<table id='paydata' style='visibility:hidden;position:absolute;z-index:5'>");
         if (!numericPin) {
-            html.append("<form onsubmit=\"return validatePin()\">");
+            html.append("<form onsubmit='return validatePin()'>");
         }
         html.append(
             "<tr><td id='payeelabel' class='label'>Payee</td><td id='payeefield' class='field' onClick=\"Saturn.toast('Name of merchant')\">")
