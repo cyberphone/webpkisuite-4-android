@@ -48,22 +48,23 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
             // Since user authorizations are pushed through the Payees they must be encrypted in order
             // to not leak user information to Payees.  Only the proper Payment Provider can decrypt
             // and process user authorizations.
+            SaturnActivity.Account account = saturnActivity.getSelectedCard();
             if (!saturnActivity.postJSONData(
                 saturnActivity.getTransactionURL(),
                 new PayerAuthorizationEncoder(saturnActivity.authorizationData,
-                                              saturnActivity.selectedCard.authorityUrl,
-                                              saturnActivity.selectedCard.paymentMethod,
-                                              saturnActivity.selectedCard.dataEncryptionAlgorithm,
-                                              saturnActivity.selectedCard.encryptionKey,
-                                              saturnActivity.selectedCard.optionalKeyId,
-                                              saturnActivity.selectedCard.keyEncryptionAlgorithm),
+                                              account.authorityUrl,
+                                              account.paymentMethod,
+                                              account.dataEncryptionAlgorithm,
+                                              account.encryptionKey,
+                                              account.optionalKeyId,
+                                              account.keyEncryptionAlgorithm),
                 BaseProxyActivity.RedirectPermitted.OPTIONAL)) {
                 JSONDecoder returnMessage = saturnActivity.parseJSONResponse();
                 if (returnMessage instanceof ProviderUserResponseDecoder) {
                     encryptedMessage =
                         ((ProviderUserResponseDecoder)returnMessage)
                             .getEncryptedMessage(saturnActivity.privateMessageEncryptionKey,
-                                                 saturnActivity.selectedCard.dataEncryptionAlgorithm);
+                                                 account.dataEncryptionAlgorithm);
                 } else {
                     merchantHtmlAlert = ((WalletAlertDecoder)returnMessage).getText();
                 }
@@ -138,8 +139,7 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
                                 "</form>");
                 }
              } else {
-                 html.append(header(saturnActivity.selectedCard == null ?
-                         "Unknown" : saturnActivity.walletRequest.paymentRequest.getPayeeCommonName(),
+                 html.append(header(saturnActivity.walletRequest.paymentRequest.getPayeeCommonName(),
                                     merchantHtmlAlert));
             }
             saturnActivity.currentForm = SaturnActivity.FORM.SIMPLE;

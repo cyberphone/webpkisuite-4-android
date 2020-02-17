@@ -146,7 +146,7 @@ public class SaturnActivity extends BaseProxyActivity {
           "75% {opacity:1;text-indent:-30em} 76% {opacity:0;text-indent:-30em} 77% {opacity:0;text-indent:15em} " +
           "78% {opacity:1;text-indent:15em} 100% {opacity:1;text-indent:0em}}\n" +
           "</style>\n" +
-          "<script type='text/javascript'>\n" +
+          "<script>\n" +
           "'use strict';\n" +
           "function positionElements() {\n";
 
@@ -156,11 +156,11 @@ public class SaturnActivity extends BaseProxyActivity {
 
     WalletRequestDecoder walletRequest;
 
-    enum FORM {SIMPLE, COLLECTION, PAYMENTREQUEST}
+    enum FORM {SIMPLE, PAYMENTREQUEST}
 
     FORM currentForm = FORM.SIMPLE;
 
-    Account selectedCard;
+    int selectedCard;
 
     String pin = "";
 
@@ -184,7 +184,7 @@ public class SaturnActivity extends BaseProxyActivity {
         String accountId;
         String authorityUrl;
         boolean cardFormatAccountId;
-        String cardSvgIcon;
+        byte[] cardSvgIcon;
         AsymSignatureAlgorithms signatureAlgorithm;
         int signatureKeyHandle;
         DataEncryptionAlgorithms dataEncryptionAlgorithm;
@@ -202,7 +202,7 @@ public class SaturnActivity extends BaseProxyActivity {
                 String authorityUrl,
                 // Card visuals
                 boolean cardFormatAccountId,
-                String cardSvgIcon,
+                byte[] cardSvgIcon,
                 // Signature
                 int signatureKeyHandle,
                 AsymSignatureAlgorithms signatureAlgorithm,
@@ -234,6 +234,17 @@ public class SaturnActivity extends BaseProxyActivity {
     byte[] currentHtml;
 
     final WebViewAssetLoader webLoader = new WebViewAssetLoader.Builder()
+            .addPathHandler("/card/", new WebViewAssetLoader.PathHandler() {
+                @Nullable
+                @Override
+                public WebResourceResponse handle(@NonNull String cardIndex) {
+                    Log.i("RRR", cardIndex);
+                    return new WebResourceResponse("image/svg+xml",
+                            "utf-8",
+                            new ByteArrayInputStream(accountCollection
+                                    .get(Integer.parseInt(cardIndex)).cardSvgIcon));
+                }
+            })
             .addPathHandler("/main/", new WebViewAssetLoader.PathHandler() {
                 @Nullable
                 @Override
@@ -253,6 +264,7 @@ public class SaturnActivity extends BaseProxyActivity {
                     .append(htmlBodyPrefix)
                     .append(body)
                     .append("</body></html>").toString().getBytes("utf-8");
+            Log.i("XXX", positionScript);
         } catch (Exception e) {
             Log.e("HTM", e.getMessage());
             return;
@@ -297,9 +309,6 @@ public class SaturnActivity extends BaseProxyActivity {
         displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         switch (currentForm) {
-        case COLLECTION:
-            showCardCollection();
-            break;
 
         case PAYMENTREQUEST:
             try {
@@ -401,14 +410,9 @@ public class SaturnActivity extends BaseProxyActivity {
         }
     }
 
-    String htmlOneCard(Account account, int width, String card, String clickOption) {
-        return new StringBuilder("<table id='")
-            .append(card)
-            .append("' style='visibility:hidden;position:absolute'><tr><td id='")
-            .append(card)
-            .append("image'><svg ")
-            .append(clickOption)
-            .append(" style=\"width:")
+    String htmlOneCard(int width) {
+        return new StringBuilder("<table id='card' style='visibility:hidden;position:absolute'>"+
+                    "<tr><td><svg style=\"width:")
             .append((width * 100) / factor)
             .append("px\" ")
             .append(whiteTheme ?
@@ -448,18 +452,20 @@ public class SaturnActivity extends BaseProxyActivity {
                     "</defs>" +
                     "<rect filter=\"url(#dropShaddow)\" rx=\"16\" ry=\"16\" " +
                     "height=\"181\" width=\"303\" y=\"8.5\" x=\"7.5\" fill=\"white\"/>" +
-                    "<svg x=\"10\" y=\"10\" clip-path=\"url(#cardClip)\">")
-
-            .append(account.cardSvgIcon)
+                    "<svg x=\"10\" y=\"10\" clip-path=\"url(#cardClip)\">" +
+                    "<image id=\"cardImage\" width=\"300\" height=\"180\" " +
+                    "style=\"opacity:1;cursor:pointer\" href=\"/card/")
+            .append(selectedCard)
+            .append("\"/></svg>")
 
             .append(whiteTheme ?
-                    "</svg><rect x=\"10\" y=\"2\" width=\"298\" height=\"178\" " +
+                    "<rect x=\"10\" y=\"2\" width=\"298\" height=\"178\" " +
                     "rx=\"14.7\" ry=\"14.7\" fill=\"none\" " +
                     "stroke=\"url(#innerCardBorder)\" stroke-width=\"2.7\"/>" +
                     "<rect x=\"8.5\" y=\"0.5\" width=\"301\" height=\"181\" " +
                     "rx=\"16\" ry=\"16\" fill=\"none\" stroke=\"url(#outerCardBorder)\"/>"
                              :
-                    "</svg><rect x=\"10.5\" y=\"11\" width=\"296.5\" height=\"176\" " +
+                    "<rect x=\"10.5\" y=\"11\" width=\"296.5\" height=\"176\" " +
                     "rx=\"16\" ry=\"16\" fill=\"none\" stroke=\"#162c44\"/>" +
                     "<rect x=\"9.5\" y=\"9.5\" width=\"299.5\" height=\"179\" " +
                     "rx=\"17\" ry=\"17\" fill=\"none\" stroke=\"#e0e0e0\"/>")
@@ -467,16 +473,25 @@ public class SaturnActivity extends BaseProxyActivity {
             .append("</svg></td></tr><tr><td style='text-align:center'>" +
                     "<div class='balance' onClick=\"Saturn.toast('Not implemented in the demo...')\">" +
                     "Balance: <span class='money'>")
-            .append(getBalance(account))
+            .append(getBalance(getSelectedCard()))
             .append("</span>" +
                     "</div></td></tr></table>").toString();
     }
 
+    Account getSelectedCard() {
+        return accountCollection.get(selectedCard);
+    }
+
     void ShowPaymentRequest() throws IOException {
         currentForm = FORM.PAYMENTREQUEST;
-        boolean numericPin = sks.getKeyProtectionInfo(selectedCard.signatureKeyHandle).getPinFormat() == PassphraseFormat.NUMERIC;
+        boolean numericPin = sks.getKeyProtectionInfo(
+                getSelectedCard().signatureKeyHandle).getPinFormat() == PassphraseFormat.NUMERIC;
         int width = displayMetrics.widthPixels;
         StringBuilder js = new StringBuilder(
+            "cardImage = document.getElementById('cardImage');\n" +
+            "cardImage.addEventListener('touchstart', beginSwipe, false);\n" +
+            "cardImage.addEventListener('touchmove', e => { e.preventDefault() }, false);\n" +
+            "cardImage.addEventListener('touchend', endSwipe, false);\n" +
             "var card = document.getElementById('card');\n" +
             "var paydata = document.getElementById('paydata');\n");
         if (numericPin) {
@@ -538,7 +553,45 @@ public class SaturnActivity extends BaseProxyActivity {
         js.append(
             "card.style.visibility='visible';\n" +
             "paydata.style.visibility='visible';\n" +
-            "}\n");
+            "}\n" +
+            "let swipeStartPosition = null;\n" +
+
+            "function beginSwipe(e) { e.preventDefault(); swipeStartPosition = e.changedTouches[0].clientX };\n" +
+
+            "function endSwipe(e) {\n" +
+            "    if (swipeStartPosition || swipeStartPosition === 0) {\n" +
+            "        let dx = e.changedTouches[0].clientX - swipeStartPosition;\n" +
+            "        swipeStartPosition = null\n" +
+            "        if (Math.abs(dx) > 30) {\n" +
+            "            if (dx > 0 && cardIndex < " + (accountCollection.size() - 1) +
+                    ") {\n" +
+            "                cardIndex++;\n" +
+            "            } else if (dx < 0 && cardIndex > 0) {\n" +
+            "                cardIndex--;\n" +
+            "            } else {\n" +
+            "                return;\n" +
+            "            }\n" +
+            "            setCardData();\n" +
+            "            setOpacity(0);\n" +
+            "        } else {\n" +
+            "            Saturn.toast('Swipe to the left or right to change account/card');\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n" +
+            "function setOpacity(opacity) {\n" +
+            "cardImage.style.opacity = opacity;\n" +
+            "if (opacity < 0.99) {\n" +
+            "opacity += 0.2;\n" +
+             "setTimeout(function () {\n" +
+             "setOpacity(opacity);\n" +
+             "}, 50);\n" +
+             "}\n" +
+             "}\n" +
+            "function setCardData() {\n" +
+            "cardImage.setAttribute('href', '/card/' + cardIndex);\n" +
+            "}\n" +
+            "var cardIndex = 0" + ";\n" +
+            "var cardImage = null;\n");
         if (numericPin) {
             js.append(
                 "var pin = '" + HTMLEncoder.encode(pin) + "';\n" +
@@ -622,54 +675,14 @@ public class SaturnActivity extends BaseProxyActivity {
                         "</form></table>");
         }
 
-        html.append(htmlOneCard(selectedCard, landscapeMode ? (width * 4) / 11 : (width * 7) / 10, "card", " onClick=\"Saturn.toast('The selected card')\""));
-        loadHtml(js.toString(), html.toString());
-    }
-
-    void showCardCollection() {
-        currentForm = FORM.COLLECTION;
-        StringBuilder js = new StringBuilder("var header = document.getElementById('header');\n");
-        StringBuilder html =
-            new StringBuilder("<div id='header' class='header'>Select Payment Account</div>");
-        int width = displayMetrics.widthPixels;
-        int index = 0;
-        for (SaturnActivity.Account account : accountCollection) {
-            String card = "card" + String.valueOf(index);
-            js.append("var " + card + " = document.getElementById('" + card + "');\n");
-            if (index == 0) {
-                js.append("var next = ")
-                  .append(landscapeMode ? 
-                          "(Saturn.height() - " + card + ".offsetHeight) / 2;\n" 
-                                        :
-                          "(Saturn.height() - Math.floor(" + card + ".offsetHeight * 2)) / 2;\n");
-                js.append("header.style.top = (next - header.offsetHeight) / 2 + 'px';\n");
-            }
-            js.append(card + ".style.top = next;\n");
-            if (landscapeMode) {
-                double left = 1.0 / 11;
-                if (index % 2 == 1) {
-                    js.append("next += Math.floor(" + card + ".offsetHeight * 1.3);\n");
-                    left = 6.0 / 11;
-                }
-                js.append(card + ".style.left = Math.floor(Saturn.width() * " + String.valueOf(left) + ") + 'px';\n");
-            } else {
-                js.append(card + ".style.left = ((Saturn.width() - " + card + ".offsetWidth) / 2) + 'px';\n" +
-                          "next += Math.floor(" + card + ".offsetHeight * 1.3);\n");
-            }
-            js.append(card + ".style.visibility = 'visible';\n");
-            html.append(htmlOneCard(account,
-                                    landscapeMode ? (width * 4) / 11 : (width * 7) / 10,
-                                    card,
-                                    " onClick=\"Saturn.selectCard('" + (index++) + "')\""));
-        }
-        js.append("header.style.visibility='visible';\n");
+        html.append(htmlOneCard(landscapeMode ? (width * 4) / 11 : (width * 7) / 10));
         loadHtml(js.toString(), html.toString());
     }
 
     @JavascriptInterface
     public void selectCard(String index) throws IOException {
         pin = "";
-        selectedCard = accountCollection.get(Integer.parseInt(index));
+        selectedCard = Integer.parseInt(index);
         ShowPaymentRequest();
     }
 
@@ -708,7 +721,7 @@ public class SaturnActivity extends BaseProxyActivity {
     }
 
     boolean pinBlockCheck() throws SKSException {
-        if (sks.getKeyProtectionInfo(selectedCard.signatureKeyHandle).isPinBlocked()) {
+        if (sks.getKeyProtectionInfo(getSelectedCard().signatureKeyHandle).isPinBlocked()) {
             unconditionalAbort("Card blocked due to previous PIN errors!");
             return true;
         }
@@ -720,32 +733,35 @@ public class SaturnActivity extends BaseProxyActivity {
             if (pinBlockCheck()) {
                 return false;
             }
+            Account account = getSelectedCard();
             try {
                 // User authorizations are always signed by a key that only needs to be
                 // understood by the issuing Payment Provider (bank).
                 UserResponseItem[] tempChallenge = challengeResults;
                 challengeResults = null;
                 // The key we use for decrypting private information from our bank
-                privateMessageEncryptionKey = CryptoRandom.generateRandom(selectedCard.dataEncryptionAlgorithm.getKeyLength());
+                privateMessageEncryptionKey =
+                        CryptoRandom.generateRandom(account.dataEncryptionAlgorithm.getKeyLength());
                 // The response
                 authorizationData = AuthorizationData.encode(
                     walletRequest.paymentRequest,
                     getRequestingHost(),
-                    selectedCard.paymentMethod,
-                    selectedCard.credentialId,
-                    selectedCard.accountId,
-                        privateMessageEncryptionKey,
-                    selectedCard.dataEncryptionAlgorithm,
+                    account.paymentMethod,
+                    account.credentialId,
+                    account.accountId,
+                    privateMessageEncryptionKey,
+                    account.dataEncryptionAlgorithm,
                     tempChallenge,
-                    selectedCard.signatureAlgorithm,
+                    account.signatureAlgorithm,
                     new AsymKeySignerInterface () {
                         @Override
                         public PublicKey getPublicKey() throws IOException {
-                            return sks.getKeyAttributes(selectedCard.signatureKeyHandle).getCertificatePath()[0].getPublicKey();
+                            return sks.getKeyAttributes(
+                                    account.signatureKeyHandle).getCertificatePath()[0].getPublicKey();
                         }
                         @Override
                         public byte[] signData(byte[] data, AsymSignatureAlgorithms algorithm) throws IOException {
-                            return sks.signHashedData(selectedCard.signatureKeyHandle,
+                            return sks.signHashedData(account.signatureKeyHandle,
                                                       algorithm.getAlgorithmId (AlgorithmPreferences.SKS),
                                                       null,
                                                       pin.getBytes("UTF-8"),
@@ -762,7 +778,7 @@ public class SaturnActivity extends BaseProxyActivity {
             }
             if (!pinBlockCheck()) {
                 Log.w(SATURN, "Incorrect PIN");
-                KeyProtectionInfo pi = sks.getKeyProtectionInfo(selectedCard.signatureKeyHandle);
+                KeyProtectionInfo pi = sks.getKeyProtectionInfo(account.signatureKeyHandle);
                 showAlert("Incorrect PIN. There are " +
                           (pi.getPinRetryLimit() - pi.getPinErrorCount()) +
                           " tries left.");
@@ -828,14 +844,7 @@ public class SaturnActivity extends BaseProxyActivity {
             closeProxy();
             finish ();
         } else {
-            if (selectedCard == null) {
-                conditionalAbort(null);
-            } else if (accountCollection.size() == 1) {
-                conditionalAbort(null);
-                return;
-            }
-            selectedCard = null;
-            showCardCollection();
+            conditionalAbort(null);
         }
     }
 

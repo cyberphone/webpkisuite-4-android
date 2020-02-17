@@ -97,10 +97,8 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                         "</div><div style='word-break:break-all'>" +
                         "<a style='text-decoration:none;color:blue' href='" +
                         noMatchingMethodsUrl + "' target='_blank'>" + noMatchingMethodsUrl + "</a></div>"));
-                } else if (saturnActivity.accountCollection.size () == 1) {
-                    saturnActivity.selectCard("0");
                 } else {
-                    saturnActivity.showCardCollection();
+                    saturnActivity.selectCard("0");
                 }
             } catch (IOException e){
                 saturnActivity.logException(e);
@@ -125,9 +123,10 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                             cardData.getAuthorityUrl(),
                             // Card visuals
                             true,
-                            new String(saturnActivity.sks.getExtension(foundKey.getKeyHandle(),
+                            saturnActivity.sks.getExtension(
+                                    foundKey.getKeyHandle(),
                                     KeyGen2URIs.LOGOTYPES.CARD)
-                                    .getExtensionData(SecureKeyStore.SUB_TYPE_LOGOTYPE), "utf-8"),
+                                        .getExtensionData(SecureKeyStore.SUB_TYPE_LOGOTYPE),
                             // Signature
                             foundKey.getKeyHandle(),
                             cardData.getSignatureAlgorithm(),
