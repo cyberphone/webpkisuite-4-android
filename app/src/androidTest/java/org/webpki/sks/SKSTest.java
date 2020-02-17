@@ -82,8 +82,8 @@ import org.webpki.sks.SecureKeyStore;
 
 
 
-import android.support.test.runner.AndroidJUnit4;
-import android.support.test.InstrumentationRegistry;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.junit.runner.RunWith;
 
@@ -118,7 +118,9 @@ public class SKSTest {
 
     @BeforeClass
     public static void openFile() throws Exception {
-        sks = HardwareKeyStore.createSKS("JUnit", InstrumentationRegistry.getTargetContext(), true);
+        sks = HardwareKeyStore.createSKS("JUnit",
+                                         InstrumentationRegistry.getInstrumentation().getTargetContext(),
+                                         true);
         device = new Device(sks);
         DeviceInfo dev = device.device_info;
         reference_implementation = true;
@@ -155,7 +157,8 @@ public class SKSTest {
             }
         }
         assertTrue("Sess mismatch", i == prov_sessions.size());
-        HardwareKeyStore.serializeSKS("JUnit", InstrumentationRegistry.getTargetContext());
+        HardwareKeyStore.serializeSKS("JUnit",
+                                      InstrumentationRegistry.getInstrumentation().getTargetContext());
     }
 
     @Before

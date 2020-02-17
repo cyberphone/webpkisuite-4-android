@@ -17,9 +17,9 @@ android {
     defaultConfig {
         minSdkVersion 24
         targetSdkVersion project.androidTargetSdk
-        versionCode 29
-        versionName "1.29"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        versionCode 30
+        versionName "1.30"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -42,9 +42,9 @@ dependencies {
     // If you use this from an external project, use the following instead:
     //   compile 'com.journeyapps:zxing-android-embedded:<version>'
     api fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.webkit:webkit:1.1.0"
     api project(':zxing-android-embedded')
-    api 'com.android.support:appcompat-v7:28.0.0'
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 }

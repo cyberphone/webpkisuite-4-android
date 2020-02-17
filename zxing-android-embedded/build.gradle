@@ -4,7 +4,11 @@ ext.artifactId = 'zxing-android-embedded'
 
 dependencies {
     api 'com.google.zxing:core:3.4.0'
-    api 'com.android.support:appcompat-v7:28.0.0'
+    def appcompat_version = "1.1.0"
+
+    implementation "androidx.appcompat:appcompat:$appcompat_version"
+    // For loading and tinting drawables on older versions of the platform
+    implementation "androidx.appcompat:appcompat-resources:$appcompat_version"
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.mockito:mockito-core:1.9.5'
 }
@@ -35,6 +39,9 @@ android {
         unitTests.returnDefaultValues = true
     }
     compileSdkVersion 28
+    defaultConfig {
+        minSdkVersion 24
+    }
 }
 
 task sourceJar(type: Jar) {

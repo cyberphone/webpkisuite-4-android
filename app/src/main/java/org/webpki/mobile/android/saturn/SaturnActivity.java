@@ -25,7 +25,6 @@ import android.content.res.Configuration;
 
 import android.os.Bundle;
 
-import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
@@ -35,13 +34,22 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
 import android.webkit.JavascriptInterface;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import androidx.webkit.WebViewAssetLoader;
 
 import org.webpki.mobile.android.R;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 import java.math.BigDecimal;
@@ -223,21 +231,36 @@ public class SaturnActivity extends BaseProxyActivity {
 
     ArrayList<Account> accountCollection = new ArrayList<Account>();
 
+    byte[] currentHtml;
+
+    final WebViewAssetLoader webLoader = new WebViewAssetLoader.Builder()
+            .addPathHandler("/main/", new WebViewAssetLoader.PathHandler() {
+                @Nullable
+                @Override
+                public WebResourceResponse handle(@NonNull String path) {
+                    return new WebResourceResponse("text/html",
+                            "utf-8",
+                            new ByteArrayInputStream(currentHtml));
+                }
+            })
+            .build();
+
     void loadHtml(final String positionScript, final String body) {
+        try {
+            currentHtml = new StringBuilder(
+                    whiteTheme ? HTML_HEADER_WHITE : HTML_HEADER_SPACE)
+                    .append(positionScript)
+                    .append(htmlBodyPrefix)
+                    .append(body)
+                    .append("</body></html>").toString().getBytes("utf-8");
+        } catch (Exception e) {
+            Log.e("HTM", e.getMessage());
+            return;
+        }
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                saturnView.loadUrl("about:blank");
-                try {
-                    String html = Base64.encodeToString(new StringBuilder(
-                            whiteTheme ? HTML_HEADER_WHITE : HTML_HEADER_SPACE)
-                            .append(positionScript)
-                            .append(htmlBodyPrefix)
-                            .append(body)
-                            .append("</body></html>").toString().getBytes("utf-8"), Base64.NO_WRAP);
-                    saturnView.loadData(html, "text/html; charset=utf-8", "base64");
-                } catch (Exception e) {
-                }
+                saturnView.loadUrl("https://appassets.androidplatform.net/main/");
             }
         });
     }
@@ -327,6 +350,13 @@ public class SaturnActivity extends BaseProxyActivity {
         WebSettings webSettings = saturnView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         saturnView.addJavascriptInterface (this, "Saturn");
+        saturnView.setWebViewClient(new WebViewClient() {
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view,
+                                                              WebResourceRequest request) {
+                return webLoader.shouldInterceptRequest(request.getUrl());
+            }
+        });
         displayMetrics = new DisplayMetrics();
         whiteTheme = ThemeHolder.isWhiteTheme(getBaseContext());
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -420,16 +450,16 @@ public class SaturnActivity extends BaseProxyActivity {
                     "height=\"181\" width=\"303\" y=\"8.5\" x=\"7.5\" fill=\"white\"/>" +
                     "<svg x=\"10\" y=\"10\" clip-path=\"url(#cardClip)\">")
 
-            .append(account.cardSvgIcon.substring(account.cardSvgIcon.indexOf('>')))
+            .append(account.cardSvgIcon)
 
             .append(whiteTheme ?
-                    "<rect x=\"10\" y=\"2\" width=\"298\" height=\"178\" " +
+                    "</svg><rect x=\"10\" y=\"2\" width=\"298\" height=\"178\" " +
                     "rx=\"14.7\" ry=\"14.7\" fill=\"none\" " +
                     "stroke=\"url(#innerCardBorder)\" stroke-width=\"2.7\"/>" +
                     "<rect x=\"8.5\" y=\"0.5\" width=\"301\" height=\"181\" " +
                     "rx=\"16\" ry=\"16\" fill=\"none\" stroke=\"url(#outerCardBorder)\"/>"
                              :
-                    "<rect x=\"10.5\" y=\"11\" width=\"296.5\" height=\"176\" " +
+                    "</svg><rect x=\"10.5\" y=\"11\" width=\"296.5\" height=\"176\" " +
                     "rx=\"16\" ry=\"16\" fill=\"none\" stroke=\"#162c44\"/>" +
                     "<rect x=\"9.5\" y=\"9.5\" width=\"299.5\" height=\"179\" " +
                     "rx=\"17\" ry=\"17\" fill=\"none\" stroke=\"#e0e0e0\"/>")
