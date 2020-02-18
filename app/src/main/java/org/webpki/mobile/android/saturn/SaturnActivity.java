@@ -238,8 +238,8 @@ public class SaturnActivity extends BaseProxyActivity {
                 @Nullable
                 @Override
                 public WebResourceResponse handle(@NonNull String cardIndex) {
-                    Log.i("RRR", cardIndex);
-                    selectedCard = Integer.parseInt(cardIndex);
+                    Log.i("RRR", cardIndex + " old=" + selectedCard);
+                    selectedCard = Integer.parseInt(cardIndex.substring(0, cardIndex.indexOf('.')));
                     return new WebResourceResponse("image/svg+xml",
                                                    "utf-8",
                                                    new ByteArrayInputStream(
@@ -265,8 +265,7 @@ public class SaturnActivity extends BaseProxyActivity {
                     .append(htmlBodyPrefix)
                     .append(body)
                     .append("</body></html>").toString().getBytes("utf-8");
-            Log.i("XXX", positionScript);
-        } catch (Exception e) {
+         } catch (Exception e) {
             Log.e("HTM", e.getMessage());
             return;
         }
@@ -418,7 +417,9 @@ public class SaturnActivity extends BaseProxyActivity {
                     "<svg style='width:")
             .append(arrowWidth)
             .append("px' viewBox='0 0 110 320' xmlns='http://www.w3.org/2000/svg'>" +
-                    "<path d='M100 20 L100 300 L10 160 Z' fill='none' stroke='white' stroke-width='10'/>" +
+                    "<path d='M100 20 L100 300 L10 160 Z' fill='none' stroke='")
+            .append(whiteTheme ? "black" : "white")
+            .append("' stroke-width='10'/>" +
                     "</svg></td></td><td><svg style='width:")
             .append((width * 100) / factor)
             .append("px' ")
@@ -463,7 +464,7 @@ public class SaturnActivity extends BaseProxyActivity {
             .append("<image id='cardImage' width='300' height='180' " +
                     "style='opacity:1;cursor:pointer' href='/card/")
             .append(selectedCard)
-            .append("'/></svg>")
+            .append(".i'/></svg>")
 
             .append(whiteTheme ?
                     "<rect x='10' y='2' width='298' height='178' " +
@@ -481,7 +482,9 @@ public class SaturnActivity extends BaseProxyActivity {
                     "<svg style='width:")
             .append(arrowWidth)
             .append("px' viewBox='0 0 110 320' xmlns='http://www.w3.org/2000/svg'>" +
-                    "<path d='M10 20 L10 300 L100 160 Z' fill='none' stroke='white' stroke-width='10'/>" +
+                    "<path d='M10 20 L10 300 L100 160 Z' fill='none' stroke='")
+            .append(whiteTheme ? "black" : "white")
+            .append("' stroke-width='10'/>" +
                     "</svg></td></tr><tr><td colspan='3' style='text-align:center'>" +
                     "<div class='balance' onClick=\"Saturn.toast('Not implemented in the demo...')\">" +
                     "Balance: <span class='money'>")
@@ -567,29 +570,30 @@ public class SaturnActivity extends BaseProxyActivity {
             "paydata.style.visibility='visible';\n" +
             "setArrows();\n" +
             "}\n" +
+            "let cacheKiller = 0;\n" +
             "let swipeStartPosition = null;\n" +
 
             "function beginSwipe(e) { e.preventDefault(); swipeStartPosition = e.changedTouches[0].clientX };\n" +
 
             "function endSwipe(e) {\n" +
-            "    if (swipeStartPosition || swipeStartPosition === 0) {\n" +
-            "        let dx = e.changedTouches[0].clientX - swipeStartPosition;\n" +
-            "        swipeStartPosition = null\n" +
-            "        if (Math.abs(dx) > 30) {\n" +
-            "            if (dx > 0 && cardIndex < numberOfAccountsMinus1) {\n" +
-            "                cardIndex++;\n" +
-            "            } else if (dx < 0 && cardIndex > 0) {\n" +
-            "                cardIndex--;\n" +
-            "            } else {\n" +
-            "                return;\n" +
-            "            }\n" +
-            "            cardImage.setAttribute('href', '/card/' + cardIndex);\n" +
-            "            setOpacity(0);\n" +
-            "            setArrows();\n" +
-            "        } else {\n" +
-            "            Saturn.toast('Swipe to the left or right to change account/card');\n" +
-            "        }\n" +
+            "  if (swipeStartPosition || swipeStartPosition === 0) {\n" +
+            "    let dx = e.changedTouches[0].clientX - swipeStartPosition;\n" +
+            "    swipeStartPosition = null\n" +
+            "    if (Math.abs(dx) > 30) {\n" +
+            "      if (dx > 0 && cardIndex < numberOfAccountsMinus1) {\n" +
+            "        cardIndex++;\n" +
+            "      } else if (dx < 0 && cardIndex > 0) {\n" +
+            "        cardIndex--;\n" +
+            "      } else {\n" +
+            "        return;\n" +
+            "      }\n" +
+            "      cardImage.setAttribute('href', '/card/' + cardIndex + '.' + cacheKiller++);\n" +
+            "      setOpacity(0);\n" +
+            "      setArrows();\n" +
+            "    } else {\n" +
+            "      Saturn.toast('Swipe to the left or right to change account/card');\n" +
             "    }\n" +
+            "  }\n" +
             "}\n" +
             "function setOpacity(opacity) {\n" +
             "cardImage.style.opacity = opacity;\n" +
