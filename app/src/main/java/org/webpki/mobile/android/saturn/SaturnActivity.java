@@ -57,6 +57,7 @@ import java.math.BigDecimal;
 import java.security.PublicKey;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.AsymKeySignerInterface;
@@ -233,15 +234,24 @@ public class SaturnActivity extends BaseProxyActivity {
 
     byte[] currentHtml;
 
+    static final HashMap<String,String> noCache = new HashMap();
+
+    static {
+        noCache.put("Cache-Control", "no-store");
+    }
+
     final WebViewAssetLoader webLoader = new WebViewAssetLoader.Builder()
             .addPathHandler("/card/", new WebViewAssetLoader.PathHandler() {
                 @Nullable
                 @Override
                 public WebResourceResponse handle(@NonNull String cardIndex) {
                     Log.i("RRR", cardIndex + " old=" + selectedCard);
-                    selectedCard = Integer.parseInt(cardIndex.substring(0, cardIndex.indexOf('.')));
+                    selectedCard = Integer.parseInt(cardIndex);
                     return new WebResourceResponse("image/svg+xml",
                                                    "utf-8",
+                                                   200,
+                                                   "OK",
+                                                   noCache,
                                                    new ByteArrayInputStream(
                                                            getSelectedCard().cardImage));
                 }
@@ -312,7 +322,7 @@ public class SaturnActivity extends BaseProxyActivity {
 
         case PAYMENTREQUEST:
             try {
-                ShowPaymentRequest();
+                showPaymentRequest();
             } catch (IOException e) {
             }
             break;
@@ -464,7 +474,7 @@ public class SaturnActivity extends BaseProxyActivity {
             .append("<image id='cardImage' width='300' height='180' " +
                     "style='opacity:1;cursor:pointer' href='/card/")
             .append(selectedCard)
-            .append(".i'/></svg>")
+            .append("'/></svg>")
 
             .append(whiteTheme ?
                     "<rect x='10' y='2' width='298' height='178' " +
@@ -497,7 +507,7 @@ public class SaturnActivity extends BaseProxyActivity {
         return accountCollection.get(selectedCard);
     }
 
-    void ShowPaymentRequest() throws IOException {
+    void showPaymentRequest() throws IOException {
         currentForm = FORM.PAYMENTREQUEST;
         boolean numericPin = sks.getKeyProtectionInfo(
                 getSelectedCard().signatureKeyHandle).getPinFormat() == PassphraseFormat.NUMERIC;
@@ -570,7 +580,6 @@ public class SaturnActivity extends BaseProxyActivity {
             "paydata.style.visibility='visible';\n" +
             "setArrows();\n" +
             "}\n" +
-            "let cacheKiller = 0;\n" +
             "let swipeStartPosition = null;\n" +
 
             "function beginSwipe(e) { e.preventDefault(); swipeStartPosition = e.changedTouches[0].clientX };\n" +
@@ -587,7 +596,7 @@ public class SaturnActivity extends BaseProxyActivity {
             "      } else {\n" +
             "        return;\n" +
             "      }\n" +
-            "      cardImage.setAttribute('href', '/card/' + cardIndex + '.' + cacheKiller++);\n" +
+            "      cardImage.setAttribute('href', '/card/' + cardIndex);\n" +
             "      setOpacity(0);\n" +
             "      setArrows();\n" +
             "    } else {\n" +
@@ -704,7 +713,7 @@ public class SaturnActivity extends BaseProxyActivity {
     public void selectCard(String index) throws IOException {
         pin = "";
         selectedCard = Integer.parseInt(index);
-        ShowPaymentRequest();
+        showPaymentRequest();
     }
 
     public void hideSoftKeyBoard() {
@@ -733,7 +742,7 @@ public class SaturnActivity extends BaseProxyActivity {
             } while (challengeArray.hasMore());
             challengeResults = temp.toArray(new UserResponseItem[0]);
             hideSoftKeyBoard();
-            ShowPaymentRequest();
+            showPaymentRequest();
             paymentEvent();
         } catch (Exception e) {
             unconditionalAbort("Challenge data read failure");
@@ -863,7 +872,13 @@ public class SaturnActivity extends BaseProxyActivity {
     public void onBackPressed() {
         if (done) {
             closeProxy();
-            finish ();
+            finish();
+        } else if (currentForm == SaturnActivity.FORM.SIMPLE) {
+            try {
+                showPaymentRequest();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         } else {
             conditionalAbort(null);
         }
