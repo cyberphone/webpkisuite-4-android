@@ -254,6 +254,13 @@ public class SaturnActivity extends BaseProxyActivity {
                 public WebResourceResponse handle(@NonNull String cardIndex) {
                     Log.i("RRR", cardIndex + " old=" + selectedCard);
                     selectedCard = Integer.parseInt(cardIndex);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            saturnView.evaluateJavascript(
+                                    "document.getElementById('balance').innerHTML = '" +
+                                            getBalance(getSelectedCard()) + "';", null);                        }
+                    });
                     return new WebResourceResponse("image/svg+xml",
                                                    "utf-8",
                                                    200,
@@ -523,9 +530,7 @@ public class SaturnActivity extends BaseProxyActivity {
             .append("' stroke-width='10'/>" +
                     "</svg></td></tr><tr><td colspan='3' style='text-align:center'>" +
                     "<div class='balance' onClick=\"Saturn.toast('Not implemented in the demo...')\">" +
-                    "Balance: <span class='money'>")
-            .append(getBalance(getSelectedCard()))
-            .append("</span>" +
+                    "Balance: <span id='balance' class='money'>0.00</span>" +
                     "</div></td></tr></table>").toString();
     }
 
