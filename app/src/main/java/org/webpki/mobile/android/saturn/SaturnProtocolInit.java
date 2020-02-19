@@ -98,7 +98,7 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                         "<a style='text-decoration:none;color:blue' href='" +
                         noMatchingMethodsUrl + "' target='_blank'>" + noMatchingMethodsUrl + "</a></div>"));
                 } else {
-                    saturnActivity.selectCard("0");
+                    saturnActivity.showPaymentRequest();;
                 }
             } catch (IOException e){
                 saturnActivity.logException(e);
@@ -140,6 +140,10 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                     byte[] hash = cardData.getOptionalAccountStatusKeyHash();
 
                     // We found an applicable account!
+                    if (foundKey.getKeyHandle() == saturnActivity.lastKeyId) {
+                        // Is it our favorite account?
+                        saturnActivity.selectedCard = saturnActivity.accountCollection.size();
+                    }
                     saturnActivity.accountCollection.add(account);
                     break;
                 }

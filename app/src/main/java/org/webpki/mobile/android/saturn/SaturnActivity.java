@@ -50,6 +50,8 @@ import androidx.webkit.WebViewAssetLoader;
 import org.webpki.mobile.android.R;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import java.math.BigDecimal;
@@ -68,7 +70,6 @@ import org.webpki.json.JSONArrayReader;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONParser;
-
 import org.webpki.json.DataEncryptionAlgorithms;
 import org.webpki.json.KeyEncryptionAlgorithms;
 
@@ -91,9 +92,13 @@ import org.webpki.sks.SKSException;
 import org.webpki.util.ArrayUtil;
 import org.webpki.util.HTMLEncoder;
 
+
 public class SaturnActivity extends BaseProxyActivity {
 
     public static final String SATURN = "Saturn";
+
+    static final String SATURN_SETTINGS    = "satset";
+    static final String LAST_KEY_ID_JSON   = "lastKey";
 
     static final String BACKGROUND_WH = "#f2f2ff";
     static final String BORDER_WH     = "#8080ff";
@@ -162,6 +167,8 @@ public class SaturnActivity extends BaseProxyActivity {
     FORM currentForm = FORM.SIMPLE;
 
     int selectedCard;
+
+    int lastKeyId;
 
     String pin = "";
 
@@ -382,6 +389,16 @@ public class SaturnActivity extends BaseProxyActivity {
         factor = (int)(displayMetrics.density * 100);
         landscapeMode = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
         try {
+            FileInputStream fis = openFileInput(SaturnActivity.SATURN_SETTINGS);
+            byte[] buffer = new byte[fis.available()];
+            fis.read(buffer);
+            JSONObjectReader settings = JSONParser.parse(buffer);
+            lastKeyId = settings.getInt(LAST_KEY_ID_JSON);
+        } catch (IOException e) {
+            lastKeyId = -1;
+        }
+        try {
+
             htmlBodyPrefix = new StringBuilder("}\n" +
                                               "</script>" +
                                               "</head><body onload='positionElements()'>" +
@@ -619,8 +636,14 @@ public class SaturnActivity extends BaseProxyActivity {
             "document.getElementById('rightArrow').style.visibility = " +
             "cardIndex == numberOfAccountsMinus1 ? 'hidden' : 'visible';\n" +
             "}\n" +
-            "const numberOfAccountsMinus1 = " + (accountCollection.size() - 1) + ";\n" +
-            "var cardIndex = 0" + ";\n" +
+            "const numberOfAccountsMinus1 = ")
+        .append(accountCollection.size() - 1)
+        .append(
+            ";\n" +
+            "var cardIndex = ")
+        .append(selectedCard)
+        .append(
+            ";\n" +
             "var cardImage = null;\n");
         if (numericPin) {
             js.append(
@@ -707,13 +730,6 @@ public class SaturnActivity extends BaseProxyActivity {
 
         html.append(htmlOneCard(landscapeMode ? (width * 4) / 11 : (width * 7) / 10));
         loadHtml(js.toString(), html.toString());
-    }
-
-    @JavascriptInterface
-    public void selectCard(String index) throws IOException {
-        pin = "";
-        selectedCard = Integer.parseInt(index);
-        showPaymentRequest();
     }
 
     public void hideSoftKeyBoard() {

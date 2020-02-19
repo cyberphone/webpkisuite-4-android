@@ -16,9 +16,16 @@
  */
 package org.webpki.mobile.android.saturn;
 
+import android.content.Context;
+
 import android.os.AsyncTask;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 import org.webpki.json.JSONDecoder;
+import org.webpki.json.JSONObjectWriter;
+import org.webpki.json.JSONOutputFormats;
 
 import org.webpki.mobile.android.proxy.BaseProxyActivity;
 
@@ -145,11 +152,23 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
             saturnActivity.currentForm = SaturnActivity.FORM.SIMPLE;
             saturnActivity.messageDisplay(js.toString(), html.toString());
        } else {
+            try {
+                FileOutputStream fos =
+                        saturnActivity.openFileOutput(SaturnActivity.SATURN_SETTINGS,
+                                                      Context.MODE_PRIVATE);
+                JSONObjectWriter settings = new JSONObjectWriter();
+                settings.setInt(SaturnActivity.LAST_KEY_ID_JSON,
+                                saturnActivity.getSelectedCard().signatureKeyHandle);
+                fos.write(settings.serializeToBytes(JSONOutputFormats.NORMALIZED));
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             String url = saturnActivity.getRedirectURL();
             if (url.equals(BaseProperties.SATURN_LOCAL_SUCCESS_URI)) {
                 saturnActivity.done = true;
                 saturnActivity.simpleDisplay(saturnActivity.walletRequest.gasStationPayment ?
-                        "The operation was successful!<br>Now follow the instructions at the pump."
+                        "The operation was successful!<p>Now follow the instructions at the pump.</p>"
                                    :
                         "The operation was successful!");
                 saturnActivity.closeProxy();
