@@ -294,6 +294,15 @@ public class SaturnActivity extends BaseProxyActivity {
         });
     }
 
+    @JavascriptInterface
+    public void launchLink(String url) {
+        if (w3cPayInvoked()) {
+            launchBrowser(url);
+        } else {
+            super.launchBrowser(url);
+        }
+    }
+
     @Override
     public void launchBrowser(String url) {
         if (qrCodeInvoked()) {

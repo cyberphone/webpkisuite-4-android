@@ -94,9 +94,9 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                                 (noMatchingMethodsUrl == null ? "" :
                         "<div style='padding:10pt 0 2pt 0'>To remedy this situation, <b>" +
                          saturnActivity.getRequestingHost() + "</b> suggests browsing to:" +
-                        "</div><div style='word-break:break-all'>" +
-                        "<a style='text-decoration:none;color:blue' href='" +
-                        noMatchingMethodsUrl + "' target='_blank'>" + noMatchingMethodsUrl + "</a></div>"));
+                        "</div><div style='word-break:break-all;color:blue' " +
+                         "onclick=\"Saturn.launchLink('" +
+                        noMatchingMethodsUrl + "')\">" + noMatchingMethodsUrl + "</div>"));
                 } else {
                     saturnActivity.showPaymentRequest();;
                 }
