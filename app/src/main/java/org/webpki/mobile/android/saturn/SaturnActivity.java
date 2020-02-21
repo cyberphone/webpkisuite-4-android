@@ -476,8 +476,8 @@ public class SaturnActivity extends BaseProxyActivity {
                     "  <feGaussianBlur stdDeviation='2.4'/>" +
                     " </filter>" +
                     " <linearGradient y1='0' x1='0' y2='1' x2='1' id='innerCardBorder'>" +
-                    "  <stop offset='0' stop-opacity='0.6' stop-color='white'/>" +
-                    "  <stop offset='0.48' stop-opacity='0.6' stop-color='white'/>" +
+                    "  <stop offset='0' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
+                    "  <stop offset='0.48' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
                     "  <stop offset='0.52' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
                     "  <stop offset='1' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
                     " </linearGradient>" +
@@ -500,6 +500,12 @@ public class SaturnActivity extends BaseProxyActivity {
                     " <filter id='dropShaddow'>" +
                     "  <feGaussianBlur stdDeviation='3.5'/>" +
                     " </filter>" +
+                    " <linearGradient y1='0' x1='0' y2='1' x2='1' id='innerCardBorder'>" +
+                    "  <stop offset='0' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
+                    "  <stop offset='0.48' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
+                    "  <stop offset='0.52' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
+                    "  <stop offset='1' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
+                    " </linearGradient>" +
                     "</defs>" +
                     "<rect filter='url(#dropShaddow)' rx='16' ry='16' " +
                     "height='181' width='303' y='8.5' x='7.5' fill='white'/>" +
@@ -516,10 +522,13 @@ public class SaturnActivity extends BaseProxyActivity {
                     "<rect x='8.5' y='0.5' width='301' height='181' " +
                     "rx='16' ry='16' fill='none' stroke='url(#outerCardBorder)'/>"
                              :
-                    "<rect x='10.5' y='11' width='296.5' height='176' " +
-                    "rx='16' ry='16' fill='none' stroke='#162c44'/>" +
-                    "<rect x='9.5' y='9.5' width='299.5' height='179' " +
-                    "rx='17' ry='17' fill='none' stroke='#e0e0e0'/>")
+                    "<rect fill='none' height='177' rx='16' ry='16' " +
+                    "stroke='#162c44' width='297' x='10.5' y='10.5'/>" +
+                    "<rect fill='none' height='174' rx='15' ry='15' " +
+                    "stroke='url(#innerCardBorder)' stroke-width='2' " +
+                    "width='294' x='12' y='12'/>" +
+                    "<rect fill='none' height='179' rx='17' ry='17' " +
+                    "stroke='#e0e0e0' width='299' x='9.5' y='9.5'/>")
 
             .append("</svg></td><td id='rightArrow' style='visibility:hidden'>" +
                     "<svg style='width:")
