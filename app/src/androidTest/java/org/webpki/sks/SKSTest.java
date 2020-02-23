@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2018 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2020 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -82,8 +82,8 @@ import org.webpki.sks.SecureKeyStore;
 
 
 
-import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.platform.app.InstrumentationRegistry;
+import android.support.test.runner.AndroidJUnit4;
+import android.support.test.InstrumentationRegistry;
 
 import org.junit.runner.RunWith;
 
@@ -104,11 +104,11 @@ public class SKSTest {
 
     static boolean standalone_testing;
 
-    static ArrayList<Integer> prov_sessions = new ArrayList<Integer>();
+    static ArrayList<Integer> prov_sessions = new ArrayList<>();
 
     static Device device;
     
-    static HashSet<String> supported_algorithms = new HashSet<String>();
+    static HashSet<String> supported_algorithms = new HashSet<>();
 
     static boolean bc_loaded;
     
@@ -118,9 +118,7 @@ public class SKSTest {
 
     @BeforeClass
     public static void openFile() throws Exception {
-        sks = HardwareKeyStore.createSKS("JUnit",
-                                         InstrumentationRegistry.getInstrumentation().getTargetContext(),
-                                         true);
+        sks = HardwareKeyStore.createSKS("JUnit", InstrumentationRegistry.getTargetContext(), true);
         device = new Device(sks);
         DeviceInfo dev = device.device_info;
         reference_implementation = true;
@@ -157,8 +155,7 @@ public class SKSTest {
             }
         }
         assertTrue("Sess mismatch", i == prov_sessions.size());
-        HardwareKeyStore.serializeSKS("JUnit",
-                                      InstrumentationRegistry.getInstrumentation().getTargetContext());
+        HardwareKeyStore.serializeSKS("JUnit", InstrumentationRegistry.getTargetContext());
     }
 
     @Before

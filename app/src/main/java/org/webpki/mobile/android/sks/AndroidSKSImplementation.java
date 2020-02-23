@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2018 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2020 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -107,7 +107,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
     static final short[] SKS_DEFAULT_RSA_SUPPORT           = {2048};
 
     static final int MAX_LENGTH_CRYPTO_DATA                = 16384;
-    static final int MAX_LENGTH_EXTENSION_DATA             = 250000;
+    static final int MAX_LENGTH_EXTENSION_DATA             = 250000; // A reasonably big image
 
     static final char[] BASE64_URL = {'A','B','C','D','E','F','G','H',
                                       'I','J','K','L','M','N','O','P',
@@ -119,16 +119,16 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
                                       '4','5','6','7','8','9','-','_'};
 
     int nextKeyHandle = 1;
-    LinkedHashMap<Integer, KeyEntry> keys = new LinkedHashMap<Integer, KeyEntry>();
+    LinkedHashMap<Integer, KeyEntry> keys = new LinkedHashMap<>();
 
     int nextProvHandle = 1;
-    LinkedHashMap<Integer, Provisioning> provisionings = new LinkedHashMap<Integer, Provisioning>();
+    LinkedHashMap<Integer, Provisioning> provisionings = new LinkedHashMap<>();
 
     int nextPinHandle = 1;
-    LinkedHashMap<Integer, PINPolicy> pinPolicies = new LinkedHashMap<Integer, PINPolicy>();
+    LinkedHashMap<Integer, PINPolicy> pinPolicies = new LinkedHashMap<>();
 
     int nextPukHandle = 1;
-    LinkedHashMap<Integer, PUKPolicy> pukPolicies = new LinkedHashMap<Integer, PUKPolicy>();
+    LinkedHashMap<Integer, PUKPolicy> pukPolicies = new LinkedHashMap<>();
 
     X509Certificate[] deviceCertificatePath;
     private transient PrivateKey attestationKey;                  // Hardware backed do not serialize
@@ -210,7 +210,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
 
         byte[] symmetricKey;     // Defined by "importSymmetricKey"
 
-        LinkedHashSet<String> grantedDomains = new LinkedHashSet<String>();
+        LinkedHashSet<String> grantedDomains = new LinkedHashSet<>();
 
         LinkedHashSet<String> endorsedAlgorithms;
 
@@ -230,7 +230,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
         byte keyBackup;
 
 
-        LinkedHashMap<String, ExtObject> extensions = new LinkedHashMap<String, ExtObject>();
+        LinkedHashMap<String, ExtObject> extensions = new LinkedHashMap<>();
 
         KeyEntry(Provisioning owner, String id) {
             super(owner, id);
@@ -253,7 +253,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
 
         @SuppressWarnings("fallthrough")
         ArrayList<KeyEntry> getPinSynchronizedKeys() {
-            ArrayList<KeyEntry> group = new ArrayList<KeyEntry>();
+            ArrayList<KeyEntry> group = new ArrayList<>();
             if (pinPolicy.grouping == PIN_GROUPING_NONE) {
                 group.add(this);
             } else {
@@ -510,10 +510,10 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
         int provisioningHandle;
 
         // The virtual/shared name-space
-        LinkedHashMap<String, Boolean> names = new LinkedHashMap<String, Boolean>();
+        LinkedHashMap<String, Boolean> names = new LinkedHashMap<>();
 
         // Post provisioning management
-        ArrayList<PostProvisioningObject> postProvisioningObjects = new ArrayList<PostProvisioningObject>();
+        ArrayList<PostProvisioningObject> postProvisioningObjects = new ArrayList<>();
 
         boolean privacyEnabled;
         String clientSessionId;
@@ -880,7 +880,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
         }
     }
 
-    static LinkedHashMap<String, Algorithm> supportedAlgorithms = new LinkedHashMap<String, Algorithm>();
+    static LinkedHashMap<String, Algorithm> supportedAlgorithms = new LinkedHashMap<>();
 
     static Algorithm addAlgorithm(String uri, String jceName, int mask) {
         Algorithm alg = new Algorithm();
@@ -3159,7 +3159,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
             verifier.addString(friendlyName == null ? "" : friendlyName);
             verifier.addString(keyAlgorithm);
             verifier.addArray(keyParameters == null ? ZERO_LENGTH_ARRAY : keyParameters);
-            LinkedHashSet<String> tempEndorsed = new LinkedHashSet<String>();
+            LinkedHashSet<String> tempEndorsed = new LinkedHashSet<>();
             String prevAlg = "\0";
             for (String endorsedAlgorithm : endorsedAlgorithms) {
                 ///////////////////////////////////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2018 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2020 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ public final class ASN1ObjectID extends Simple {
     }
 
     public void encode(Encoder encoder) throws IOException {
-        ArrayList<BigInteger> v = new ArrayList<BigInteger>();
+        ArrayList<BigInteger> v = new ArrayList<>();
 
         StringTokenizer st = new StringTokenizer(id, ".");
         while (st.hasMoreTokens()) {
@@ -127,7 +127,7 @@ public final class ASN1ObjectID extends Simple {
     }
 
     public static void tryReadOIDNames(String filename) throws IOException { 
-        Hashtable<String, String> on = new Hashtable<String, String>(), no = new Hashtable<String, String>(); 
+        Hashtable<String, String> on = new Hashtable<>(), no = new Hashtable<>(); 
         oidToName = on;
         nameToOID = no;
     }
