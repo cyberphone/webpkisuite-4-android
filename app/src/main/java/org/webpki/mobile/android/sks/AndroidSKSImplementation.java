@@ -107,7 +107,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
     static final short[] SKS_DEFAULT_RSA_SUPPORT           = {2048};
 
     static final int MAX_LENGTH_CRYPTO_DATA                = 16384;
-    static final int MAX_LENGTH_EXTENSION_DATA             = 65536;
+    static final int MAX_LENGTH_EXTENSION_DATA             = 250000;
 
     static final char[] BASE64_URL = {'A','B','C','D','E','F','G','H',
                                       'I','J','K','L','M','N','O','P',

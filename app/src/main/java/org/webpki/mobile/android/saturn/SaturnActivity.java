@@ -497,15 +497,15 @@ public class SaturnActivity extends BaseProxyActivity {
                     " <clipPath id='cardClip'>" +
                     "  <rect rx='15' ry='15' height='178' width='298' y='0' x='0'/>" +
                     " </clipPath>" +
-                    " <filter id='dropShaddow'>" +
-                    "  <feGaussianBlur stdDeviation='3.5'/>" +
-                    " </filter>" +
                     " <linearGradient y1='0' x1='0' y2='1' x2='1' id='innerCardBorder'>" +
                     "  <stop offset='0' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
                     "  <stop offset='0.48' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
                     "  <stop offset='0.52' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
                     "  <stop offset='1' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
                     " </linearGradient>" +
+                    " <filter id='dropShaddow'>" +
+                    "  <feGaussianBlur stdDeviation='3.5'/>" +
+                    " </filter>" +
                     "</defs>" +
                     "<rect filter='url(#dropShaddow)' rx='16' ry='16' " +
                     "height='181' width='303' y='8.5' x='7.5' fill='white'/>" +
@@ -516,19 +516,17 @@ public class SaturnActivity extends BaseProxyActivity {
             .append("'/></svg>")
 
             .append(whiteTheme ?
-                    "<rect x='10' y='2' width='298' height='178' " +
-                    "rx='14.7' ry='14.7' fill='none' " +
-                    "stroke='url(#innerCardBorder)' stroke-width='2.7'/>" +
-                    "<rect x='8.5' y='0.5' width='301' height='181' " +
-                    "rx='16' ry='16' fill='none' stroke='url(#outerCardBorder)'/>"
+                    "<rect fill='none' x='10' y='2' width='298' height='178' " +
+                    "rx='14.7' ry='14.7' stroke='url(#innerCardBorder)' stroke-width='2.7'/>" +
+                    "<rect fill='none' x='8.5' y='0.5' width='301' height='181' " +
+                    "rx='16' ry='16' stroke='url(#outerCardBorder)'/>"
                              :
-                    "<rect fill='none' height='177' rx='16' ry='16' " +
-                    "stroke='#162c44' width='297' x='10.5' y='10.5'/>" +
-                    "<rect fill='none' height='174' rx='15' ry='15' " +
-                    "stroke='url(#innerCardBorder)' stroke-width='2' " +
-                    "width='294' x='12' y='12'/>" +
-                    "<rect fill='none' height='179' rx='17' ry='17' " +
-                    "stroke='#e0e0e0' width='299' x='9.5' y='9.5'/>")
+                    "<rect fill='none' x='12' y='12' width='294' height='174' " +
+                    "rx='15' ry='15' stroke='url(#innerCardBorder)' stroke-width='2'/>" +
+                    "<rect fill='none' x='9.5' y='9.5' width='299' height='179' " +
+                    "rx='17' ry='17' stroke='#e0e0e0'/>" +
+                    "<rect fill='none' x='10.5' y='10.5' width='297' height='177' " +
+                    "rx='16' ry='16' stroke='#162c44'/>")
 
             .append("</svg></td><td id='rightArrow' style='visibility:hidden'>" +
                     "<svg style='width:")
