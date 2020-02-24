@@ -136,8 +136,7 @@ public class PaymentActivity extends Activity {
             if(resultCode == Activity.RESULT_OK){
                 Log.i("FFF", "OK");
                 setResult(Activity.RESULT_OK, data);
-            }
-            if (resultCode == Activity.RESULT_CANCELED) {
+            } else if (resultCode == Activity.RESULT_CANCELED) {
                 Log.i("FFF", "Cancel");
                 //Write your code if there's no result
             }
