@@ -89,7 +89,7 @@ import org.webpki.sks.SecureKeyStore;
  *  Author: Anders Rundgren
  */
 public class AndroidSKSImplementation implements SecureKeyStore, Serializable, GrantInterface {
-    private static final long serialVersionUID = 12L;
+    private static final long serialVersionUID = 15L;
 
     /////////////////////////////////////////////////////////////////////////////////////////////
     // SKS version and configuration data
@@ -97,8 +97,8 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
     static final String SKS_VENDOR_NAME                    = "WebPKI.org";
     static final String SKS_VENDOR_DESCRIPTION             = "SKS for Android";
     static final String SKS_UPDATE_URL                     = null;  // Change here to test or disable
-    static final boolean SKS_DEVICE_PIN_SUPPORT            = false;  // Change here to test or disable
-    static final boolean SKS_BIOMETRIC_SUPPORT             = false; // Change here to test or disable
+    static final boolean SKS_DEVICE_PIN_SUPPORT            = false; // Change here to test or disable
+    static final boolean SKS_BIOMETRIC_SUPPORT             = true;  // Change here to test or disable
 
     ///////////////////////////////////////////////////////////////////////////////////
     // Default RSA support
@@ -326,6 +326,28 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
                 // A success always resets the PIN error counter(s)
                 ///////////////////////////////////////////////////////////////////////////////////
                 setErrorCounter((short) 0);
+            }
+        }
+        
+        void authorize(boolean biometricAuth, byte[] pin) {
+            if (biometricAuth) {
+                if (biometricProtection == BIOMETRIC_PROTECTION_NONE) {
+                    abort("Biometric option invalid for key #" + keyHandle);
+                }
+                if (biometricProtection == BIOMETRIC_PROTECTION_EXCLUSIVE || 
+                    biometricProtection == BIOMETRIC_PROTECTION_ALTERNATIVE) {
+                    if (pin != null) {
+                        abort("Biometric + pin option invalid for key #" + keyHandle);
+                    }
+                } else {
+                    verifyPin(pin);
+                }
+            } else {
+                if (biometricProtection == BIOMETRIC_PROTECTION_COMBINED ||
+                    biometricProtection == BIOMETRIC_PROTECTION_EXCLUSIVE) {
+                    abort("Missing biometric for key #" + keyHandle);
+                }
+                verifyPin(pin);
             }
         }
 
@@ -1825,6 +1847,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
     public synchronized byte[] asymmetricKeyDecrypt(int keyHandle,
                                                     String algorithm,
                                                     byte[] parameters,
+                                                    boolean biometricAuth,
                                                     byte[] authorization,
                                                     byte[] data) {
         ///////////////////////////////////////////////////////////////////////////////////
@@ -1833,9 +1856,9 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
         KeyEntry keyEntry = getStdKey(keyHandle);
 
         ///////////////////////////////////////////////////////////////////////////////////
-        // Verify PIN (in any)
+        // Authorize
         ///////////////////////////////////////////////////////////////////////////////////
-        keyEntry.verifyPin(authorization);
+        keyEntry.authorize(biometricAuth, authorization);
 
         ///////////////////////////////////////////////////////////////////////////////////
         // Check that the encryption algorithm is known and applicable
@@ -1874,6 +1897,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
     public synchronized byte[] signHashedData(int keyHandle,
                                               String algorithm,
                                               byte[] parameters,
+                                              boolean biometricAuth,
                                               byte[] authorization,
                                               byte[] data) {
         try {
@@ -1883,9 +1907,9 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
             KeyEntry keyEntry = getStdKey(keyHandle);
     
             ///////////////////////////////////////////////////////////////////////////////////
-            // Verify PIN (in any)
+            // Authorize
             ///////////////////////////////////////////////////////////////////////////////////
-            keyEntry.verifyPin(authorization);
+            keyEntry.authorize(biometricAuth, authorization);
     
             ///////////////////////////////////////////////////////////////////////////////////
             // Enforce the data limit
@@ -1929,6 +1953,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
     public synchronized byte[] keyAgreement(int keyHandle,
                                             String algorithm,
                                             byte[] parameters,
+                                            boolean biometricAuth,
                                             byte[] authorization,
                                             ECPublicKey publicKey) {
         ///////////////////////////////////////////////////////////////////////////////////
@@ -1937,9 +1962,9 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
         KeyEntry keyEntry = getStdKey(keyHandle);
 
         ///////////////////////////////////////////////////////////////////////////////////
-        // Verify PIN (in any)
+        // Authorize
         ///////////////////////////////////////////////////////////////////////////////////
-        keyEntry.verifyPin(authorization);
+        keyEntry.authorize(biometricAuth, authorization);
 
         ///////////////////////////////////////////////////////////////////////////////////
         // Check that the key agreement algorithm is known and applicable
@@ -1979,6 +2004,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
                                                    String algorithm,
                                                    boolean mode,
                                                    byte[] parameters,
+                                                   boolean biometricAuth,
                                                    byte[] authorization,
                                                    byte[] data) {
         ///////////////////////////////////////////////////////////////////////////////////
@@ -1987,9 +2013,9 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
         KeyEntry keyEntry = getStdKey(keyHandle);
 
         ///////////////////////////////////////////////////////////////////////////////////
-        // Verify PIN (in any)
+        // Authorize
         ///////////////////////////////////////////////////////////////////////////////////
-        keyEntry.verifyPin(authorization);
+        keyEntry.authorize(biometricAuth, authorization);
 
         ///////////////////////////////////////////////////////////////////////////////////
         // Enforce the data limit
@@ -2052,6 +2078,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
     public synchronized byte[] performHmac(int keyHandle,
                                            String algorithm,
                                            byte[] parameters,
+                                           boolean biometricAuth,
                                            byte[] authorization,
                                            byte[] data) {
         ///////////////////////////////////////////////////////////////////////////////////
@@ -2060,9 +2087,9 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
         KeyEntry keyEntry = getStdKey(keyHandle);
 
         ///////////////////////////////////////////////////////////////////////////////////
-        // Verify PIN (in any)
+        // Authorize
         ///////////////////////////////////////////////////////////////////////////////////
-        keyEntry.verifyPin(authorization);
+        keyEntry.authorize(biometricAuth, authorization);
 
         ///////////////////////////////////////////////////////////////////////////////////
         // Enforce the data limit

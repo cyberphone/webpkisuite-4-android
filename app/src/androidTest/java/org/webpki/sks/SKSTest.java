@@ -179,16 +179,14 @@ public class SKSTest {
         ProvSess sess = new ProvSess(device, 0);
         GenKey key1 = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
         assertTrue(sess.exists());
         ProvSess sess2 = new ProvSess(device);
         GenKey key3 = sess2.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         if (post) {
             key3.postUpdateKey(key1);
@@ -243,8 +241,7 @@ public class SKSTest {
             ProvSess sess = new ProvSess(device, 0);
             sess.createKey("Key.1",
                     KeyAlgorithms.RSA2048,
-                    null /* pin_value */,
-                    null,
+                    new KeyProtectionSpec(),
                     AppUsage.AUTHENTICATION,
                     algorithms);
             assertTrue("Should have thrown", culprit_alg == null);
@@ -279,21 +276,18 @@ public class SKSTest {
                 null /* pukPolicy */);
         GenKey key1 = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                good_pin /* pin_value */,
-                pinPolicy,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
         assertTrue(sess.exists());
         ProvSess sess2 = new ProvSess(device);
         GenKey key2 = sess2.createKey("Key.2",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         GenKey key3 = sess2.createKey("Key.1",
                 KeyAlgorithms.RSA2048,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         if (order) key3.postCloneKey(key1);
         key2.postUpdateKey(key1);
@@ -306,17 +300,23 @@ public class SKSTest {
         assertTrue("Ownership error", key3.getUpdatedKeyInfo().getProvisioningHandle() == sess2.provisioning_handle);
         assertFalse("Managed sessions MUST be deleted", sess.exists());
         try {
-            key3.signData(AsymSignatureAlgorithms.RSA_SHA256, "", TEST_STRING);
+            key3.signData(AsymSignatureAlgorithms.RSA_SHA256, 
+                          new KeyAuthorization(""),
+                          TEST_STRING);
             fail("Bad PIN should not work");
         } catch (SKSException e) {
             authorizationErrorCheck(e);
         }
         try {
-            byte[] result = key3.signData(AsymSignatureAlgorithms.RSA_SHA256, good_pin, TEST_STRING);
+            byte[] result = key3.signData(AsymSignatureAlgorithms.RSA_SHA256, 
+                                          new KeyAuthorization(good_pin), 
+                                          TEST_STRING);
             SignatureWrapper verify = new SignatureWrapper(AsymSignatureAlgorithms.RSA_SHA256, key3.getPublicKey());
             verify.update(TEST_STRING);
             assertTrue("Bad signature key3", verify.verify(result));
-            result = key1.signData(AsymSignatureAlgorithms.ECDSA_SHA256, good_pin, TEST_STRING);
+            result = key1.signData(AsymSignatureAlgorithms.ECDSA_SHA256, 
+                                   new KeyAuthorization(good_pin), 
+                                   TEST_STRING);
             verify = new SignatureWrapper(AsymSignatureAlgorithms.ECDSA_SHA256, key2.getPublicKey());
             verify.update(TEST_STRING);
             assertTrue("Bad signature key1", verify.verify(result));
@@ -329,8 +329,7 @@ public class SKSTest {
         ProvSess sess = new ProvSess(device);
         GenKey key = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         String type = "http://example.com/define";
         try {
@@ -408,7 +407,7 @@ public class SKSTest {
     void checkIDObject(String id, boolean ok) throws Exception {
         try {
             ProvSess sess = new ProvSess(device, id);
-            assertTrue("Should have failed", ok);
+            assertTrue("Should have failed...", ok);
             sess.closeSession();
         } catch (SKSException e) {
             checkException(e, "Malformed \"" + SecureKeyStore.VAR_SERVER_SESSION_ID + "\" : " + id);
@@ -455,8 +454,7 @@ public class SKSTest {
                     puk_pol /* pukPolicy */);
             key = sess.createKey("Key.1",
                     KeyAlgorithms.NIST_P_256,
-                    good_pin /* pin_value */,
-                    pin_pol /* pinPolicy */,
+                    new KeyProtectionSpec(good_pin, pin_pol),
                     AppUsage.AUTHENTICATION).setCertificate(cn());
             sess.closeSession();
         }
@@ -467,13 +465,17 @@ public class SKSTest {
                 try {
                     key.setPIN(good_puk, pin);
                     assertTrue("Shouldn't pass", pass);
-                    key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, pin, TEST_STRING);
+                    key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, 
+                                 new KeyAuthorization(pin), 
+                                 TEST_STRING);
                     key.changePIN(pin, good_pin);
                 } catch (SKSException e) {
                     assertFalse("Should pass", pass);
                 }
             }
-            key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, good_pin, TEST_STRING);
+            key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, 
+                         new KeyAuthorization(good_pin), 
+                         TEST_STRING);
         }
     }
 
@@ -498,8 +500,7 @@ public class SKSTest {
                     null /* pukPolicy */);
             sess.createKey("Key.1",
                     KeyAlgorithms.NIST_P_256,
-                    pin /* pin_value */,
-                    pin_pol /* pinPolicy */,
+                    new KeyProtectionSpec(pin, pin_pol),
                     AppUsage.AUTHENTICATION).setCertificate(cn());
             sess.abortSession();
         } catch (SKSException e) {
@@ -533,34 +534,41 @@ public class SKSTest {
 
         GenKey key = sess.createKey("Key.1",
                 preferred_rsa_algorithm,
-                good_pin /* pin_value */,
-                pinPolicy /* pinPolicy */,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
 
         for (int count = 0; count < 2; count++) {
             try {
-                key.signData(AsymSignatureAlgorithms.RSA_SHA256, good_pin + "2", TEST_STRING);
+                key.signData(AsymSignatureAlgorithms.RSA_SHA256, 
+                             new KeyAuthorization(good_pin + "2"), 
+                             TEST_STRING);
                 fail("Bad PIN should not work");
             } catch (SKSException e) {
                 authorizationErrorCheck(e);
             }
         }
         try {
-            key.signData(AsymSignatureAlgorithms.RSA_SHA256, good_pin, TEST_STRING);
+            key.signData(AsymSignatureAlgorithms.RSA_SHA256, 
+                         new KeyAuthorization(good_pin), 
+                         TEST_STRING);
         } catch (SKSException e) {
             fail("Good PIN should work");
         }
         for (int count = 0; count < 3; count++) {
             try {
-                key.signData(AsymSignatureAlgorithms.RSA_SHA256, good_pin + "2", TEST_STRING);
+                key.signData(AsymSignatureAlgorithms.RSA_SHA256, 
+                             new KeyAuthorization(good_pin + "2"),
+                             TEST_STRING);
                 fail("Bad PIN should not work");
             } catch (SKSException e) {
                 authorizationErrorCheck(e);
             }
         }
         try {
-            key.signData(AsymSignatureAlgorithms.RSA_SHA256, good_pin, TEST_STRING);
+            key.signData(AsymSignatureAlgorithms.RSA_SHA256, 
+                         new KeyAuthorization(good_pin), 
+                         TEST_STRING);
             fail("Good PIN but too many errors should NOT work");
         } catch (SKSException e) {
             authorizationErrorCheck(e);
@@ -583,8 +591,7 @@ public class SKSTest {
 
             sess.createKey("Key.1",
                     KeyAlgorithms.NIST_P_256,
-                    good_pin /* pin_value */,
-                    pinPolicy /* pinPolicy */,
+                    new KeyProtectionSpec(good_pin, pinPolicy),
                     AppUsage.AUTHENTICATION).setCertificate(cn());
             sess.closeSession();
             assertFalse("Should have failed", fail_hard);
@@ -609,25 +616,21 @@ public class SKSTest {
                     null /* pukPolicy */);
             sess.createKey("Key.1",
                     KeyAlgorithms.NIST_P_256,
-                    pin1 /* pin_value */,
-                    pin_pol /* pinPolicy */,
+                    new KeyProtectionSpec(pin1, pin_pol),
                     AppUsage.AUTHENTICATION).setCertificate(cn());
             if (grouping == Grouping.SIGNATURE_PLUS_STANDARD) {
                 sess.createKey("Key.1s",
                         KeyAlgorithms.NIST_P_256,
-                        pin1 /* pin_value */,
-                        pin_pol /* pinPolicy */,
+                        new KeyProtectionSpec(pin1, pin_pol),
                         AppUsage.UNIVERSAL).setCertificate(cn());
                 sess.createKey("Key.2s",
                         KeyAlgorithms.NIST_P_256,
-                        same_pin ? pin1 : pin2 /* pin_value */,
-                        pin_pol /* pinPolicy */,
+                        new KeyProtectionSpec(same_pin ? pin1 : pin2, pin_pol),
                         AppUsage.SIGNATURE).setCertificate(cn());
             }
             sess.createKey("Key.2",
                     KeyAlgorithms.NIST_P_256,
-                    same_pin ? pin1 : pin2 /* pin_value */,
-                    pin_pol /* pinPolicy */,
+                    new KeyProtectionSpec(same_pin ? pin1 : pin2, pin_pol),
                     AppUsage.SIGNATURE).setCertificate(cn());
             sess.abortSession();
         } catch (SKSException e) {
@@ -639,14 +642,18 @@ public class SKSTest {
     void lockECKey(GenKey key, String good_pin) throws Exception {
         for (int i = 1; i < 4; i++) {
             try {
-                key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, good_pin + "4", TEST_STRING);
+                key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, 
+                             new KeyAuthorization(good_pin + "4"), 
+                             TEST_STRING);
                 assertTrue("PIN fail", i < 3);
             } catch (SKSException e) {
                 authorizationErrorCheck(e);
             }
         }
         try {
-            key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, good_pin, TEST_STRING);
+            key.signData(AsymSignatureAlgorithms.ECDSA_SHA256,
+                         new KeyAuthorization(good_pin), 
+                         TEST_STRING);
             fail("PIN fail");
         } catch (SKSException e) {
             authorizationErrorCheck(e);
@@ -660,8 +667,7 @@ public class SKSTest {
         try {
             sess.createKey("Key.1",
                     preferred_rsa_algorithm,
-                    null /* pin_value */,
-                    null,
+                    new KeyProtectionSpec(),
                     AppUsage.AUTHENTICATION).setCertificate(cn());
             fail("Bad ones shouldn't pass");
         } catch (SKSException e) {
@@ -673,16 +679,14 @@ public class SKSTest {
         ProvSess sess = new ProvSess(device, 0);
         GenKey key1 = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
         assertTrue(sess.exists());
         ProvSess sess2 = new ProvSess(device);
         GenKey key2 = sess2.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 appUsage).setCertificate(cn());
         try {
             key2.postUpdateKey(key1);
@@ -711,16 +715,14 @@ public class SKSTest {
                 null /* pukPolicy */);
         GenKey key1 = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                good_pin /* pin_value */,
-                pinPolicy,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
         assertTrue(sess.exists());
         ProvSess sess2 = new ProvSess(device);
         GenKey key2 = sess2.createKey("Key.1",
                 KeyAlgorithms.RSA2048,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 appUsage).setCertificate(cn());
         try {
             key2.postCloneKey(key1);
@@ -731,17 +733,23 @@ public class SKSTest {
             assertTrue("Ownership error", key1.getUpdatedKeyInfo().getProvisioningHandle() == sess2.provisioning_handle);
             assertFalse("Managed sessions MUST be deleted", sess.exists());
             try {
-                key2.signData(AsymSignatureAlgorithms.RSA_SHA256, "1111", TEST_STRING);
+                key2.signData(AsymSignatureAlgorithms.RSA_SHA256,
+                              new KeyAuthorization("1111"), 
+                              TEST_STRING);
                 fail("Bad PIN should not work");
             } catch (SKSException e) {
                 authorizationErrorCheck(e);
             }
             try {
-                byte[] result = key2.signData(AsymSignatureAlgorithms.RSA_SHA256, good_pin, TEST_STRING);
+                byte[] result = key2.signData(AsymSignatureAlgorithms.RSA_SHA256, 
+                                              new KeyAuthorization(good_pin),
+                                              TEST_STRING);
                 SignatureWrapper verify = new SignatureWrapper(AsymSignatureAlgorithms.RSA_SHA256, key2.getPublicKey());
                 verify.update(TEST_STRING);
                 assertTrue("Bad signature key2", verify.verify(result));
-                result = key1.signData(AsymSignatureAlgorithms.ECDSA_SHA256, good_pin, TEST_STRING);
+                result = key1.signData(AsymSignatureAlgorithms.ECDSA_SHA256, 
+                                       new KeyAuthorization(good_pin), 
+                                       TEST_STRING);
                 verify = new SignatureWrapper(AsymSignatureAlgorithms.ECDSA_SHA256, key1.getPublicKey());
                 verify.update(TEST_STRING);
                 assertTrue("Bad signature key1", verify.verify(result));
@@ -786,8 +794,7 @@ public class SKSTest {
 
         GenKey key = sess.createKey("Key.1",
                 preferred_rsa_algorithm,
-                good_pin /* pin_value */,
-                pinPolicy /* pinPolicy */,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.ENCRYPTION).setCertificate(cn());
         sess.closeSession();
         Cipher cipher = Cipher.getInstance(encryption_algorithm.getJceName());
@@ -799,21 +806,20 @@ public class SKSTest {
             cipher.init(Cipher.ENCRYPT_MODE, key.getPublicKey());
         }
         byte[] enc = cipher.doFinal(TEST_STRING);
-try {
-        assertTrue("Encryption error: " + encryption_algorithm,
-                ArrayUtil.compare(device.sks.asymmetricKeyDecrypt(key.keyHandle,
-                        encryption_algorithm.getAlgorithmId(AlgorithmPreferences.SKS),
-                        null,
-                        good_pin.getBytes("UTF-8"),
-                        enc), TEST_STRING));
-} catch (SKSException e) {
-    assertTrue("Android OAEP", e.getMessage().contains("Unsupported MGF1 digest: SHA-256"));
-    return;
-}
+        try {
+            assertTrue("Encryption error: " + encryption_algorithm,
+                   ArrayUtil.compare(key.asymmetricKeyDecrypt(encryption_algorithm,
+                                                              new KeyAuthorization(good_pin),
+                                                              enc), TEST_STRING));
+        } catch (SKSException e) {
+            assertTrue("Android OAEP", e.getMessage().contains("Unsupported MGF1 digest: SHA-256"));
+            return;
+        }
         try {
             device.sks.asymmetricKeyDecrypt(key.keyHandle,
                     AsymSignatureAlgorithms.RSA_SHA256.getAlgorithmId(AlgorithmPreferences.SKS),
                     null,
+                    false,
                     good_pin.getBytes("UTF-8"),
                     enc);
             fail("Alg error");
@@ -821,17 +827,18 @@ try {
             checkException(e, "Algorithm does not match operation: http://www.w3.org/2001/04/xmldsig-more#rsa-sha256");
         }
         try {
-            device.sks.asymmetricKeyDecrypt(key.keyHandle,
-                    encryption_algorithm.getAlgorithmId(AlgorithmPreferences.SKS),
-                    new byte[]{6},
-                    good_pin.getBytes("UTF-8"),
-                    enc);
+            key.asymmetricKeyDecrypt(encryption_algorithm,
+                                     new byte[]{6},
+                                     new KeyAuthorization(good_pin),
+                                     enc);
             fail("Parm error");
         } catch (SKSException e) {
             checkException(e, "\"" + SecureKeyStore.VAR_PARAMETERS + "\" for key # do not match algorithm");
         }
         try {
-            key.asymmetricKeyDecrypt(encryption_algorithm, good_pin + "4", enc);
+            key.asymmetricKeyDecrypt(encryption_algorithm, 
+                                     new KeyAuthorization(good_pin + "4"), 
+                                     enc);
             fail("PIN error");
         } catch (SKSException e) {
             authorizationErrorCheck(e);
@@ -863,14 +870,12 @@ try {
 
             GenKey key1 = sess.createKey("Key.1",
                     preferred_rsa_algorithm,
-                    s_pin /* pin_value */,
-                    pinPolicy /* pinPolicy */,
+                    new KeyProtectionSpec(s_pin, pinPolicy),
                     AppUsage.SIGNATURE).setCertificate(cn());
             try {
                 sess.createKey("Key.2",
                         preferred_rsa_algorithm,
-                        a_pin /* pin_value */,
-                        pinPolicy /* pinPolicy */,
+                        new KeyProtectionSpec(a_pin, pinPolicy),
                         AppUsage.AUTHENTICATION).setCertificate(cn());
                 assertTrue("Bad combo " + pg + s_pin + a_pin + e_pin, pg == Grouping.NONE ||
                         (pg == Grouping.SHARED && sa) || (pg == Grouping.SIGNATURE_PLUS_STANDARD && !sa) || (pg == Grouping.UNIQUE && !sa));
@@ -882,8 +887,7 @@ try {
             try {
                 sess.createKey("Key.3",
                         preferred_rsa_algorithm,
-                        e_pin /* pin_value */,
-                        pinPolicy /* pinPolicy */,
+                        new KeyProtectionSpec(e_pin, pinPolicy),
                         AppUsage.ENCRYPTION).setCertificate(cn());
                 assertTrue("Bad combo " + pg + s_pin + a_pin + e_pin, pg == Grouping.NONE ||
                         (pg == Grouping.SHARED && sa && ae) || (pg == Grouping.SIGNATURE_PLUS_STANDARD && !sa && ae && !se) || (pg == Grouping.UNIQUE && !sa && !ae && !se));
@@ -894,18 +898,18 @@ try {
             }
             GenKey key4 = sess.createKey("Key.4",
                     preferred_rsa_algorithm,
-                    s_pin /* pin_value */,
-                    pinPolicy /* pinPolicy */,
+                    new KeyProtectionSpec(s_pin, pinPolicy),
                     AppUsage.SIGNATURE).setCertificate(cn());
             sess.createKey("Key.5",
                     preferred_rsa_algorithm,
-                    e_pin /* pin_value */,
-                    pinPolicy /* pinPolicy */,
+                    new KeyProtectionSpec(e_pin, pinPolicy),
                     AppUsage.ENCRYPTION).setCertificate(cn());
             sess.closeSession();
             key4.changePIN(s_pin, other_pin);
             try {
-                key1.signData(AsymSignatureAlgorithms.RSA_SHA256, other_pin, TEST_STRING);
+                key1.signData(AsymSignatureAlgorithms.RSA_SHA256, 
+                              new KeyAuthorization(other_pin), 
+                              TEST_STRING);
             } catch (SKSException e) {
                 assertTrue("None does not distribute PINs", pg == Grouping.NONE);
             }
@@ -991,8 +995,7 @@ try {
         ProvSess sess = new ProvSess(device);
         sess.createKey("Key.1",
                 preferred_rsa_algorithm,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION);
         try {
             sess.closeSession();
@@ -1003,8 +1006,7 @@ try {
         try {
             sess.createKey("Key.1",
                     preferred_rsa_algorithm,
-                    "1234" /* pin_value */,
-                    null /* pinPolicy */,
+                    new KeyProtectionSpec("1234", null),
                     AppUsage.AUTHENTICATION);
             fail("PIN without policy");
         } catch (SKSException e) {
@@ -1036,8 +1038,7 @@ try {
                         new byte[]{0, 0, 0, 3} : null);
                 sess.createKey("Key." + i++,
                             key_algorithm,
-                            null /* pin_value */,
-                            null /* pinPolicy */,
+                            new KeyProtectionSpec(),
                             AppUsage.AUTHENTICATION).setCertificate(cn());
             }
         }
@@ -1057,8 +1058,7 @@ try {
         ProvSess sess = new ProvSess(device);
         sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
 
@@ -1069,13 +1069,14 @@ try {
         ProvSess sess = new ProvSess(device);
         GenKey key = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         int keyHandle = device.sks.getKeyHandle(sess.provisioning_handle, "Key.1");
         assertTrue("Key Handle", keyHandle == key.keyHandle);
         sess.closeSession();
-        byte[] result = key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, null, TEST_STRING);
+        byte[] result = key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, 
+                                     new KeyAuthorization(), 
+                                     TEST_STRING);
         SignatureWrapper verify = new SignatureWrapper(AsymSignatureAlgorithms.ECDSA_SHA256, key.getPublicKey());
         verify.update(TEST_STRING);
         assertTrue("Bad signature", verify.verify(result));
@@ -1098,18 +1099,21 @@ try {
         ProvSess sess = new ProvSess(device);
         GenKey key = sess.createKey("Key.1",
                 KeyAlgorithms.RSA2048,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
         assertTrue("Must be 0", key.getKeyProtectionInfo().getKeyBackup() == 0);
 
-        byte[] result = key.signData(AsymSignatureAlgorithms.RSA_SHA256, null, TEST_STRING);
+        byte[] result = key.signData(AsymSignatureAlgorithms.RSA_SHA256, 
+                                     new KeyAuthorization(), 
+                                     TEST_STRING);
         SignatureWrapper verify = new SignatureWrapper(AsymSignatureAlgorithms.RSA_SHA256, key.getPublicKey());
         verify.update(TEST_STRING);
         assertTrue("Bad signature", verify.verify(result));
 
-        result = key.signData(AsymSignatureAlgorithms.RSA_SHA512, null, TEST_STRING);
+        result = key.signData(AsymSignatureAlgorithms.RSA_SHA512,
+                              new KeyAuthorization(), 
+                              TEST_STRING);
         verify = new SignatureWrapper(AsymSignatureAlgorithms.RSA_SHA512, key.getPublicKey());
         verify.update(TEST_STRING);
         assertTrue("Bad signature", verify.verify(result));
@@ -1202,13 +1206,11 @@ try {
         ProvSess sess = new ProvSess(device, 0);
         GenKey key1 = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         GenKey key2 = sess.createKey("Key.2",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
         assertTrue(sess.exists());
@@ -1229,8 +1231,7 @@ try {
             ProvSess sess = new ProvSess(device, updatable ? new Integer(0) : null);
             GenKey key1 = sess.createKey("Key.1",
                     KeyAlgorithms.NIST_P_256,
-                    null /* pin_value */,
-                    null /* pinPolicy */,
+                    new KeyProtectionSpec(),
                     AppUsage.AUTHENTICATION).setCertificate(cn());
             sess.closeSession();
             assertTrue(sess.exists());
@@ -1259,13 +1260,11 @@ try {
         ProvSess sess = new ProvSess(device);
         GenKey key1 = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         GenKey key2 = sess.createKey("Key.2",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
         assertTrue(sess.exists());
@@ -1279,8 +1278,7 @@ try {
         ProvSess sess = new ProvSess(device);
         GenKey key1 = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
         assertTrue(sess.exists());
@@ -1306,16 +1304,14 @@ try {
                 null /* pukPolicy */);
         GenKey key1 = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                good_pin /* pin_value */,
-                pinPolicy,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
         assertTrue(sess.exists());
         ProvSess sess2 = new ProvSess(device);
         GenKey key2 = sess2.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         key2.postUpdateKey(key1);
         sess2.closeSession();
@@ -1324,13 +1320,17 @@ try {
         assertTrue("Ownership error", key1.getUpdatedKeyInfo().getProvisioningHandle() == sess2.provisioning_handle);
         assertFalse("Managed sessions MUST be deleted", sess.exists());
         try {
-            key1.signData(AsymSignatureAlgorithms.ECDSA_SHA256, "bad", TEST_STRING);
+            key1.signData(AsymSignatureAlgorithms.ECDSA_SHA256, 
+                          new KeyAuthorization("bad"), 
+                          TEST_STRING);
             fail("Bad PIN should not work");
         } catch (SKSException e) {
             authorizationErrorCheck(e);
         }
         try {
-            byte[] result = key1.signData(AsymSignatureAlgorithms.ECDSA_SHA256, good_pin, TEST_STRING);
+            byte[] result = key1.signData(AsymSignatureAlgorithms.ECDSA_SHA256, 
+                                          new KeyAuthorization(good_pin), 
+                                          TEST_STRING);
             SignatureWrapper verify = new SignatureWrapper(AsymSignatureAlgorithms.ECDSA_SHA256, key2.getPublicKey());
             verify.update(TEST_STRING);
             assertTrue("Bad signature", verify.verify(result));
@@ -1345,8 +1345,7 @@ try {
         ProvSess sess = new ProvSess(device, 0);
         GenKey key1 = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
         assertTrue(sess.exists());
@@ -1359,8 +1358,7 @@ try {
                 null /* pukPolicy */);
         GenKey key2 = sess2.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                good_pin /* pin_value */,
-                pinPolicy,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         try {
             key2.postUpdateKey(key1);
@@ -1377,8 +1375,7 @@ try {
                 null /* pukPolicy */);
         key2 = sess2.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                good_pin /* pin_value */,
-                pinPolicy,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         try {
             key2.postCloneKey(key1);
@@ -1393,21 +1390,18 @@ try {
         ProvSess sess = new ProvSess(device, 0);
         GenKey key1 = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
         assertTrue(sess.exists());
         ProvSess sess2 = new ProvSess(device);
         GenKey key2 = sess2.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         GenKey key3 = sess2.createKey("Key.2",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         key2.postUpdateKey(key1);
         try {
@@ -1423,21 +1417,18 @@ try {
         ProvSess sess = new ProvSess(device, 0);
         GenKey key1 = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         GenKey key2 = sess.createKey("Key.2",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
         assertTrue(sess.exists());
         ProvSess sess2 = new ProvSess(device);
         GenKey key3 = sess2.createKey("Key.3",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         key3.postUpdateKey(key1);
         try {
@@ -1470,21 +1461,18 @@ try {
                 null /* pukPolicy */);
         GenKey key1 = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                good_pin /* pin_value */,
-                pinPolicy,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         GenKey key2 = sess.createKey("Key.2",
                 KeyAlgorithms.NIST_P_256,
-                good_pin /* pin_value */,
-                pinPolicy,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
         assertTrue(sess.exists());
         ProvSess sess2 = new ProvSess(device);
         GenKey key3 = sess2.createKey("Key.1",
                 KeyAlgorithms.RSA2048,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         key3.postCloneKey(key1);
         sess2.closeSession();
@@ -1494,17 +1482,23 @@ try {
         assertTrue("Ownership error", key2.getUpdatedKeyInfo().getProvisioningHandle() == sess2.provisioning_handle);
         assertFalse("Managed sessions MUST be deleted", sess.exists());
         try {
-            key3.signData(AsymSignatureAlgorithms.RSA_SHA256, "1111", TEST_STRING);
+            key3.signData(AsymSignatureAlgorithms.RSA_SHA256, 
+                          new KeyAuthorization("1111"), 
+                          TEST_STRING);
             fail("Bad PIN should not work");
         } catch (SKSException e) {
             authorizationErrorCheck(e);
         }
         try {
-            byte[] result = key3.signData(AsymSignatureAlgorithms.RSA_SHA256, good_pin, TEST_STRING);
+            byte[] result = key3.signData(AsymSignatureAlgorithms.RSA_SHA256, 
+                                          new KeyAuthorization(good_pin), 
+                                          TEST_STRING);
             SignatureWrapper verify = new SignatureWrapper(AsymSignatureAlgorithms.RSA_SHA256, key3.getPublicKey());
             verify.update(TEST_STRING);
             assertTrue("Bad signature key3", verify.verify(result));
-            result = key1.signData(AsymSignatureAlgorithms.ECDSA_SHA256, good_pin, TEST_STRING);
+            result = key1.signData(AsymSignatureAlgorithms.ECDSA_SHA256,
+                                   new KeyAuthorization(good_pin), 
+                                   TEST_STRING);
             verify = new SignatureWrapper(AsymSignatureAlgorithms.ECDSA_SHA256, key1.getPublicKey());
             verify.update(TEST_STRING);
             assertTrue("Bad signature key1", verify.verify(result));
@@ -1538,13 +1532,11 @@ try {
         ProvSess sess = new ProvSess(device, 0);
         GenKey key1 = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         GenKey key2 = sess.createKey("Key.2",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
         assertTrue(sess.exists());
@@ -1583,8 +1575,7 @@ try {
 
         GenKey key = sess.createKey("Key.1",
                 preferred_rsa_algorithm,
-                good_pin /* pin_value */,
-                pinPolicy /* pinPolicy */,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.ENCRYPTION).setCertificate(cn());
         sess.closeSession();
 
@@ -1598,14 +1589,15 @@ try {
         Cipher cipher = Cipher.getInstance(AsymEncryptionAlgorithms.RSA_ES_PKCS_1_5.getJceName());
         cipher.init(Cipher.ENCRYPT_MODE, key.getPublicKey());
         byte[] enc = cipher.doFinal(TEST_STRING);
-        assertTrue("Encryption error", ArrayUtil.compare(device.sks.asymmetricKeyDecrypt(key.keyHandle,
-                AsymEncryptionAlgorithms.RSA_ES_PKCS_1_5.getAlgorithmId(AlgorithmPreferences.SKS),
-                null,
-                good_pin.getBytes("UTF-8"),
+        assertTrue("Encryption error", ArrayUtil.compare(key.asymmetricKeyDecrypt(
+                AsymEncryptionAlgorithms.RSA_ES_PKCS_1_5,
+                new KeyAuthorization(good_pin),
                 enc), TEST_STRING));
         for (int i = 1; i <= (pin_retry * 2); i++) {
             try {
-                key.asymmetricKeyDecrypt(AsymEncryptionAlgorithms.RSA_ES_PKCS_1_5, good_pin + "4", enc);
+                key.asymmetricKeyDecrypt(AsymEncryptionAlgorithms.RSA_ES_PKCS_1_5, 
+                                         new KeyAuthorization(good_pin + "4"), 
+                                         enc);
                 fail("PIN error");
             } catch (SKSException e) {
 
@@ -1613,7 +1605,9 @@ try {
             assertTrue("PIN should be blocked", device.sks.getKeyProtectionInfo(key.keyHandle).isPinBlocked() ^ (i < pin_retry));
         }
         try {
-            key.asymmetricKeyDecrypt(AsymEncryptionAlgorithms.RSA_ES_PKCS_1_5, good_pin, enc);
+            key.asymmetricKeyDecrypt(AsymEncryptionAlgorithms.RSA_ES_PKCS_1_5, 
+                                     new KeyAuthorization(good_pin), 
+                                     enc);
             fail("PIN lock error");
         } catch (SKSException e) {
             authorizationErrorCheck(e);
@@ -1625,11 +1619,10 @@ try {
             authorizationErrorCheck(e);
         }
         key.unlockKey(good_puk);
-        assertTrue("Encryption error", ArrayUtil.compare(device.sks.asymmetricKeyDecrypt(key.keyHandle,
-                AsymEncryptionAlgorithms.RSA_ES_PKCS_1_5.getAlgorithmId(AlgorithmPreferences.SKS),
-                null,
-                good_pin.getBytes("UTF-8"),
-                enc), TEST_STRING));
+        assertTrue("Encryption error", ArrayUtil.compare(key.asymmetricKeyDecrypt(
+                                                         AsymEncryptionAlgorithms.RSA_ES_PKCS_1_5,
+                                                         new KeyAuthorization(good_pin),
+                                                         enc), TEST_STRING));
         for (int i = 1; i <= (pin_retry * 2); i++) {
             try {
                 key.changePIN(good_pin + "2", good_pin);
@@ -1646,10 +1639,10 @@ try {
             authorizationErrorCheck(e);
         }
         key.setPIN(good_puk, good_pin + "2");
-        assertTrue("Encryption error", ArrayUtil.compare(key.asymmetricKeyDecrypt(AsymEncryptionAlgorithms.RSA_ES_PKCS_1_5,
-                good_pin + "2",
-                enc),
-                TEST_STRING));
+        assertTrue("Encryption error", 
+                ArrayUtil.compare(key.asymmetricKeyDecrypt(AsymEncryptionAlgorithms.RSA_ES_PKCS_1_5,
+                                                           new KeyAuthorization(good_pin + "2"),
+                                                           enc), TEST_STRING));
     }
 
     @Test
@@ -1680,11 +1673,12 @@ try {
                     puk /* pukPolicy */);
             GenKey key = sess.createKey("Key.1",
                     KeyAlgorithms.NIST_P_256,
-                    good_pin /* pin_value */,
-                    pinPolicy,
+                    new KeyProtectionSpec(good_pin, pinPolicy),
                     AppUsage.AUTHENTICATION).setCertificate(cn());
             sess.closeSession();
-            key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, good_pin, TEST_STRING);
+            key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, 
+                         new KeyAuthorization(good_pin), 
+                         TEST_STRING);
             try {
                 key.changePIN(good_pin, "8437");
                 assertTrue("Modifiable", modifiable);
@@ -1706,8 +1700,7 @@ try {
         ProvSess sess = new ProvSess(device);
         GenKey key = sess.createKey("Key.1",
                 preferred_rsa_algorithm,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
         try {
@@ -1724,8 +1717,7 @@ try {
         sess.overrideExportProtection(ExportProtection.NONE.getSksValue());
         GenKey key = sess.createKey("Key.1",
                 preferred_rsa_algorithm,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
         try {
@@ -1746,8 +1738,7 @@ try {
         try {
             sess.createKey("Key.1",
                     preferred_rsa_algorithm,
-                    null /* pin_value */,
-                    null /* pinPolicy */,
+                    new KeyProtectionSpec(),
                     AppUsage.AUTHENTICATION).setCertificate(cn());
             fail("Missing PIN");
         } catch (SKSException e) {
@@ -1769,8 +1760,7 @@ try {
 
         GenKey key = sess.createKey("Key.1",
                 preferred_rsa_algorithm,
-                good_pin /* pin_value */,
-                pinPolicy /* pinPolicy */,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
 
@@ -1804,8 +1794,7 @@ try {
         try {
             sess.createKey("Key.1",
                     preferred_rsa_algorithm,
-                    good_pin /* pin_value */,
-                    pinPolicy /* pinPolicy */,
+                    new KeyProtectionSpec(good_pin, pinPolicy),
                     AppUsage.AUTHENTICATION).setCertificate(cn());
             fail("No PUK");
         } catch (SKSException e) {
@@ -1831,8 +1820,7 @@ try {
                 puk_pol /* pukPolicy */);
         GenKey key = sess.createKey("Key.1",
                 preferred_rsa_algorithm,
-                good_pin /* pin_value */,
-                pinPolicy /* pinPolicy */,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
         assertFalse("Not asymmetric key", device.sks.getKeyAttributes(key.keyHandle).isSymmetricKey());
@@ -1875,8 +1863,7 @@ try {
                     null /* pukPolicy */);
             GenKey key = sess.createKey("Key.1",
                     KeyAlgorithms.NIST_P_256,
-                    good_pin /* pin_value */,
-                    pinPolicy,
+                    new KeyProtectionSpec(good_pin, pinPolicy),
                     keyUsage,
                     new String[]{MACAlgorithms.HMAC_SHA256.getAlgorithmId(AlgorithmPreferences.SKS)}).setCertificate(cn());
             key.setSymmetricKey(symmetricKey);
@@ -1900,19 +1887,21 @@ try {
                 null /* pukPolicy */);
         GenKey key = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                good_pin /* pin_value */,
-                pinPolicy,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.AUTHENTICATION,
                 new String[]{MACAlgorithms.HMAC_SHA256.getAlgorithmId(AlgorithmPreferences.SKS)}).setCertificate(cn());
         key.setSymmetricKey(symmetricKey);
         sess.closeSession();
         assertTrue("Not symmetric key", device.sks.getKeyAttributes(key.keyHandle).isSymmetricKey());
-        byte[] result = key.performHMAC(MACAlgorithms.HMAC_SHA256, good_pin, TEST_STRING);
+        byte[] result = key.performHMAC(MACAlgorithms.HMAC_SHA256,
+                                        new KeyAuthorization(good_pin), 
+                                        TEST_STRING);
         assertTrue("HMAC error", ArrayUtil.compare(result, MACAlgorithms.HMAC_SHA256.digest(symmetricKey, TEST_STRING)));
         try {
             sess.sks.performHmac(key.keyHandle,
                     MACAlgorithms.HMAC_SHA512.getAlgorithmId(AlgorithmPreferences.SKS),
                     null,
+                    false,
                     good_pin.getBytes("UTF-8"),
                     TEST_STRING);
             fail("Algorithm not allowed");
@@ -1922,6 +1911,7 @@ try {
             sess.sks.performHmac(key.keyHandle,
                     SymEncryptionAlgorithms.AES128_CBC.getAlgorithmId(AlgorithmPreferences.SKS),
                     null,
+                    false,
                     good_pin.getBytes("UTF-8"), TEST_STRING);
             fail("Algorithm not allowed");
         } catch (SKSException e) {
@@ -1955,8 +1945,7 @@ try {
             try {
                 key = sess.createKey("Key.1",
                         KeyAlgorithms.NIST_P_256,
-                        good_pin /* pin_value */,
-                        pinPolicy,
+                        new KeyProtectionSpec(good_pin, pinPolicy),
                         AppUsage.AUTHENTICATION,
                         new String[]{sym_enc.getAlgorithmId(AlgorithmPreferences.SKS)}).setCertificate(cn());
                 key.setSymmetricKey(symmetricKey);
@@ -1971,7 +1960,7 @@ try {
             byte[] result = key.symmetricKeyEncrypt(sym_enc,
                     true,
                     sym_enc.needsIv() && !sym_enc.internalIv() ? iv_val : null,
-                    good_pin,
+                    new KeyAuthorization(good_pin),
                     data);
             byte[] res2 = result.clone();
             Cipher crypt = Cipher.getInstance(sym_enc.getJceName());
@@ -1990,13 +1979,13 @@ try {
             assertTrue("decrypt error", ArrayUtil.compare(data, key.symmetricKeyEncrypt(sym_enc,
                     false,
                     sym_enc.needsIv() && !sym_enc.internalIv() ? iv_val : null,
-                    good_pin,
+                    new KeyAuthorization(good_pin),
                     result)));
             try {
                 key.symmetricKeyEncrypt(sym_enc,
                         true,
                         sym_enc.needsIv() && !sym_enc.internalIv() ? null : iv_val,
-                        good_pin,
+                        new KeyAuthorization(good_pin),
                         data);
                 fail("Incorrect IV must fail");
             } catch (SKSException e) {
@@ -2025,8 +2014,7 @@ try {
             try {
                 key = sess.createKey("Key.1",
                         KeyAlgorithms.NIST_P_256,
-                        good_pin /* pin_value */,
-                        pinPolicy,
+                        new KeyProtectionSpec(good_pin, pinPolicy),
                         AppUsage.AUTHENTICATION,
                         new String[]{hmac.getAlgorithmId(AlgorithmPreferences.SKS)}).setCertificate(cn());
                 key.setSymmetricKey(symmetricKey);
@@ -2036,7 +2024,9 @@ try {
                 continue;
             }
             sess.closeSession();
-            byte[] result = key.performHMAC(hmac, good_pin, data);
+            byte[] result = key.performHMAC(hmac, 
+                                            new KeyAuthorization(good_pin), 
+                                            data);
             assertTrue("HMAC error", ArrayUtil.compare(result, hmac.digest(symmetricKey, data)));
         }
     }
@@ -2056,8 +2046,7 @@ try {
                 null /* pukPolicy */);
         GenKey key = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                good_pin /* pin_value */,
-                pinPolicy,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.AUTHENTICATION,
                 new String[]{SymEncryptionAlgorithms.AES128_CBC.getAlgorithmId(AlgorithmPreferences.SKS)}).setCertificate(cn());
         try {
@@ -2084,8 +2073,7 @@ try {
 
         GenKey key = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                good_pin /* pin_value */,
-                pinPolicy /* pinPolicy */,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.AUTHENTICATION,
                 new String[]{SecureKeyStore.ALGORITHM_NONE}).setCertificate(cn());
         key.setSymmetricKey(symmetricKey);
@@ -2117,8 +2105,7 @@ try {
 
         sess.createKey("Key.1",
                 preferred_rsa_algorithm,
-                good_pin /* pin_value */,
-                pinPolicy /* pinPolicy */,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.AUTHENTICATION,
                 new String[]{SymEncryptionAlgorithms.AES128_CBC.getAlgorithmId(AlgorithmPreferences.SKS)}).setCertificate(cn());
         try {
@@ -2143,8 +2130,7 @@ try {
 
         sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                good_pin /* pin_value */,
-                pinPolicy,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.ENCRYPTION,
                 new String[]{SymEncryptionAlgorithms.AES128_CBC.getAlgorithmId(AlgorithmPreferences.SKS)}).setCertificate(cn());
         try {
@@ -2183,8 +2169,7 @@ try {
                     null /* pukPolicy */);
             GenKey key = sess.createKey("Key.1",
                     KeyAlgorithms.NIST_P_256,
-                    good_pin /* pin_value */,
-                    pinPolicy,
+                    new KeyProtectionSpec(good_pin, pinPolicy),
                     keyUsage).setCertificate(cn(), key_pair.getPublic());
             key.setPrivateKey(key_pair);
             sess.closeSession();
@@ -2193,14 +2178,18 @@ try {
             cipher.init(Cipher.ENCRYPT_MODE, key.getPublicKey());
             byte[] enc = cipher.doFinal(TEST_STRING);
             assertTrue("Encryption error", ArrayUtil.compare(key.asymmetricKeyDecrypt(AsymEncryptionAlgorithms.RSA_ES_PKCS_1_5,
-                    good_pin,
+                    new KeyAuthorization(good_pin),
                     enc), TEST_STRING));
-            byte[] result = key.signData(AsymSignatureAlgorithms.RSA_SHA256, good_pin, TEST_STRING);
+            byte[] result = key.signData(AsymSignatureAlgorithms.RSA_SHA256, 
+                                         new KeyAuthorization(good_pin), 
+                                         TEST_STRING);
             SignatureWrapper verify = new SignatureWrapper(AsymSignatureAlgorithms.RSA_SHA256, key.getPublicKey());
             verify.update(TEST_STRING);
             assertTrue("Bad signature", verify.verify(result));
             try {
-                key.performHMAC(MACAlgorithms.HMAC_SHA256, good_pin, TEST_STRING);
+                key.performHMAC(MACAlgorithms.HMAC_SHA256, 
+                                new KeyAuthorization(good_pin), 
+                                TEST_STRING);
                 fail("Sym key!");
             } catch (SKSException e) {
                 checkException(e, "Asymmetric key # is incompatible with: http://www.w3.org/2001/04/xmldsig-more#hmac-sha256");
@@ -2231,8 +2220,7 @@ try {
                 null /* pukPolicy */);
         GenKey key = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                good_pin /* pin_value */,
-                pinPolicy,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.ENCRYPTION,
                 new String[]{SymEncryptionAlgorithms.AES192_CBC.getAlgorithmId(AlgorithmPreferences.SKS)}).setCertificate(cn());
         try {
@@ -2258,8 +2246,7 @@ try {
                 null /* pukPolicy */);
         GenKey key = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                good_pin /* pin_value */,
-                pinPolicy,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.ENCRYPTION).setCertificate(cn());
         sess.closeSession();
         KeyPairGenerator generator = KeyPairGenerator.getInstance("EC");
@@ -2272,6 +2259,7 @@ try {
             z = device.sks.keyAgreement(key.keyHandle,
                     ecdhAlgorithm,
                     null,
+                    false,
                     good_pin.getBytes("UTF-8"),
                     (ECPublicKey) key_pair.getPublic());
             assertTrue("has ECDH", supported_algorithms.contains(ecdhAlgorithm));
@@ -2301,8 +2289,7 @@ try {
                 null /* pukPolicy */);
         GenKey key = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                good_pin /* pin_value */,
-                pinPolicy,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.ENCRYPTION).setCertificate(cn());
         sess.closeSession();
         try {
@@ -2328,8 +2315,7 @@ try {
                     null /* pukPolicy */);
             GenKey key = sess.createKey("Key.1",
                     KeyAlgorithms.NIST_P_256,
-                    good_pin /* pin_value */,
-                    pinPolicy,
+                    new KeyProtectionSpec(good_pin, pinPolicy),
                     AppUsage.AUTHENTICATION).setCertificate(cn());
             sess.closeSession();
             lockECKey(key, good_pin);
@@ -2348,7 +2334,9 @@ try {
                 assertFalse("Good kmk should not throw", i == 0);
             }
             try {
-                key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, good_pin, TEST_STRING);
+                key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, 
+                             new KeyAuthorization(good_pin), 
+                             TEST_STRING);
                 assertTrue("Bad kmk should throw", i == 0);
             } catch (SKSException e) {
                 assertFalse("Good kmk should not throw", i == 0);
@@ -2372,22 +2360,22 @@ try {
                     null /* pukPolicy */);
             GenKey key = sess.createKey("Key.1",
                     KeyAlgorithms.NIST_P_256,
-                    good_pin /* pin_value */,
-                    pinPolicy,
+                    new KeyProtectionSpec(good_pin, pinPolicy),
                     AppUsage.AUTHENTICATION).setCertificate(cn());
             sess.closeSession();
             lockECKey(key, good_pin);
             ProvSess sess2 = new ProvSess(device);
             GenKey new_key = sess2.createKey("Key.1",
                     KeyAlgorithms.NIST_P_256,
-                    null /* pin_value */,
-                    null /* pinPolicy */,
+                    new KeyProtectionSpec(),
                     AppUsage.AUTHENTICATION).setCertificate(cn());
             if (i == 0) new_key.postUpdateKey(key);
             sess2.postUnlockKey(key);
             if (i == 1) new_key.postUpdateKey(key);
             sess2.closeSession();
-            key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, good_pin, TEST_STRING);
+            key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, 
+                         new KeyAuthorization(good_pin), 
+                         TEST_STRING);
             assertFalse("taken", new_key.exists());
         }
     }
@@ -2407,23 +2395,25 @@ try {
                     null /* pukPolicy */);
             GenKey key = sess.createKey("Key.1",
                     KeyAlgorithms.NIST_P_256,
-                    good_pin /* pin_value */,
-                    pinPolicy,
+                    new KeyProtectionSpec(good_pin, pinPolicy),
                     AppUsage.AUTHENTICATION).setCertificate(cn());
             sess.closeSession();
             lockECKey(key, good_pin);
             ProvSess sess2 = new ProvSess(device);
             GenKey new_key = sess2.createKey("Key.1",
                     KeyAlgorithms.NIST_P_256,
-                    null /* pin_value */,
-                    null /* pinPolicy */,
+                    new KeyProtectionSpec(),
                     AppUsage.AUTHENTICATION).setCertificate(cn());
             if (i == 0) new_key.postCloneKey(key);
             sess2.postUnlockKey(key);
             if (i == 1) new_key.postCloneKey(key);
             sess2.closeSession();
-            new_key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, good_pin, TEST_STRING);
-            key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, good_pin, TEST_STRING);
+            new_key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, 
+                             new KeyAuthorization(good_pin), 
+                             TEST_STRING);
+            key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, 
+                         new KeyAuthorization(good_pin), 
+                         TEST_STRING);
         }
     }
 
@@ -2442,16 +2432,14 @@ try {
                     null /* pukPolicy */);
             GenKey key = sess.createKey("Key.1",
                     KeyAlgorithms.NIST_P_256,
-                    good_pin /* pin_value */,
-                    pinPolicy,
+                    new KeyProtectionSpec(good_pin, pinPolicy),
                     AppUsage.AUTHENTICATION).setCertificate(cn());
             sess.closeSession();
             lockECKey(key, good_pin);
             ProvSess sess2 = new ProvSess(device, (short) 50, 0, i < 2 || i > 3, null);
             GenKey new_key = sess2.createKey("Key.1",
                     KeyAlgorithms.NIST_P_256,
-                    null /* pin_value */,
-                    null /* pinPolicy */,
+                    new KeyProtectionSpec(),
                     AppUsage.AUTHENTICATION).setCertificate(cn());
             try {
                 if (i % 2 == 0) new_key.postCloneKey(key);
@@ -2459,8 +2447,12 @@ try {
                 if (i % 2 == 1) new_key.postCloneKey(key);
                 sess2.closeSession();
                 assertTrue("Shouldn't", i < 4);
-                new_key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, good_pin, TEST_STRING);
-                key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, good_pin, TEST_STRING);
+                new_key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, 
+                                 new KeyAuthorization(good_pin), 
+                                 TEST_STRING);
+                key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, 
+                             new KeyAuthorization(good_pin), 
+                             TEST_STRING);
             } catch (SKSException e) {
                 checkException(e, "Inconsistent use of the \"" + SecureKeyStore.VAR_PRIVACY_ENABLED + "\" attribute for key #");
             }
@@ -2489,14 +2481,12 @@ try {
         ProvSess sess = new ProvSess(device);
         GenKey key = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn(), key_pair.getPublic());
         key.setPrivateKey(key_pair);
         GenKey key2 = sess.createKey("Key.2",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificatePath(key.getCertificatePath());
         key2.setPrivateKey(key_pair);
         try {
@@ -2508,16 +2498,14 @@ try {
         sess = new ProvSess(device);
         key = sess.createKey("Key.3",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn(), key_pair.getPublic());
         key.setPrivateKey(key_pair);
         sess.closeSession();
         sess = new ProvSess(device);
         key2 = sess.createKey("Key.4",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificatePath(key.getCertificatePath());
         key2.setPrivateKey(key_pair);
         try {
@@ -2529,16 +2517,14 @@ try {
         sess = new ProvSess(device, 0);
         key = sess.createKey("Key.3",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn(), key_pair.getPublic());
         key.setPrivateKey(key_pair);
         sess.closeSession();
         ProvSess sess2 = new ProvSess(device);
         GenKey new_key = sess2.createKey("Key.4",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificatePath(key.getCertificatePath());
         new_key.setPrivateKey(key_pair);
         new_key.postUpdateKey(key);
@@ -2546,22 +2532,21 @@ try {
         sess = new ProvSess(device, 0);
         key = sess.createKey("Key.3",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn(), key_pair.getPublic());
         key.setPrivateKey(key_pair);
         sess.closeSession();
         sess2 = new ProvSess(device);
         new_key = sess2.createKey("Key.4",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null /* pinPolicy */,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificatePath(key.getCertificatePath());
         new_key.setPrivateKey(key_pair);
         sess2.postDeleteKey(key);
         sess2.closeSession();
     }
 
+    
     @Test
     public void test60() throws Exception {
         String good_pin = "1563";
@@ -2577,8 +2562,7 @@ try {
                 null /* pukPolicy */);
         GenKey key = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                good_pin /* pin_value */,
-                pinPolicy,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.AUTHENTICATION,
                 new String[]{SymEncryptionAlgorithms.AES128_CBC.getAlgorithmId(AlgorithmPreferences.SKS)}).setCertificate(cn());
         key.setSymmetricKey(symmetricKey);
@@ -2605,8 +2589,7 @@ try {
                 null /* pukPolicy */);
         GenKey key = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                good_pin /* pin_value */,
-                pinPolicy,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         key.setSymmetricKey(symmetricKey);
         try {
@@ -2634,8 +2617,7 @@ try {
                 null /* pukPolicy */);
         GenKey key = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                good_pin /* pin_value */,
-                pinPolicy,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         try {
             KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
@@ -2665,8 +2647,7 @@ try {
         KeyPair key_pair = kpg.generateKeyPair();
         sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                good_pin /* pin_value */,
-                pinPolicy,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.AUTHENTICATION).setCertificate(cn(), key_pair.getPublic());
         try {
             sess.closeSession();
@@ -2696,8 +2677,7 @@ try {
             KeyPair key_pair = kpg.generateKeyPair();
             sess.createKey("Key.1",
                     ka,
-                    good_pin /* pin_value */,
-                    pinPolicy,
+                    new KeyProtectionSpec(good_pin, pinPolicy),
                     AppUsage.AUTHENTICATION).setCertificate(cn(), key_pair.getPublic());
             try {
                 sess.closeSession();
@@ -2725,8 +2705,7 @@ try {
         KeyPair key_pair = generator.generateKeyPair();
         sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                good_pin /* pin_value */,
-                pinPolicy,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.AUTHENTICATION).setCertificate(cn(), key_pair.getPublic());
         try {
             sess.closeSession();
@@ -2754,7 +2733,7 @@ try {
             fail("Bad server key");
         } catch (SKSException e) {
             ProvSess.override_server_ephemeral_key_algorithm = null;
-            // The current android test suite runs only on the client creating another error message
+            // The current android test suite runs only on the client creating another error message    
         }
     }
 
@@ -2786,8 +2765,7 @@ try {
         try {
             GenKey key = sess.createKey("Key.1",
                     preferred_rsa_algorithm,
-                    null /* pin_value */,
-                    null,
+                    new KeyProtectionSpec(),
                     AppUsage.AUTHENTICATION).setCertificate(cn(), key_pair.getPublic());
             key.setPrivateKey(key_pair);
             sess.closeSession();
@@ -2803,8 +2781,7 @@ try {
         try {
             GenKey key = sess.createKey("Key.1",
                     preferred_rsa_algorithm,
-                    null /* pin_value */,
-                    null,
+                    new KeyProtectionSpec(),
                     AppUsage.AUTHENTICATION).setCertificate(cn());
             key.setPrivateKey(key_pair);
             fail("RSA mismatch");
@@ -2857,8 +2834,7 @@ try {
         ProvSess sess = new ProvSess(device);
         GenKey key = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION);
         try {
             sess.sks.importSymmetricKey(key.keyHandle,
@@ -2887,13 +2863,14 @@ try {
                 puk_pol /* pukPolicy */);
         GenKey key = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                good_pin /* pin_value */,
-                pinPolicy,
+                new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
         for (int i = 0; i < 3; i++) {
             try {
-                key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, good_pin + "3", TEST_STRING);
+                key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, 
+                             new KeyAuthorization(good_pin + "3"), 
+                             TEST_STRING);
                 fail("Bad PIN should not work");
             } catch (SKSException e) {
                 authorizationErrorCheck(e);
@@ -2913,7 +2890,9 @@ try {
         assertTrue("Should be PIN blocked", kpi.isPinBlocked());
         assertFalse("Should not be PUK blocked", kpi.isPukBlocked());
         key.unlockKey(good_puk);
-        key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, good_pin, TEST_STRING);
+        key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, 
+                     new KeyAuthorization(good_pin), 
+                     TEST_STRING);
     }
 
     @Test
@@ -2921,8 +2900,7 @@ try {
         ProvSess sess = new ProvSess(device);
         GenKey key = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         String type = "http://example.com/define";
         byte subType = SecureKeyStore.SUB_TYPE_EXTENSION;
@@ -2937,8 +2915,7 @@ try {
         sess = new ProvSess(device);
         key = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         type = "http://example.com/define";
         subType = SecureKeyStore.SUB_TYPE_EXTENSION;
@@ -2992,8 +2969,7 @@ try {
         try {
             sess.createKey("Key.1",
                     KeyAlgorithms.NIST_P_256,
-                    null /* pin_value */,
-                    null,
+                    new KeyProtectionSpec(),
                     AppUsage.AUTHENTICATION);
             fail("MAC");
         } catch (SKSException e) {
@@ -3007,8 +2983,7 @@ try {
         try {
             sess.createKey("Key.1",
                     KeyAlgorithms.NIST_P_256,
-                    null /* pin_value */,
-                    null,
+                    new KeyProtectionSpec(),
                     AppUsage.AUTHENTICATION).setCertificate(device.device_info.getCryptoDataSize());
             fail("Shouldn't pass");
         } catch (SKSException e) {
@@ -3032,13 +3007,11 @@ try {
         ProvSess sess = new ProvSess(device, 0);
         GenKey key = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.createKey("Key.2",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
         PublicKey keyManagementKey = sess.server_sess_key.enumerateKeyManagementKeys()[1];  // The new KMK
@@ -3057,8 +3030,7 @@ try {
         ProvSess sess = new ProvSess(device);
         sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
         PublicKey keyManagementKey = sess.server_sess_key.enumerateKeyManagementKeys()[1];  // The new KMK
@@ -3093,8 +3065,7 @@ try {
             sess.override_key_entry_algorithm = "http://somewhere";
             sess.createKey("Key.1",
                     KeyAlgorithms.NIST_P_256,
-                    null /* pin_value */,
-                    null,
+                    new KeyProtectionSpec(),
                     AppUsage.AUTHENTICATION).setCertificate(cn());
             fail("Not good");
         } catch (SKSException e) {
@@ -3107,20 +3078,20 @@ try {
         ProvSess sess = new ProvSess(device);
         GenKey ec = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         GenKey rsa = sess.createKey("Key.2",
                 KeyAlgorithms.RSA2048,
-                null /* pin_value */,
-                null,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION).setCertificate(cn());
         sess.closeSession();
 
         for (AsymSignatureAlgorithms alg : AsymSignatureAlgorithms.values()) {
             GenKey tk = alg.isRsa() ? rsa : ec;
             try {
-                byte[] result = tk.signData(alg, null, TEST_STRING);
+                byte[] result = tk.signData(alg, 
+                                            new KeyAuthorization(),
+                                            TEST_STRING);
                 SignatureWrapper verify = new SignatureWrapper(alg, tk.getPublicKey());
                 verify.update(TEST_STRING);
                 assertTrue("Bad signature " + alg.getAlgorithmId(AlgorithmPreferences.SKS), verify.verify(result));
@@ -3140,8 +3111,7 @@ try {
             sess.devicePinProtected = true;
             sess.createKey("Key.1",
                     KeyAlgorithms.NIST_P_256,
-                    null /* pin_value */,
-                    null,
+                    new KeyProtectionSpec(),
                     AppUsage.AUTHENTICATION).setCertificate(cn());
             assertTrue("devPIN", dev_pin);
             sess.closeSession();
@@ -3155,19 +3125,113 @@ try {
         ProvSess sess = new ProvSess(device);
         GenKey key = sess.createKey("Key.1",
                 KeyAlgorithms.NIST_P_256,
-                null /* pin_value */,
-                null,
+                new KeyProtectionSpec(),
                 AppUsage.AUTHENTICATION,
                 new String[]{AsymSignatureAlgorithms.ECDSA_SHA256
                         .getAlgorithmId(AlgorithmPreferences.SKS)})
                             .setCertificate(cn());
         sess.closeSession();
-        key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, null, TEST_STRING);
+        key.signData(AsymSignatureAlgorithms.ECDSA_SHA256,
+                     new KeyAuthorization(), 
+                     TEST_STRING);
         try {
-            key.signData(AsymSignatureAlgorithms.ECDSA_SHA384, null, TEST_STRING);
+            key.signData(AsymSignatureAlgorithms.ECDSA_SHA384, 
+                         new KeyAuthorization(), 
+                         TEST_STRING);
             fail("Should not accept");
         } catch (SKSException e) {
             assertTrue("Flag not endorsed", e.getMessage().contains("384"));
         }
     }
- }
+    
+    void singleBiometricTest(BiometricProtection biometricProtection, 
+                             boolean optionalPin,
+                             boolean biometricAuth,
+                             String resultError) throws Exception {
+        ProvSess sess = new ProvSess(device);
+        PINPol pinPolicy = null;
+        String pin = null;
+        if (optionalPin) {
+            pin = "1234";
+            pinPolicy = sess.createPINPolicy("PIN",
+                    PassphraseFormat.NUMERIC,
+                    4 /* minLength */,
+                    8 /* maxLength */,
+                    (short) 3 /* retryLimit*/,
+                    null /* pukPolicy */);
+            
+        }
+        GenKey key = null;
+        try {
+            key = sess.createKey("Key.1",
+                    KeyAlgorithms.NIST_P_256,
+                    new KeyProtectionSpec(biometricProtection, pin, pinPolicy),
+                    AppUsage.AUTHENTICATION,
+                    new String[]{AsymSignatureAlgorithms.ECDSA_SHA256
+                            .getAlgorithmId(AlgorithmPreferences.SKS)})
+                                .setCertificate(cn());
+            sess.closeSession();
+        } catch (SKSException e) {
+            checkException(e, "Invalid \"biometricProtection\" and PIN combination");
+            if (biometricProtection == BiometricProtection.EXCLUSIVE ^ optionalPin) {
+                fail("Strange " + biometricProtection + " " + optionalPin + " " + biometricAuth + " " + resultError);
+            }
+            assertTrue("Null " + biometricProtection + " " + optionalPin + " " + biometricAuth, resultError == null);
+            return;
+        }
+        try {
+            key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, 
+                         new KeyAuthorization(biometricAuth, pin), 
+                         TEST_STRING);
+            if (resultError != null) {
+                fail("Should not accept " + biometricProtection + " " + optionalPin + " " + biometricAuth + " " + resultError);
+            }
+        } catch (SKSException e) {
+            if (resultError == null) {
+                fail("Should not have thrown " + biometricProtection + " " + optionalPin + " " + biometricAuth + " " + resultError);
+            }
+//            System.out.println(biometricProtection + " " + optionalPin + " " + biometricAuth + "\n" + resultError + "\n" + e.getMessage());
+            checkException(e, resultError);
+        }
+        if (optionalPin) {
+            try {
+                key.signData(AsymSignatureAlgorithms.ECDSA_SHA256, 
+                             new KeyAuthorization(biometricAuth, "124244"), 
+                             TEST_STRING);
+                fail("Should not accept " + biometricProtection + " " + optionalPin + " " + biometricAuth + " " + resultError);
+            } catch (SKSException e) {
+                checkException(e, resultError == null ? "\"authorization\" error for key #" : resultError);
+            }
+        }
+    }
+    
+    void biometricTest(BiometricProtection biometricProtection, 
+                       String res1, 
+                       String res2, 
+                       String res3, 
+                       String res4) throws Exception {
+        singleBiometricTest(biometricProtection, false, false, res1);
+        singleBiometricTest(biometricProtection, true,  false, res2);
+        singleBiometricTest(biometricProtection, false, true,  res3);
+        singleBiometricTest(biometricProtection, true,  true,  res4);
+    }
+
+    @Test
+    public void test85() throws Exception {
+        biometricTest(BiometricProtection.EXCLUSIVE,
+                      "Missing biometric for key #", 
+                      null,
+                      null,
+                      null);
+        biometricTest(BiometricProtection.ALTERNATIVE,
+                      null,
+                      null,
+                      null,
+                      "Biometric + pin option invalid for key #");
+        biometricTest(BiometricProtection.COMBINED, 
+                      null, 
+                      "Missing biometric for key #",
+                      null,
+                      null);
+    }
+}

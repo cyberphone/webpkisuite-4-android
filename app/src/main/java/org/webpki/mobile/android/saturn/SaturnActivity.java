@@ -831,6 +831,7 @@ public class SaturnActivity extends BaseProxyActivity {
                             return sks.signHashedData(account.signatureKeyHandle,
                                                       algorithm.getAlgorithmId (AlgorithmPreferences.SKS),
                                                       null,
+                                                      false,
                                                       pin.getBytes("UTF-8"),
                                                       algorithm.getDigestAlgorithm().digest(data));
                         }

@@ -75,6 +75,7 @@ public class WebAuthResponseCreation extends AsyncTask<Void, String, String> {
                             return webauth_activity.sks.signHashedData(key_handle,
                                                                        sign_alg.getAlgorithmId(AlgorithmPreferences.SKS),
                                                                        null,
+                                                                       false,
                                                                        authorization.getBytes("UTF-8"),
                                                                        sign_alg.getDigestAlgorithm().digest(data));
                         }
