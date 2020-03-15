@@ -276,6 +276,10 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
                 invocation_response.addImagePreference(KeyGen2URIs.LOGOTYPES.LIST, "image/png", default_icon.getWidth(), default_icon.getHeight());
             }
 
+            if (keyGen2Activity.invocationRequest.getQueriedCapabilities().contains(KeyGen2URIs.CLIENT_FEATURES.BIOMETRIC_SUPPORT)) {
+                invocation_response.addSupportedFeature(KeyGen2URIs.CLIENT_FEATURES.BIOMETRIC_SUPPORT);
+            }
+
             keyGen2Activity.postJSONData(keyGen2Activity.getTransactionURL(),
                                           invocation_response,
                                           BaseProxyActivity.RedirectPermitted.FORBIDDEN);
