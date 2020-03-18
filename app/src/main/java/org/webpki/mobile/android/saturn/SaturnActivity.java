@@ -52,6 +52,7 @@ import org.webpki.mobile.android.R;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import java.math.BigDecimal;
@@ -105,7 +106,8 @@ public class SaturnActivity extends BaseProxyActivity {
 
     static final String HEADER_FONT_SIZE   = "14pt";
 
-    static final String HTML_HEADER_WHITE = "<html><head><style type='text/css'>\n" +
+    static final String HTML_HEADER_WHITE =
+          "<!DOCTYPE html><html><head><title>Saturn</title><style type='text/css'>\n" +
           "body {margin:0;font-size:12pt;color:#000000;font-family:Roboto;background-color:white}\n" +
           "td.label {text-align:right;padding:3pt 3pt 3pt 0pt}\n" +
           "td.field {min-width:11em;padding:3pt 6pt 3pt 6pt;border-width:1px;" +
@@ -130,7 +132,8 @@ public class SaturnActivity extends BaseProxyActivity {
           "'use strict';\n" +
           "function positionElements() {\n";
 
-    static final String HTML_HEADER_SPACE = "<html><head><style type='text/css'>\n" +
+    static final String HTML_HEADER_SPACE =
+          "<!DOCTYPE html><html><head><title>Saturn</title><style type='text/css'>\n" +
           "body {margin:0;font-size:12pt;color:white;font-family:Roboto;" +
           "background:linear-gradient(to bottom right, #162c44, #6d7a8e, #162c44);background-attachment:fixed}\n" +
           "td.label {font-weight:500;text-align:right;padding:3pt 3pt 3pt 0pt}\n" +
@@ -289,7 +292,12 @@ public class SaturnActivity extends BaseProxyActivity {
                     .append(htmlBodyPrefix)
                     .append(body)
                     .append("</body></html>").toString().getBytes("utf-8");
-         } catch (Exception e) {
+/*
+            FileOutputStream fos = openFileOutput("html.txt", Context.MODE_PRIVATE);
+            fos.write(currentHtml);
+            fos.close();
+*/
+        } catch (Exception e) {
             Log.e("HTM", e.getMessage());
             return;
         }
@@ -463,7 +471,7 @@ public class SaturnActivity extends BaseProxyActivity {
                     "<path d='M100 20 L100 300 L10 160 Z' fill='none' stroke='")
             .append(whiteTheme ? "black" : "white")
             .append("' stroke-width='10'/>" +
-                    "</svg></td></td><td><svg style='width:")
+                    "</svg></td><td><svg style='width:")
             .append((width * 100) / factor)
             .append("px' ")
             .append(whiteTheme ?
@@ -735,9 +743,7 @@ public class SaturnActivity extends BaseProxyActivity {
                         "</table>" +
                         "<div id='kbd' style='visibility:hidden;position:absolute;width:")
                 .append(landscapeMode ? (width * 50) / factor : (width * 88) / factor)
-                .append("px;height:")
-                .append(landscapeMode ? (width * ((50 * 162) / 416)) / factor : (width * ((88 * 162) / 416)) / factor)
-                .append("'>")
+                .append("px'>")
                 .append(ThemeHolder.getKeyBoard())
                 .append("</div>");
         } else {

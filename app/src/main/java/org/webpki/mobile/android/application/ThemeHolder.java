@@ -114,27 +114,25 @@ public class ThemeHolder {
                 x = 0;
             }
             s.append(addDigit(i, x, i < 4 ? 0 : i > 6 ? 114 : 57));
-            x += 80;
+            x += 90;
         }
 
         s.append("<a xlink:href=\"javascript:deleteDigit()\">")
-        .append(addButtonCore(56, 48, (80 * 3) + 120, 0))
+        .append(addButtonCore(56, 48, (90 * 3) + 90, 0))
         .append("<text x=\"")
-        .append(((80 * 3) + 120)  + 28.5)
+        .append(((90 * 3) + 90)  + 28)
         .append("\" y=\"")
-        .append(36)
+        .append(36.5)
         .append("\" font-family=\"Roboto\" font-size=\"50\" " +
-                "text-anchor=\"middle\" fill=\"#be1018\">&#171;</text></a>");
+                "text-anchor=\"middle\" fill=\"#be1018\">&#171;</text></a>" +
 
-        s.append("<a xlink:href=\"javascript:validatePin()\">")
-        .append(addButtonCore(136, 70, 80 * 3 + 120 + 56 - 136, 92))
-        .append("<text x=\"")
-        .append((80 * 3) + 120 + 56 - 136  + 68)
-        .append("\" y=\"")
-        .append(92 + 44)
-        .append("\" font-family=\"Roboto\" font-size=\"26\" " +
-                "text-anchor=\"middle\" font-weight=\"bold\" fill=\"#009900\">Validate</text></a>");
-
-        return s.append("</svg></div>").toString();
+                "<a xlink:href=\"javascript:validatePin()\">")
+        .append(addButtonCore(80, 60, 90 * 3 + 90 + 56 - 80, 102))
+        .append("<path fill=\"#009900\" " +
+                "d=\"m 364,131 c 4.5,4.9 7.2,9.7 8.9,13.5 h 2.1 " +
+                "c 5,-10.3 10.7,-18.7 17.5,-25.7 h -4 " +
+                "c -6.6,7.5 -8.7,10.5 -14.5,21 -1.8,-3.4 -3.1,-5.2 -5.8,-8.8 h -4 z\"/>" +
+                "</a></svg>");
+        return s.toString();
     }
 }
