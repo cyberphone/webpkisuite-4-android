@@ -18,6 +18,9 @@ package org.webpki.mobile.android.saturn.common;
 
 import java.io.IOException;
 
+import java.util.Vector;
+
+import org.webpki.json.JSONArrayReader;
 import org.webpki.json.JSONDecoder;
 import org.webpki.json.JSONObjectReader;
 
@@ -25,7 +28,12 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
 
     private static final long serialVersionUID = 1L;
 
-    public String paymentMethods[];
+    public static class PaymentMethodDescriptor {
+        public String paymentMethod;
+        public byte[] keyHash;
+    }
+
+    public Vector<PaymentMethodDescriptor> paymentMethodList = new Vector<>();
 
     public String noMatchingMethodsUrl;
 
@@ -35,7 +43,14 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
 
     @Override
     protected void readJSONData(JSONObjectReader rd) throws IOException {
-        paymentMethods = rd.getStringArray(PAYMENT_METHODS_JSON);
+        JSONArrayReader methodList = rd.getArray(SUPPORTED_PAYMENT_METHODS_JSON);
+        do {
+            PaymentMethodDescriptor pmd = new PaymentMethodDescriptor();
+            JSONObjectReader o = methodList.getObject();
+            pmd.paymentMethod = o.getString(PAYMENT_METHOD_JSON);
+            pmd.keyHash = o.getBinary(KEY_HASH_JSON);
+            paymentMethodList.add(pmd);
+        } while (methodList.hasMore());
         paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
         gasStationPayment = paymentRequest.getNonDirectPayment() == NonDirectPayments.GAS_STATION;
         noMatchingMethodsUrl = rd.getStringConditional(NO_MATCHING_METHODS_URL_JSON);

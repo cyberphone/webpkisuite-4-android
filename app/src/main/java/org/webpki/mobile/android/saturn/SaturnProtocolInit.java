@@ -67,7 +67,7 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                 // for the fictitious payment schemes this system is supporting but it
                 // might still not match the Payee's list of supported account types.
                 ek = collectPotentialAccount(ek,
-                                             new CardDataDecoder("2", ext.getExtensionData(
+                                             new CardDataDecoder("3", ext.getExtensionData(
                                                          SecureKeyStore.SUB_TYPE_EXTENSION)),
                                              saturnActivity.walletRequest);
             }
@@ -114,10 +114,13 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                                           WalletRequestDecoder wrd) throws IOException {
         if (cardData.isRecognized()) {
             String paymentMethod = cardData.getPaymentMethod();
-            for (String acceptedPaymentMethod : wrd.paymentMethods) {
-                if (paymentMethod.equals(acceptedPaymentMethod)) {
+            for (WalletRequestDecoder.PaymentMethodDescriptor acceptedPaymentMethod
+                                       : wrd.paymentMethodList) {
+                if (paymentMethod.equals(acceptedPaymentMethod.paymentMethod)) {
                     Account account = new Account(
-                            cardData.getPaymentMethod(),
+                            paymentMethod,
+                            cardData.getRequestHashAlgorithm(),
+                            acceptedPaymentMethod.keyHash,
                             cardData.getCredentialId(),
                             cardData.getAccountId(),
                             cardData.getAuthorityUrl(),

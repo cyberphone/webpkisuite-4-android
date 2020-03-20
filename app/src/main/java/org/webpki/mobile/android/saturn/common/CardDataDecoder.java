@@ -22,8 +22,8 @@ import java.math.BigDecimal;
 
 import java.security.PublicKey;
 
-import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.AsymSignatureAlgorithms;
+import org.webpki.crypto.HashAlgorithms;
 
 import org.webpki.json.DataEncryptionAlgorithms;
 import org.webpki.json.KeyEncryptionAlgorithms;
@@ -39,10 +39,12 @@ public class CardDataDecoder {
     // Since deployed card data should preferably remain useful even if the Saturn protocol
     // changes, multiple versions may need to be supported by client software.
     static final String VERSION_JSON   = "version";
-    static final String ACTUAL_VERSION = "2";
+    static final String ACTUAL_VERSION = "3";
     
-    static final String ACCOUNT_STATUS_KEY_HASH = "accountStatusKeyHash";
-    static final String TEMPORARY_BALANCE_FIX   = "temp.bal.fix";
+    static final String REQUEST_HASH_ALGORITHM_JSON = "requestHashAlgorithm";
+    
+    static final String ACCOUNT_STATUS_KEY_HASH     = "accountStatusKeyHash";
+    static final String TEMPORARY_BALANCE_FIX       = "temp.bal.fix";
     
     public CardDataDecoder(String expectedVersion, byte[] cardDataBlob) throws IOException {
         JSONObjectReader rd = JSONParser.parse(cardDataBlob);
@@ -53,9 +55,9 @@ public class CardDataDecoder {
             accountId = rd.getString(BaseProperties.ACCOUNT_ID_JSON);
             credentialId = rd.getString(BaseProperties.CREDENTIAL_ID_JSON);
             authorityUrl = rd.getString(BaseProperties.PROVIDER_AUTHORITY_URL_JSON);
-            signatureAlgorithm = AsymSignatureAlgorithms
-                    .getAlgorithmFromId(rd.getString(BaseProperties.SIGNATURE_ALGORITHM_JSON),
-                                                     AlgorithmPreferences.JOSE);
+            requestHashAlgorithm = Utils.getHashAlgorithm(rd, REQUEST_HASH_ALGORITHM_JSON);
+            signatureAlgorithm = 
+                    Utils.getSignatureAlgorithm(rd, BaseProperties.SIGNATURE_ALGORITHM_JSON);
             JSONObjectReader ep = rd.getObject(BaseProperties.ENCRYPTION_PARAMETERS_JSON);
             dataEncryptionAlgorithm = DataEncryptionAlgorithms
                     .getAlgorithmFromId(ep.getString(BaseProperties.DATA_ENCRYPTION_ALGORITHM_JSON));
@@ -99,6 +101,10 @@ public class CardDataDecoder {
         return authorityUrl;
     }
 
+    HashAlgorithms requestHashAlgorithm;
+    public HashAlgorithms getRequestHashAlgorithm() {
+        return requestHashAlgorithm;
+    }
     AsymSignatureAlgorithms signatureAlgorithm;
     public AsymSignatureAlgorithms getSignatureAlgorithm() {
         return signatureAlgorithm;

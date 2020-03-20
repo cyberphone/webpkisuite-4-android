@@ -66,6 +66,7 @@ import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.AsymKeySignerInterface;
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.CryptoRandom;
+import org.webpki.crypto.HashAlgorithms;
 
 import org.webpki.json.JSONArrayReader;
 import org.webpki.json.JSONObjectReader;
@@ -191,6 +192,8 @@ public class SaturnActivity extends BaseProxyActivity {
 
     static class Account {
         String paymentMethod;
+        byte[] keyHash;
+        HashAlgorithms requestHashAlgorithm;
         String credentialId;
         String accountId;
         String authorityUrl;
@@ -208,6 +211,8 @@ public class SaturnActivity extends BaseProxyActivity {
 
         Account(// The core...
                 String paymentMethod,
+                HashAlgorithms requestHashAlgorithm,
+                byte[] keyHash,
                 String credentialId,
                 String accountId,
                 String authorityUrl,
@@ -222,8 +227,11 @@ public class SaturnActivity extends BaseProxyActivity {
                 DataEncryptionAlgorithms dataEncryptionAlgorithm,
                 PublicKey encryptionKey,
                 String optionalKeyId,
+//TODO next release?
                 BigDecimal tempBalanceFix) {
             this.paymentMethod = paymentMethod;
+            this.requestHashAlgorithm = requestHashAlgorithm;
+            this.keyHash = keyHash;
             this.credentialId = credentialId;
             this.accountId = accountId;
             this.authorityUrl = authorityUrl;
@@ -818,8 +826,10 @@ public class SaturnActivity extends BaseProxyActivity {
                 // The response
                 authorizationData = AuthorizationData.encode(
                     walletRequest.paymentRequest,
+                    account.requestHashAlgorithm,
                     getRequestingHost(),
                     account.paymentMethod,
+                    account.keyHash,
                     account.credentialId,
                     account.accountId,
                     privateMessageEncryptionKey,
