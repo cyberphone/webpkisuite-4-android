@@ -192,12 +192,12 @@ public class SaturnActivity extends BaseProxyActivity {
 
     static class Account {
         String paymentMethod;
-        byte[] keyHash;
         HashAlgorithms requestHashAlgorithm;
+        HashAlgorithms keyHashAlgorithm;
+        byte[] keyHashValue;
         String credentialId;
         String accountId;
         String authorityUrl;
-        boolean cardFormatAccountId;
         byte[] cardImage;
         AsymSignatureAlgorithms signatureAlgorithm;
         int signatureKeyHandle;
@@ -212,12 +212,12 @@ public class SaturnActivity extends BaseProxyActivity {
         Account(// The core...
                 String paymentMethod,
                 HashAlgorithms requestHashAlgorithm,
-                byte[] keyHash,
+                HashAlgorithms keyHashAlgorithm,
+                byte[] keyHashValue,
                 String credentialId,
                 String accountId,
                 String authorityUrl,
                 // Card visuals
-                boolean cardFormatAccountId,
                 byte[] cardImage,
                 // Signature
                 int signatureKeyHandle,
@@ -231,11 +231,11 @@ public class SaturnActivity extends BaseProxyActivity {
                 BigDecimal tempBalanceFix) {
             this.paymentMethod = paymentMethod;
             this.requestHashAlgorithm = requestHashAlgorithm;
-            this.keyHash = keyHash;
+            this.keyHashAlgorithm = keyHashAlgorithm;
+            this.keyHashValue = keyHashValue;
             this.credentialId = credentialId;
             this.accountId = accountId;
             this.authorityUrl = authorityUrl;
-            this.cardFormatAccountId = cardFormatAccountId;
             this.cardImage = cardImage;
             this.signatureKeyHandle = signatureKeyHandle;
             this.signatureAlgorithm = signatureAlgorithm;
@@ -451,13 +451,6 @@ public class SaturnActivity extends BaseProxyActivity {
 
         // Start of Saturn
         new SaturnProtocolInit(this).execute();
-    }
-
-    static String formatAccountId(Account card) {
-        return card.cardFormatAccountId ?
-            AuthorizationData.formatCardNumber(card.accountId)
-                                        :
-            card.accountId;
     }
 
     String getBalance(Account account) {
@@ -829,7 +822,8 @@ public class SaturnActivity extends BaseProxyActivity {
                     account.requestHashAlgorithm,
                     getRequestingHost(),
                     account.paymentMethod,
-                    account.keyHash,
+                    account.keyHashAlgorithm,
+                    account.keyHashValue,
                     account.credentialId,
                     account.accountId,
                     privateMessageEncryptionKey,

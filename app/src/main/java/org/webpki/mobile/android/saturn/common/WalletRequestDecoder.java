@@ -20,7 +20,10 @@ import java.io.IOException;
 
 import java.util.Vector;
 
+import org.webpki.crypto.HashAlgorithms;
+
 import org.webpki.json.JSONArrayReader;
+import org.webpki.json.JSONCryptoHelper;
 import org.webpki.json.JSONDecoder;
 import org.webpki.json.JSONObjectReader;
 
@@ -30,7 +33,8 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
 
     public static class PaymentMethodDescriptor {
         public String paymentMethod;
-        public byte[] keyHash;
+        public HashAlgorithms keyHashAlgorithm;
+        public byte[] keyHashValue;
     }
 
     public Vector<PaymentMethodDescriptor> paymentMethodList = new Vector<>();
@@ -48,7 +52,10 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
             PaymentMethodDescriptor pmd = new PaymentMethodDescriptor();
             JSONObjectReader o = methodList.getObject();
             pmd.paymentMethod = o.getString(PAYMENT_METHOD_JSON);
-            pmd.keyHash = o.getBinary(KEY_HASH_JSON);
+            o = o.getObject(KEY_HASH_JSON);
+            pmd.keyHashAlgorithm =
+                CryptoUtils.getHashAlgorithm(o, JSONCryptoHelper.ALGORITHM_JSON);
+            pmd.keyHashValue = o.getBinary(JSONCryptoHelper.VALUE_JSON);
             paymentMethodList.add(pmd);
         } while (methodList.hasMore());
         paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));

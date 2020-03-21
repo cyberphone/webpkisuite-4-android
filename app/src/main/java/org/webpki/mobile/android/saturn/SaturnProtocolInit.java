@@ -120,12 +120,12 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                     Account account = new Account(
                             paymentMethod,
                             cardData.getRequestHashAlgorithm(),
-                            acceptedPaymentMethod.keyHash,
+                            acceptedPaymentMethod.keyHashAlgorithm,
+                            acceptedPaymentMethod.keyHashValue,
                             cardData.getCredentialId(),
                             cardData.getAccountId(),
                             cardData.getAuthorityUrl(),
                             // Card visuals
-                            true,
                             saturnActivity.sks.getExtension(
                                     foundKey.getKeyHandle(),
                                     KeyGen2URIs.LOGOTYPES.CARD)
