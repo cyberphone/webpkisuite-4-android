@@ -579,20 +579,22 @@ public class SaturnActivity extends BaseProxyActivity {
             if (numericPin) {
                 js.append(
                     "var wGutter = Math.floor((Saturn.width() - kbd.offsetWidth - card.offsetWidth) / 3);\n" +
-                    "card.style.right = wGutter + 'px';\n" +
-                    "card.style.top = (Saturn.height() - card.offsetHeight)/3 + 'px';\n" +
-                    "kbd.style.left = wGutter + 'px';\n" +
+                    "card.style.left = wGutter + 'px';\n" +
+                    "card.style.top = (Saturn.height() - card.offsetHeight)/2 + 'px';\n" +
+                    "kbd.style.right = wGutter + 'px';\n" +
                     "var hGutter = Math.floor((Saturn.height() - kbd.offsetHeight - paydata.offsetHeight) / 3);\n" +
                     "var kbdTop = Math.floor(Saturn.height() - hGutter - kbd.offsetHeight);\n" +
                     "kbd.style.top = kbdTop + 'px';\n" +
-                    "paydata.style.left = wGutter + 'px';\n" +
+                    "var pGutter = ((kbd.offsetWidth - paydata.offsetWidth + payeelabel.offsetWidth) / 2) + wGutter;\n" +
+                    "if (pGutter < 10) pGutter = 10;\n" +
+                    "paydata.style.right = pGutter + 'px';\n" +
                     "paydata.style.top = hGutter + 'px';\n"+
                     "kbd.style.visibility='visible';\n");
             } else {
                 js.append(
                     "var gutter = Math.floor((Saturn.width() - paydata.offsetWidth - card.offsetWidth) / 3);\n" +
                     "card.style.right = gutter + 'px';\n" +
-                    "paydata.style.left = gutter + 'px';\n" +
+                    "paydata.style.right = gutter + 'px';\n" +
                     "card.style.top = Math.floor((Saturn.height() - card.offsetHeight) / 2) + 'px';\n" +
                     "paydata.style.top = Math.floor((Saturn.height() - paydata.offsetHeight) / 2) + 'px';\n");
             }
