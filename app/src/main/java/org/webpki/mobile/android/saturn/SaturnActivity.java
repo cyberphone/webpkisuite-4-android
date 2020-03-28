@@ -79,7 +79,7 @@ import org.webpki.mobile.android.application.ThemeHolder;
 
 import org.webpki.mobile.android.proxy.BaseProxyActivity;
 
-import org.webpki.mobile.android.saturn.common.AuthorizationData;
+import org.webpki.mobile.android.saturn.common.AuthorizationDataEncoder;
 import org.webpki.mobile.android.saturn.common.UserResponseItem;
 import org.webpki.mobile.android.saturn.common.WalletRequestDecoder;
 
@@ -819,7 +819,7 @@ public class SaturnActivity extends BaseProxyActivity {
                 privateMessageEncryptionKey =
                         CryptoRandom.generateRandom(account.dataEncryptionAlgorithm.getKeyLength());
                 // The response
-                authorizationData = AuthorizationData.encode(
+                authorizationData = AuthorizationDataEncoder.encode(
                     walletRequest.paymentRequest,
                     account.requestHashAlgorithm,
                     getRequestingHost(),
