@@ -20,10 +20,7 @@ import java.io.IOException;
 
 import java.util.Vector;
 
-import org.webpki.crypto.HashAlgorithms;
-
 import org.webpki.json.JSONArrayReader;
-import org.webpki.json.JSONCryptoHelper;
 import org.webpki.json.JSONDecoder;
 import org.webpki.json.JSONObjectReader;
 
@@ -33,8 +30,7 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
 
     public static class PaymentMethodDescriptor {
         public String paymentMethod;
-        public HashAlgorithms keyHashAlgorithm;
-        public byte[] keyHashValue;
+        public String payeeAuthorityUrl;
     }
 
     public Vector<PaymentMethodDescriptor> paymentMethodList = new Vector<>();
@@ -43,7 +39,7 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
 
     public boolean gasStationPayment;
 
-    public PaymentRequest paymentRequest;
+    public PaymentRequestDecoder paymentRequest;
 
     @Override
     protected void readJSONData(JSONObjectReader rd) throws IOException {
@@ -52,14 +48,14 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
             PaymentMethodDescriptor pmd = new PaymentMethodDescriptor();
             JSONObjectReader o = methodList.getObject();
             pmd.paymentMethod = o.getString(PAYMENT_METHOD_JSON);
-            o = o.getObject(KEY_HASH_JSON);
-            pmd.keyHashAlgorithm =
-                CryptoUtils.getHashAlgorithm(o, JSONCryptoHelper.ALGORITHM_JSON);
-            pmd.keyHashValue = o.getBinary(JSONCryptoHelper.VALUE_JSON);
+            pmd.payeeAuthorityUrl = o.getString(PAYEE_AUTHORITY_URL_JSON);
             paymentMethodList.add(pmd);
         } while (methodList.hasMore());
-        paymentRequest = new PaymentRequest(rd.getObject(PAYMENT_REQUEST_JSON));
-        gasStationPayment = paymentRequest.getNonDirectPayment() == NonDirectPayments.GAS_STATION;
+        paymentRequest = new PaymentRequestDecoder(rd.getObject(PAYMENT_REQUEST_JSON));
+        if (paymentRequest.getNonDirectPayment() != null) {
+            gasStationPayment = paymentRequest.getNonDirectPayment().getType() ==
+                                     NonDirectPaymentTypes.GAS_STATION;
+        }
         noMatchingMethodsUrl = rd.getStringConditional(NO_MATCHING_METHODS_URL_JSON);
     }
 

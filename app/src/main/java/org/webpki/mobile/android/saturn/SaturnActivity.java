@@ -80,6 +80,7 @@ import org.webpki.mobile.android.application.ThemeHolder;
 import org.webpki.mobile.android.proxy.BaseProxyActivity;
 
 import org.webpki.mobile.android.saturn.common.AuthorizationDataEncoder;
+import org.webpki.mobile.android.saturn.common.ClientPlatform;
 import org.webpki.mobile.android.saturn.common.UserResponseItem;
 import org.webpki.mobile.android.saturn.common.WalletRequestDecoder;
 
@@ -192,9 +193,8 @@ public class SaturnActivity extends BaseProxyActivity {
 
     static class Account {
         String paymentMethod;
+        String payeeAuthorityUrl;
         HashAlgorithms requestHashAlgorithm;
-        HashAlgorithms keyHashAlgorithm;
-        byte[] keyHashValue;
         String credentialId;
         String accountId;
         String authorityUrl;
@@ -211,9 +211,8 @@ public class SaturnActivity extends BaseProxyActivity {
 
         Account(// The core...
                 String paymentMethod,
+                String payeeAuthorityUrl,
                 HashAlgorithms requestHashAlgorithm,
-                HashAlgorithms keyHashAlgorithm,
-                byte[] keyHashValue,
                 String credentialId,
                 String accountId,
                 String authorityUrl,
@@ -230,9 +229,8 @@ public class SaturnActivity extends BaseProxyActivity {
 //TODO next release?
                 BigDecimal tempBalanceFix) {
             this.paymentMethod = paymentMethod;
+            this.payeeAuthorityUrl = payeeAuthorityUrl;
             this.requestHashAlgorithm = requestHashAlgorithm;
-            this.keyHashAlgorithm = keyHashAlgorithm;
-            this.keyHashValue = keyHashValue;
             this.credentialId = credentialId;
             this.accountId = accountId;
             this.authorityUrl = authorityUrl;
@@ -822,16 +820,16 @@ public class SaturnActivity extends BaseProxyActivity {
                 authorizationData = AuthorizationDataEncoder.encode(
                     walletRequest.paymentRequest,
                     account.requestHashAlgorithm,
+                    account.payeeAuthorityUrl,
                     getRequestingHost(),
                     account.paymentMethod,
-                    account.keyHashAlgorithm,
-                    account.keyHashValue,
                     account.credentialId,
                     account.accountId,
                     privateMessageEncryptionKey,
                     account.dataEncryptionAlgorithm,
                     tempChallenge,
                     account.signatureAlgorithm,
+                    new ClientPlatform("Andro","5.55","HUAligen"),
                     new AsymKeySignerInterface () {
                         @Override
                         public PublicKey getPublicKey() throws IOException {

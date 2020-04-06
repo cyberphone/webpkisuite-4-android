@@ -119,9 +119,8 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                 if (paymentMethod.equals(acceptedPaymentMethod.paymentMethod)) {
                     Account account = new Account(
                             paymentMethod,
+                            acceptedPaymentMethod.payeeAuthorityUrl,
                             cardData.getRequestHashAlgorithm(),
-                            acceptedPaymentMethod.keyHashAlgorithm,
-                            acceptedPaymentMethod.keyHashValue,
                             cardData.getCredentialId(),
                             cardData.getAccountId(),
                             cardData.getAuthorityUrl(),
