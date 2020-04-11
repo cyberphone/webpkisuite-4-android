@@ -54,7 +54,9 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
         paymentRequest = new PaymentRequestDecoder(rd.getObject(PAYMENT_REQUEST_JSON));
         if (paymentRequest.getNonDirectPayment() != null) {
             gasStationPayment = paymentRequest.getNonDirectPayment().getType() ==
-                                     NonDirectPaymentTypes.GAS_STATION;
+                                    NonDirectPaymentTypes.RESERVATION &&
+                                paymentRequest.getNonDirectPayment().getReservationSubType() ==
+                                    ReservationSubTypes.GAS_STATION;
         }
         noMatchingMethodsUrl = rd.getStringConditional(NO_MATCHING_METHODS_URL_JSON);
     }

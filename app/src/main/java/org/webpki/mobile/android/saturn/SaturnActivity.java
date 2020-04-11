@@ -123,7 +123,8 @@ public class SaturnActivity extends BaseProxyActivity {
           "left:10pt;right:10pt;background-color:#ffffea;color:black;padding:15pt 10pt}" +
           "span.pinfix {color:" + BACKGROUND_WH + "}\n" +
           "span.money {font-weight:500;letter-spacing:1pt}\n" +
-          "span.marquee {color:brown;display:inline-block;position:relative;top:1pt;white-space:nowrap;animation-name:rollingtext;" +
+          "span.marquee {color:brown;display:inline-block;position:relative;top:1pt;" +
+              "white-space:nowrap;animation-name:rollingtext;" +
           "animation-duration:10s;animation-timing-function:linear;" +
           "animation-iteration-count:infinite;font-size:10pt}\n" +
           "@keyframes rollingtext {0% {opacity:1;text-indent:0em} 33% {opacity:1;text-indent:0em} " +
@@ -725,13 +726,15 @@ public class SaturnActivity extends BaseProxyActivity {
             html.append("<form onsubmit='return validatePin()'>");
         }
         html.append(
-            "<tr><td id='payeelabel' class='label'>Payee</td><td id='payeefield' class='field' onClick=\"Saturn.toast('Name of merchant')\">")
+            "<tr><td id='payeelabel' class='label'>Payee</td><td id='payeefield' " +
+                "class='field' onClick=\"Saturn.toast('Name of merchant')\">")
           .append(HTMLEncoder.encode(walletRequest.paymentRequest.getPayeeCommonName()))
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
             "<tr><td class='label'>Amount</td><td id='amountfield' " +
             "class='field' onClick=\"Saturn.toast('Amount to pay')\"><span class='money'>")
-          .append(walletRequest.paymentRequest.getCurrency().amountToDisplayString(walletRequest.paymentRequest.getAmount(), true))
+          .append(walletRequest.paymentRequest.getCurrency()
+              .amountToDisplayString(walletRequest.paymentRequest.getAmount(), true))
           .append("</span>")
           .append(walletRequest.gasStationPayment ? "<br>\u200b" : "")
           .append("</td></tr>" +
