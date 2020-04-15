@@ -113,23 +113,21 @@ public class SaturnActivity extends BaseProxyActivity {
           "body {margin:0;font-size:12pt;color:#000000;font-family:Roboto;background-color:white}\n" +
           "td.label {text-align:right;padding:3pt 3pt 3pt 0pt}\n" +
           "td.field {min-width:11em;padding:3pt 6pt 3pt 6pt;border-width:1px;" +
-          "border-style:solid;border-color:" + BORDER_WH + ";background-color:" + BACKGROUND_WH + ";overflow:hidden;" +
+          "border-style:solid;border-color:" + BORDER_WH +
+              ";background-color:" + BACKGROUND_WH + ";overflow:hidden;" +
           "white-space:nowrap;box-sizing:border-box}\n" +
           "div.balance {display:inline-block;padding:2pt 5pt;border-width:1px;" +
-          "border-style:solid;border-color:" + BORDER_WH + ";border-radius:5pt;background-color:" + BACKGROUND_WH + "}\n" +
-          "div.header {font-size:" + HEADER_FONT_SIZE + ";visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
+          "border-style:solid;border-color:" + BORDER_WH +
+              ";border-radius:5pt;background-color:" + BACKGROUND_WH + "}\n" +
+          "div.header {font-size:" + HEADER_FONT_SIZE +
+              ";visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
           "div.message {visibility:hidden;position:absolute;box-shadow:3pt 3pt 3pt lightgrey;" +
           "border-width:1px;border-color:grey;border-style:solid;border-radius:10pt;" +
           "left:10pt;right:10pt;background-color:#ffffea;color:black;padding:15pt 10pt}" +
           "span.pinfix {color:" + BACKGROUND_WH + "}\n" +
           "span.money {font-weight:500;letter-spacing:1pt}\n" +
-          "span.marquee {color:brown;display:inline-block;position:relative;top:1pt;" +
-              "white-space:nowrap;animation-name:rollingtext;" +
-          "animation-duration:10s;animation-timing-function:linear;" +
-          "animation-iteration-count:infinite;font-size:10pt}\n" +
-          "@keyframes rollingtext {0% {opacity:1;text-indent:0em} 33% {opacity:1;text-indent:0em} " +
-          "75% {opacity:1;text-indent:-30em} 76% {opacity:0;text-indent:-30em} 77% {opacity:0;text-indent:15em} " +
-          "78% {opacity:1;text-indent:15em} 100% {opacity:1;text-indent:0em}}\n" +
+          "span.marquee {color:brown;display:inline-block;position:relative;top:1pt" +
+              ";white-space:nowrap;font-size:10pt}\n" +
           "</style>\n" +
           "<script>\n" +
           "'use strict';\n" +
@@ -145,18 +143,15 @@ public class SaturnActivity extends BaseProxyActivity {
           "white-space:nowrap;box-sizing:border-box}\n" +
           "div.balance {font-weight:500;display:inline-block;padding:2pt 5pt;border-width:1pt;" +
           "border-style:solid;border-color:#b0b0b0;border-radius:5pt;background-color:black}\n" +
-          "div.header {font-size:" + HEADER_FONT_SIZE + ";visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
+          "div.header {font-size:" + HEADER_FONT_SIZE +
+              ";visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
           "div.message {visibility:hidden;position:absolute;box-shadow:0pt 0pt 8pt white;" +
           "border-width:1pt;border-color:#162c44;border-style:solid;border-radius:10pt;" +
           "left:10pt;right:10pt;background-color:white;color:black;padding:15pt 10pt}" +
           "span.pinfix {color:black}\n" +
           "span.money {font-weight:500;letter-spacing:1pt}\n" +
-          "span.marquee {color:orange;display:inline-block;position:relative;top:1pt;white-space:nowrap;animation-name:rollingtext;" +
-          "animation-duration:10s;animation-timing-function:linear;" +
-          "animation-iteration-count:infinite;font-size:10pt}\n" +
-          "@keyframes rollingtext {0% {opacity:1;text-indent:0em} 33% {opacity:1;text-indent:0em} " +
-          "75% {opacity:1;text-indent:-30em} 76% {opacity:0;text-indent:-30em} 77% {opacity:0;text-indent:15em} " +
-          "78% {opacity:1;text-indent:15em} 100% {opacity:1;text-indent:0em}}\n" +
+          "span.marquee {color:orange;display:inline-block;position:relative;top:1pt" +
+              ";white-space:nowrap;font-size:10pt}\n" +
           "</style>\n" +
           "<script>\n" +
           "'use strict';\n" +
@@ -619,11 +614,8 @@ public class SaturnActivity extends BaseProxyActivity {
                     "paydata.style.top = (gutter * 5 + card.offsetHeight) + 'px';\n");
             }
         }
-        if (walletRequest.gasStationPayment) {
-            js.append("document.getElementById('amountfield').innerHTML += " +
-                    "\"<span class='marquee'><i>Reserved</i>, actual payment will match fuel quantity</span>\";\n");
-        }
-        js.append(
+        js.append (walletRequest.getOptionalMarqueeCode())
+          .append(
             "card.style.visibility='visible';\n" +
             "paydata.style.visibility='visible';\n" +
             "setArrows();\n" +
@@ -732,11 +724,8 @@ public class SaturnActivity extends BaseProxyActivity {
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
             "<tr><td class='label'>Amount</td><td id='amountfield' " +
-            "class='field' onClick=\"Saturn.toast('Amount to pay')\"><span class='money'>")
-          .append(walletRequest.paymentRequest.getCurrency()
-              .amountToDisplayString(walletRequest.paymentRequest.getAmount(), true))
-          .append("</span>")
-          .append(walletRequest.gasStationPayment ? "<br>\u200b" : "")
+            "class='field' onClick=\"Saturn.toast('Amount to pay')\">")
+          .append(walletRequest.getFormattedAmount())
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
             "<tr><td class='label'>PIN</td>");

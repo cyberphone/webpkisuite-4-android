@@ -37,9 +37,48 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
 
     public String noMatchingMethodsUrl;
 
-    public boolean gasStationPayment;
-
     public PaymentRequestDecoder paymentRequest;
+
+    public String getFormattedAmount() throws IOException {
+        return "<span class='money'>" +
+               paymentRequest.getCurrency().amountToDisplayString(paymentRequest.getAmount(), true) +
+            (paymentRequest.getNonDirectPayment() == null ?
+                "</span>" :
+                "</span><br>\u200b");
+
+    }
+    private String marquee = "<i>Reserved</i>, actual payment will match fuel quantity";
+    public String getOptionalMarqueeCode() {
+        return paymentRequest.getNonDirectPayment() == null ? "" :
+            "document.getElementById('amountfield').innerHTML += \"<span id='marquee1' class='marquee'>" +
+                marquee +
+                "</span><span id='marquee2' class='marquee'>" +
+                marquee +
+                "</span>\";\n" +
+            "var marquee1 = document.getElementById('marquee1');\n" +
+            "var marquee2 = document.getElementById('marquee2');\n" +
+            "var marqueeWidth = marquee1.offsetWidth;\n" +
+            "var startMarquee = 0;\n" +
+            "var delayMarquee = 0;\n" +
+            "var distance = Math.floor(document.getElementById('payeefield').offsetWidth / 3);\n" +
+            "setInterval(function() {\n" +
+            "  marquee1.style.left = startMarquee + 'px';\n" +
+            "  marquee2.style.left = (startMarquee + distance) + 'px';\n" +
+            "  if (delayMarquee++ > 200) {\n" +
+            "    if (--startMarquee + marqueeWidth + distance == 0) {\n" +
+            "      delayMarquee = 0;\n" +
+            "      startMarquee = 0;\n" +
+            "    }\n" +
+            "  }\n" +
+            "}, 10);\n";
+    }
+
+    public String getLocalSuccessMessage() {
+        return paymentRequest.getNonDirectPayment() == null ?
+            "The operation was successful!"
+                                                            :
+            "The operation was successful!<p>Now follow the instructions at the pump.</p>";
+    }
 
     @Override
     protected void readJSONData(JSONObjectReader rd) throws IOException {
@@ -52,12 +91,6 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
             paymentMethodList.add(pmd);
         } while (methodList.hasMore());
         paymentRequest = new PaymentRequestDecoder(rd.getObject(PAYMENT_REQUEST_JSON));
-        if (paymentRequest.getNonDirectPayment() != null) {
-            gasStationPayment = paymentRequest.getNonDirectPayment().getType() ==
-                                    NonDirectPaymentTypes.RESERVATION &&
-                                paymentRequest.getNonDirectPayment().getReservationSubType() ==
-                                    ReservationSubTypes.GAS_STATION;
-        }
         noMatchingMethodsUrl = rd.getStringConditional(NO_MATCHING_METHODS_URL_JSON);
     }
 
