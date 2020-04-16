@@ -67,7 +67,7 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                 // for the fictitious payment schemes this system is supporting but it
                 // might still not match the Payee's list of supported account types.
                 ek = collectPotentialAccount(ek,
-                                             new CardDataDecoder("3", ext.getExtensionData(
+                                             new CardDataDecoder(ext.getExtensionData(
                                                          SecureKeyStore.SUB_TYPE_EXTENSION)),
                                              saturnActivity.walletRequest);
             }

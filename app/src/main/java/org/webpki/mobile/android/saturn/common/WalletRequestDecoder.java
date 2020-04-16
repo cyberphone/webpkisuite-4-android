@@ -39,17 +39,19 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
 
     public PaymentRequestDecoder paymentRequest;
 
+    private NonDirectPaymentDecoder nonDirectPayment;
+
     public String getFormattedAmount() throws IOException {
         return "<span class='money'>" +
                paymentRequest.getCurrency().amountToDisplayString(paymentRequest.getAmount(), true) +
-            (paymentRequest.getNonDirectPayment() == null ?
+            (nonDirectPayment == null ?
                 "</span>" :
                 "</span><br>\u200b");
 
     }
     private String marquee = "<i>Reserved</i>, actual payment will match fuel quantity";
     public String getOptionalMarqueeCode() {
-        return paymentRequest.getNonDirectPayment() == null ? "" :
+        return nonDirectPayment == null ? "" :
             "document.getElementById('amountfield').innerHTML += \"<span id='marquee1' class='marquee'>" +
                 marquee +
                 "</span><span id='marquee2' class='marquee'>" +
@@ -73,11 +75,19 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
             "}, 10);\n";
     }
 
-    public String getLocalSuccessMessage() {
-        return paymentRequest.getNonDirectPayment() == null ?
-            "The operation was successful!"
-                                                            :
-            "The operation was successful!<p>Now follow the instructions at the pump.</p>";
+    public String getLocalSuccessMessage()  {
+        return nonDirectPayment != null &&
+            nonDirectPayment.getType() == NonDirectPaymentTypes.RESERVATION &&
+            nonDirectPayment.getReservationSubType() == ReservationSubTypes.GAS_STATION ?
+            "The operation was successful!<p>Now follow the instructions at the pump.</p>"
+            :
+            "The operation was successful!";
+    }
+
+    public String getAmountLabel() {
+        return nonDirectPayment == null ||
+               nonDirectPayment.getType() == NonDirectPaymentTypes.RESERVATION ?
+                                                                       "Total" : "Confirm";
     }
 
     @Override
@@ -91,6 +101,7 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
             paymentMethodList.add(pmd);
         } while (methodList.hasMore());
         paymentRequest = new PaymentRequestDecoder(rd.getObject(PAYMENT_REQUEST_JSON));
+        nonDirectPayment = paymentRequest.getNonDirectPayment();
         noMatchingMethodsUrl = rd.getStringConditional(NO_MATCHING_METHODS_URL_JSON);
     }
 

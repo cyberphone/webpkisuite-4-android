@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 
+import android.os.Build;
 import android.os.Bundle;
 
 import android.util.DisplayMetrics;
@@ -242,11 +243,11 @@ public class SaturnActivity extends BaseProxyActivity {
         }
     }
 
-    ArrayList<Account> accountCollection = new ArrayList<Account>();
+    ArrayList<Account> accountCollection = new ArrayList<>();
 
     byte[] currentHtml;
 
-    static final HashMap<String,String> noCache = new HashMap();
+    static final HashMap<String,String> noCache = new HashMap<>();
 
     static {
         noCache.put("Cache-Control", "no-store");
@@ -723,7 +724,10 @@ public class SaturnActivity extends BaseProxyActivity {
           .append(HTMLEncoder.encode(walletRequest.paymentRequest.getPayeeCommonName()))
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
-            "<tr><td class='label'>Amount</td><td id='amountfield' " +
+            "<tr><td class='label'>")
+          .append(walletRequest.getAmountLabel())
+          .append(
+            "</td><td id='amountfield' " +
             "class='field' onClick=\"Saturn.toast('Amount to pay')\">")
           .append(walletRequest.getFormattedAmount())
           .append("</td></tr>" +
@@ -821,7 +825,9 @@ public class SaturnActivity extends BaseProxyActivity {
                     account.dataEncryptionAlgorithm,
                     tempChallenge,
                     account.signatureAlgorithm,
-                    new ClientPlatform("Andro","5.55","HUAligen"),
+                    "WebPKI Suite/Saturn",
+                    getPackageManager().getPackageInfo(getPackageName(), 0).versionName,
+                    new ClientPlatform("Android", Build.VERSION.RELEASE, Build.MANUFACTURER),
                     new AsymKeySignerInterface () {
                         @Override
                         public PublicKey getPublicKey() throws IOException {
