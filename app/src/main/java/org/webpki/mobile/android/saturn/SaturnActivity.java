@@ -129,6 +129,7 @@ public class SaturnActivity extends BaseProxyActivity {
           "span.money {font-weight:500;letter-spacing:1pt}\n" +
           "span.marquee {color:brown;display:inline-block;position:relative;top:1pt" +
               ";white-space:nowrap;font-size:10pt}\n" +
+          "span.moneynote {color:darkblue}\n" +
           "</style>\n" +
           "<script>\n" +
           "'use strict';\n" +
@@ -153,6 +154,7 @@ public class SaturnActivity extends BaseProxyActivity {
           "span.money {font-weight:500;letter-spacing:1pt}\n" +
           "span.marquee {color:orange;display:inline-block;position:relative;top:1pt" +
               ";white-space:nowrap;font-size:10pt}\n" +
+          "span.moneynote {color:lightblue}\n" +
           "</style>\n" +
           "<script>\n" +
           "'use strict';\n" +

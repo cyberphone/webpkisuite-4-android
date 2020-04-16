@@ -42,37 +42,61 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
     private NonDirectPaymentDecoder nonDirectPayment;
 
     public String getFormattedAmount() throws IOException {
-        return "<span class='money'>" +
-               paymentRequest.getCurrency().amountToDisplayString(paymentRequest.getAmount(), true) +
-            (nonDirectPayment == null ?
-                "</span>" :
-                "</span><br>\u200b");
-
+        return (nonDirectPayment == null ||
+                nonDirectPayment.getType() == NonDirectPaymentTypes.RESERVATION ?
+            "" : "<span class='moneynote'>Upfront fee:</span> ") +
+            "<span class='money'>" +
+            paymentRequest.getCurrency().amountToDisplayString(paymentRequest.getAmount(), true) +
+            (nonDirectPayment == null ? "</span>" : "</span><br>\u200b");
     }
-    private String marquee = "<i>Reserved</i>, actual payment will match fuel quantity";
+
+    private String getMarquee() {
+        switch (nonDirectPayment.getType()) {
+            case RESERVATION:
+                switch (nonDirectPayment.getReservationSubType()) {
+                    case GAS_STATION:
+                        return  "<i>Reserved</i>, actual payment will match fuel quantity";
+                    case BOOKING:
+                        return  "<i>Booking</i>, see contract for details";
+                    case DEPOSIT:
+                        return  "<i>Deposit</i>, see contract for details";
+                    case CONSUMABLE:
+                        return  "<i>Reserved</i>, actual payment will match quantity";
+                }
+            case RECURRING:
+                return nonDirectPayment.getInterval() == RecurringPaymentIntervals.UNSPECIFIED ?
+                    "Multiple payment grant" : "<i>Subscription</i>, see contract for details";
+        }
+        throw new RuntimeException("Unexpected");
+    }
+
     public String getOptionalMarqueeCode() {
-        return nonDirectPayment == null ? "" :
-            "document.getElementById('amountfield').innerHTML += \"<span id='marquee1' class='marquee'>" +
-                marquee +
-                "</span><span id='marquee2' class='marquee'>" +
-                marquee +
-                "</span>\";\n" +
-            "var marquee1 = document.getElementById('marquee1');\n" +
-            "var marquee2 = document.getElementById('marquee2');\n" +
-            "var marqueeWidth = marquee1.offsetWidth;\n" +
-            "var startMarquee = 0;\n" +
-            "var delayMarquee = 0;\n" +
-            "var distance = Math.floor(document.getElementById('payeefield').offsetWidth / 3);\n" +
-            "setInterval(function() {\n" +
-            "  marquee1.style.left = startMarquee + 'px';\n" +
-            "  marquee2.style.left = (startMarquee + distance) + 'px';\n" +
-            "  if (delayMarquee++ > 200) {\n" +
-            "    if (--startMarquee + marqueeWidth + distance == 0) {\n" +
-            "      delayMarquee = 0;\n" +
-            "      startMarquee = 0;\n" +
-            "    }\n" +
-            "  }\n" +
-            "}, 10);\n";
+        if (nonDirectPayment == null) {
+            return "";
+        }
+        String marquee = getMarquee();
+        return
+         "document.getElementById('amountfield').innerHTML += \"<span id='marquee1' class='marquee'>" +
+            marquee +
+            "</span><span id='marquee2' class='marquee'>" +
+            marquee +
+            "</span>\";\n" +
+        "var marquee1 = document.getElementById('marquee1');\n" +
+        "var marquee2 = document.getElementById('marquee2');\n" +
+        "var marqueeWidth = marquee1.offsetWidth;\n" +
+        "var startMarquee = 0;\n" +
+        "var delayMarquee = 0;\n" +
+        "var distance = Math.floor(document.getElementById('payeefield').offsetWidth / 3);\n" +
+        "setInterval(function() {\n" +
+        "  marquee1.style.left = startMarquee + 'px';\n" +
+        "  marquee2.style.left = (startMarquee + distance) + 'px';\n" +
+        "  if (delayMarquee++ > 200) {\n" +
+        "    if (--startMarquee + marqueeWidth + distance == 0) {\n" +
+        "      delayMarquee = 0;\n" +
+        "      startMarquee = 0;\n" +
+        "    }\n" +
+        "  }\n" +
+        "}, 10);\n";
     }
 
     public String getLocalSuccessMessage()  {
