@@ -204,9 +204,7 @@ public class SaturnActivity extends BaseProxyActivity {
         KeyEncryptionAlgorithms keyEncryptionAlgorithm;
         PublicKey encryptionKey;
         String optionalKeyId;
-        int optionalBalanceKeyHandle;
-
-        BigDecimal tempBalanceFix;
+        Integer optionalBalanceKeyHandle;
 
         Account(// The core...
                 String paymentMethod,
@@ -225,8 +223,7 @@ public class SaturnActivity extends BaseProxyActivity {
                 DataEncryptionAlgorithms dataEncryptionAlgorithm,
                 PublicKey encryptionKey,
                 String optionalKeyId,
-//TODO next release?
-                BigDecimal tempBalanceFix) {
+                Integer optionalBalanceKeyHandle) {
             this.paymentMethod = paymentMethod;
             this.payeeAuthorityUrl = payeeAuthorityUrl;
             this.requestHashAlgorithm = requestHashAlgorithm;
@@ -240,8 +237,7 @@ public class SaturnActivity extends BaseProxyActivity {
             this.dataEncryptionAlgorithm = dataEncryptionAlgorithm;
             this.encryptionKey = encryptionKey;
             this.optionalKeyId = optionalKeyId;
-
-            this.tempBalanceFix = tempBalanceFix;
+            this.optionalBalanceKeyHandle = optionalBalanceKeyHandle;
         }
     }
 
@@ -452,8 +448,9 @@ public class SaturnActivity extends BaseProxyActivity {
 
     String getBalance(Account account) {
         try {
-            return walletRequest.paymentRequest.getCurrency()
-                    .amountToDisplayString(account.tempBalanceFix, true);
+            return account.optionalBalanceKeyHandle == null ? "N/A" :
+                walletRequest.paymentRequest.getCurrency()
+                    .amountToDisplayString(new BigDecimal(3000), true);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -746,7 +743,8 @@ public class SaturnActivity extends BaseProxyActivity {
                 .append(ThemeHolder.getKeyBoard())
                 .append("</div>");
         } else {
-            html.append("<td><input id='alphanum' style='font-size:inherit;width:100%' autofocus type='password' size='12' maxlength='16' value='")
+            html.append("<td><input id='alphanum' style='font-size:inherit;width:100%' " +
+                        "autofocus type='password' size='12' maxlength='16' value='")
                 .append(HTMLEncoder.encode(pin))
                 .append("'></td></tr>" +
                         "<tr><td></td><td style='padding-top:12pt;text-align:center'>" +
@@ -770,7 +768,7 @@ public class SaturnActivity extends BaseProxyActivity {
     @JavascriptInterface
     public boolean getChallengeJSON(String json) {
         try {
-            ArrayList<UserResponseItem> temp = new ArrayList<UserResponseItem>();
+            ArrayList<UserResponseItem> temp = new ArrayList<>();
             JSONArrayReader challengeArray = JSONParser.parse(json).getJSONArrayReader();
              do {
                  JSONObjectReader challengeObject = challengeArray.getObject();

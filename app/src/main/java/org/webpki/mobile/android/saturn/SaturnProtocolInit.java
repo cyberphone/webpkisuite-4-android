@@ -20,6 +20,8 @@ import java.io.IOException;
 
 import android.os.AsyncTask;
 
+import org.webpki.crypto.HashAlgorithms;
+
 import org.webpki.keygen2.KeyGen2URIs;
 
 import org.webpki.mobile.android.saturn.SaturnActivity.Account;
@@ -34,6 +36,8 @@ import org.webpki.sks.EnumeratedKey;
 import org.webpki.sks.Extension;
 import org.webpki.sks.KeyAttributes;
 import org.webpki.sks.SecureKeyStore;
+
+import org.webpki.util.ArrayUtil;
 
 public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
     private SaturnActivity saturnActivity;
@@ -109,7 +113,7 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
         }
     }
 
-    EnumeratedKey collectPotentialAccount(EnumeratedKey foundKey,
+    EnumeratedKey collectPotentialAccount(EnumeratedKey signatureKey,
                                           CardDataDecoder cardData,
                                           WalletRequestDecoder wrd) throws IOException {
         if (cardData.isRecognized()) {
@@ -117,6 +121,22 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
             for (WalletRequestDecoder.PaymentMethodDescriptor acceptedPaymentMethod
                                        : wrd.paymentMethodList) {
                 if (paymentMethod.equals(acceptedPaymentMethod.paymentMethod)) {
+                    byte[] hash = cardData.getOptionalAccountStatusKeyHash();
+                    Integer balanceKeyHandle = null;
+                    if (hash != null) {
+                        EnumeratedKey ek = (EnumeratedKey)signatureKey.clone();
+                        while ((ek = saturnActivity.sks.enumerateKeys(ek.getKeyHandle())) != null) {
+                            balanceKeyHandle = ek.getKeyHandle();
+                            if (ArrayUtil.compare(hash, HashAlgorithms.SHA256.digest(
+                                saturnActivity.sks.getKeyAttributes(balanceKeyHandle)
+                                    .getCertificatePath()[0].getPublicKey().getEncoded()))) {
+                                break;
+                            }
+                        }
+                        if (balanceKeyHandle == null) {
+                            throw new IOException("Missing balanceKey h=" + signatureKey.getKeyHandle());
+                        }
+                    }
                     Account account = new Account(
                             paymentMethod,
                             acceptedPaymentMethod.payeeAuthorityUrl,
@@ -126,23 +146,22 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                             cardData.getAuthorityUrl(),
                             // Card visuals
                             saturnActivity.sks.getExtension(
-                                    foundKey.getKeyHandle(),
+                                    signatureKey.getKeyHandle(),
                                     KeyGen2URIs.LOGOTYPES.CARD)
                                         .getExtensionData(SecureKeyStore.SUB_TYPE_LOGOTYPE),
                             // Signature
-                            foundKey.getKeyHandle(),
+                            signatureKey.getKeyHandle(),
                             cardData.getSignatureAlgorithm(),
                             // Encryption
                             cardData.getKeyEncryptionAlgorithm(),
                             cardData.getDataEncryptionAlgorithm(),
                             cardData.getEncryptionKey(),
                             cardData.getOptionalKeyId(),
-                            cardData.getTempBalanceFix()
+                            balanceKeyHandle
                     );
-                    byte[] hash = cardData.getOptionalAccountStatusKeyHash();
 
                     // We found an applicable account!
-                    if (foundKey.getKeyHandle() == saturnActivity.lastKeyId) {
+                    if (signatureKey.getKeyHandle() == saturnActivity.lastKeyId) {
                         // Is it our favorite account?
                         saturnActivity.selectedCard = saturnActivity.accountCollection.size();
                     }
@@ -151,6 +170,6 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                 }
             }
         }
-        return foundKey;
+        return signatureKey;
     }
 }
