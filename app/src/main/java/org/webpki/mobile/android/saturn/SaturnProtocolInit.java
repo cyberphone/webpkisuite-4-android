@@ -143,6 +143,7 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                             cardData.getRequestHashAlgorithm(),
                             cardData.getCredentialId(),
                             cardData.getAccountId(),
+                            cardData.getCurrency(),
                             cardData.getAuthorityUrl(),
                             // Card visuals
                             saturnActivity.sks.getExtension(

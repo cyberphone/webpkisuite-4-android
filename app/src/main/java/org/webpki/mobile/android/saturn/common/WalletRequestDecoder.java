@@ -42,9 +42,9 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
 
     private NonDirectPaymentDecoder nonDirectPayment;
 
-    public String getFormattedMoney(BigDecimal amount) throws IOException {
+    public String getFormattedMoney(BigDecimal amount, Currencies currency) throws IOException {
         return "<span class='money'>" +
-            paymentRequest.getCurrency().amountToDisplayString(amount, true) +
+            currency.amountToDisplayString(amount, true) +
             "</span>";
     }
 
@@ -53,7 +53,7 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
                 nonDirectPayment.getType() == NonDirectPaymentTypes.RESERVATION ?
             "" : "<span class='moneynote'>Upfront fee:</span> ") +
             "<span class='money'>" +
-            getFormattedMoney(paymentRequest.getAmount()) +
+            getFormattedMoney(paymentRequest.getAmount(), paymentRequest.getCurrency()) +
             (nonDirectPayment == null ? "" : "<br>\u200b");
     }
 

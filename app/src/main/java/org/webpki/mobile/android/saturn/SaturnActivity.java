@@ -82,6 +82,7 @@ import org.webpki.mobile.android.proxy.BaseProxyActivity;
 
 import org.webpki.mobile.android.saturn.common.AuthorizationDataEncoder;
 import org.webpki.mobile.android.saturn.common.ClientPlatform;
+import org.webpki.mobile.android.saturn.common.Currencies;
 import org.webpki.mobile.android.saturn.common.UserResponseItem;
 import org.webpki.mobile.android.saturn.common.WalletRequestDecoder;
 
@@ -211,6 +212,7 @@ public class SaturnActivity extends BaseProxyActivity {
         HashAlgorithms requestHashAlgorithm;
         String credentialId;
         String accountId;
+        Currencies currency;
         String authorityUrl;
         byte[] cardImage;
         AsymSignatureAlgorithms signatureAlgorithm;
@@ -227,6 +229,7 @@ public class SaturnActivity extends BaseProxyActivity {
                 HashAlgorithms requestHashAlgorithm,
                 String credentialId,
                 String accountId,
+                Currencies currency,
                 String authorityUrl,
                 // Card visuals
                 byte[] cardImage,
@@ -244,6 +247,7 @@ public class SaturnActivity extends BaseProxyActivity {
             this.requestHashAlgorithm = requestHashAlgorithm;
             this.credentialId = credentialId;
             this.accountId = accountId;
+            this.currency = currency;
             this.authorityUrl = authorityUrl;
             this.cardImage = cardImage;
             this.signatureKeyHandle = signatureKeyHandle;
@@ -466,7 +470,7 @@ public class SaturnActivity extends BaseProxyActivity {
         try {
             return "Balance:&nbsp;" + (account.optionalBalanceKeyHandle == null ?
                 SPINNER_FIRST + "yellow" + SPINNER_LAST :
-                walletRequest.getFormattedMoney(new BigDecimal(3000)));
+                walletRequest.getFormattedMoney(new BigDecimal(3000), account.currency));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
