@@ -18,6 +18,7 @@ package org.webpki.mobile.android.saturn.common;
 
 import java.io.IOException;
 
+import java.math.BigDecimal;
 import java.util.Vector;
 
 import org.webpki.json.JSONArrayReader;
@@ -41,13 +42,19 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
 
     private NonDirectPaymentDecoder nonDirectPayment;
 
-    public String getFormattedAmount() throws IOException {
+    public String getFormattedMoney(BigDecimal amount) throws IOException {
+        return "<span class='money'>" +
+            paymentRequest.getCurrency().amountToDisplayString(amount, true) +
+            "</span>";
+    }
+
+    public String getFormattedTotal() throws IOException {
         return (nonDirectPayment == null ||
                 nonDirectPayment.getType() == NonDirectPaymentTypes.RESERVATION ?
             "" : "<span class='moneynote'>Upfront fee:</span> ") +
             "<span class='money'>" +
-            paymentRequest.getCurrency().amountToDisplayString(paymentRequest.getAmount(), true) +
-            (nonDirectPayment == null ? "</span>" : "</span><br>\u200b");
+            getFormattedMoney(paymentRequest.getAmount()) +
+            (nonDirectPayment == null ? "" : "<br>\u200b");
     }
 
     private String getMarquee() {
