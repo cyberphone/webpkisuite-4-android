@@ -73,8 +73,8 @@ public class PaymentActivity extends Activity {
             bad("Missing 'data'");
             return;
         }
-        // {"url":"the url we are looking for"}
-        final Uri proxyUrl = Uri.parse(jsonString.substring(8, jsonString.length() - 2));
+        // ["the url we are looking for"]
+        final Uri proxyUrl = Uri.parse(jsonString.substring(2, jsonString.length() - 2));
         String topLevelOrigin = extras.getString("topLevelOrigin");
         if (topLevelOrigin == null ||
             !topLevelOrigin.equals(extras.getString("paymentRequestOrigin"))) {
