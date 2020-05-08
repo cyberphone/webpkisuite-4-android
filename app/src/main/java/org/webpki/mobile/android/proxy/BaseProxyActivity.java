@@ -61,6 +61,7 @@ import org.webpki.net.MobileProxyParameters;
 
 import org.webpki.mobile.android.sks.AndroidSKSImplementation;
 import org.webpki.mobile.android.sks.HardwareKeyStore;
+import org.webpki.util.ArrayUtil;
 
 /**
  * Class for taking care of "webpkiproxy://" JSON protocol handlers
@@ -393,6 +394,10 @@ public abstract class BaseProxyActivity extends Activity {
         httpsWrapper.makeGetRequest(boot_url);
         initialRequestObject = httpsWrapper.getData();
         serverCertificate = httpsWrapper.getServerCertificates()[0];
+        byte[] eeCert = intent.getByteArrayExtra("eeCert");
+        if (eeCert != null && !ArrayUtil.compare(eeCert, serverCertificate.getEncoded())) {
+            throw new IOException("Certificate mismatch");
+        }
         checkContentType();
         httpsWrapper.setFollowRedirects(false);
         httpsWrapper.setRequireSuccess(false);

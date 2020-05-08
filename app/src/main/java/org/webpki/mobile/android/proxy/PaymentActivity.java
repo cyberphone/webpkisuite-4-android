@@ -68,12 +68,13 @@ public class PaymentActivity extends Activity {
             bad("Missing methodData");
             return;
         }
-        String tempUrl = methodData.getString(methodNames.get(0));
-        if (tempUrl == null) {
+        String jsonString = methodData.getString(methodNames.get(0));
+        if (jsonString == null) {
             bad("Missing 'data'");
             return;
         }
-        final Uri url = Uri.parse(tempUrl.substring(8, tempUrl.length() - 2));
+        // {"url":"the url we are looking for"}
+        final Uri proxyUrl = Uri.parse(jsonString.substring(8, jsonString.length() - 2));
         String topLevelOrigin = extras.getString("topLevelOrigin");
         if (topLevelOrigin == null ||
             !topLevelOrigin.equals(extras.getString("paymentRequestOrigin"))) {
@@ -84,38 +85,27 @@ public class PaymentActivity extends Activity {
         if (i > 0) {
             topLevelOrigin = topLevelOrigin.substring(0, i);
         }
-        if (!topLevelOrigin.equals(Uri.parse(url.getQueryParameter("url")).getHost())) {
+        if (!topLevelOrigin.equals(Uri.parse(proxyUrl.getQueryParameter("url")).getHost())) {
             bad("url host mismatch");
             return;
         }
-        Parcelable[] topLevelCertificateChain = extras.getParcelableArray("topLevelCertificateChain");
-        if (topLevelCertificateChain == null) {
-            bad("missing certchain");
+        Parcelable[] topLevelCertChain = extras.getParcelableArray("topLevelCertificateChain");
+        if (topLevelCertChain == null) {
+            bad("missing certChain");
             return;
         }
-        byte[] eeCertificateBytes = ((Bundle)topLevelCertificateChain[0]).getByteArray("certificate");
-        if (eeCertificateBytes == null) {
-            bad("missing certificate");
+        final byte[] eeCert = ((Bundle)topLevelCertChain[0]).getByteArray("certificate");
+        if (eeCert == null) {
+            bad("missing eeCert");
             return;
         }
-        final X509Certificate eeCertificate;
-        try {
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            eeCertificate = (X509Certificate)
-                    cf.generateCertificate(new ByteArrayInputStream(eeCertificateBytes));
-        } catch (GeneralSecurityException e) {
-            bad(e.getMessage());
-            return;
-        }
-        Log.i("KKK", url.getHost());
-        Log.i("KKK", eeCertificate.toString());
-        final Class<? extends BaseProxyActivity> executor = BaseProxyActivity.getExecutor(url);
+        final Class<? extends BaseProxyActivity> executor = BaseProxyActivity.getExecutor(proxyUrl);
         mWaitHandler.post(new Runnable() {
-
             @Override
             public void run() {
                 Intent intent = new Intent(getApplicationContext(), executor);
-                intent.setData(url);
+                intent.setData(proxyUrl);
+                intent.putExtra("eeCert", eeCert);
                 startActivityForResult(intent, 1);
             }
         });
