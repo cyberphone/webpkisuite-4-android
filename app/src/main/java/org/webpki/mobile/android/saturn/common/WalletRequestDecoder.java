@@ -42,10 +42,11 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
 
     private NonDirectPaymentDecoder nonDirectPayment;
 
-    public String getFormattedMoney(BigDecimal amount, Currencies currency) throws IOException {
+    public static String getFormattedMoney(BigDecimal amount, Currencies currency)
+    throws IOException {
         return "<span class='money'>" +
-            currency.amountToDisplayString(amount, true) +
-            "</span>";
+               currency.amountToDisplayString(amount, true) +
+               "</span>";
     }
 
     public String getFormattedTotal() throws IOException {
