@@ -470,7 +470,7 @@ public class SaturnActivity extends BaseProxyActivity {
         try {
             return "Balance:&nbsp;" + (account.optionalBalanceKeyHandle == null ?
                 SPINNER_FIRST + "yellow" + SPINNER_LAST :
-                walletRequest.getFormattedMoney(new BigDecimal(3000), account.currency));
+                WalletRequestDecoder.getFormattedMoney(new BigDecimal(3000), account.currency));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
