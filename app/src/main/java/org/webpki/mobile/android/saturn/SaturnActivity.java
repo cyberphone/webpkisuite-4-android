@@ -125,8 +125,8 @@ public class SaturnActivity extends BaseProxyActivity {
           "<!DOCTYPE html><html><head><title>Saturn</title><style type='text/css'>\n" +
           "body {margin:0;font-size:12pt;color:#000000;font-family:Roboto;background-color:white}\n" +
           "td.label {text-align:right;padding:3pt 3pt 3pt 0pt}\n" +
-          "td.field {min-width:11em;padding:3pt 6pt 3pt 6pt;border-width:1px;" +
-          "border-style:solid;border-color:" + BORDER_WH +
+          "td.field {min-width:11em;padding:3pt 6pt 3pt 6pt;border-width:1px" +
+              ";border-style:solid;border-color:" + BORDER_WH +
               ";background-color:" + BACKGROUND_WH + ";overflow:hidden;" +
           "white-space:nowrap;box-sizing:border-box}\n" +
           "div.balance {margin-top:4pt;padding:2pt 5pt;border-width:1px" +
@@ -135,9 +135,9 @@ public class SaturnActivity extends BaseProxyActivity {
               ";display:flex;align-items:center}\n" +
           "div.header {font-size:" + HEADER_FONT_SIZE +
               ";visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
-          "div.message {visibility:hidden;position:absolute;box-shadow:3pt 3pt 3pt lightgrey;" +
-          "border-width:1px;border-color:grey;border-style:solid;border-radius:10pt;" +
-          "left:10pt;right:10pt;background-color:#ffffea;color:black;padding:15pt 10pt}" +
+          "div.message {visibility:hidden;position:absolute;box-shadow:3pt 3pt 3pt lightgrey" +
+              ";border-width:1px;border-color:grey;border-style:solid;border-radius:10pt" +
+              ";left:10pt;right:10pt;background-color:#ffffea;color:black;padding:15pt 10pt}" +
           "span.pinfix {color:" + BACKGROUND_WH + "}\n" +
           "span.money {font-weight:500;letter-spacing:1pt}\n" +
           "span.marquee {color:brown;display:inline-block;position:relative;top:1pt" +
@@ -151,20 +151,21 @@ public class SaturnActivity extends BaseProxyActivity {
 
     static final String HTML_HEADER_SPACE =
           "<!DOCTYPE html><html><head><title>Saturn</title><style type='text/css'>\n" +
-          "body {margin:0;font-size:12pt;color:white;font-family:Roboto;" +
-          "background:linear-gradient(to bottom right, #162c44, #6d7a8e, #162c44);background-attachment:fixed}\n" +
+          "body {margin:0;font-size:12pt;color:white;font-family:Roboto" +
+               ";background:linear-gradient(to bottom right, #162c44, #6d7a8e, #162c44)" +
+               ";background-attachment:fixed}\n" +
           "td.label {font-weight:500;text-align:right;padding:3pt 3pt 3pt 0pt}\n" +
-          "td.field {font-weight:500;min-width:11em;padding:3pt 6pt 3pt 6pt;border-width:1pt;" +
-          "border-style:solid;border-color:#b0b0b0;background-color:black;overflow:hidden;" +
+          "td.field {font-weight:500;min-width:11em;padding:3pt 6pt 3pt 6pt;border-width:1pt" +
+               ";border-style:solid;border-color:#b0b0b0;background-color:black;overflow:hidden;" +
           "white-space:nowrap;box-sizing:border-box}\n" +
           "div.balance {font-weight:500;margin-top:4pt;padding:2pt 5pt;border-width:1pt" +
               ";border-style:solid;border-color:#b0b0b0;border-radius:5pt" +
               ";background-color:black;display:flex;align-items:center}\n" +
           "div.header {font-size:" + HEADER_FONT_SIZE +
               ";visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
-          "div.message {visibility:hidden;position:absolute;box-shadow:0pt 0pt 8pt white;" +
-          "border-width:1pt;border-color:#162c44;border-style:solid;border-radius:10pt;" +
-          "left:10pt;right:10pt;background-color:white;color:black;padding:15pt 10pt}" +
+          "div.message {visibility:hidden;position:absolute;box-shadow:0pt 0pt 8pt white" +
+              ";border-width:1pt;border-color:#162c44;border-style:solid;border-radius:10pt" +
+              ";left:10pt;right:10pt;background-color:white;color:black;padding:15pt 10pt}" +
           "span.pinfix {color:black}\n" +
           "span.money {font-weight:500;letter-spacing:1pt}\n" +
           "span.marquee {color:orange;display:inline-block;position:relative;top:1pt" +
