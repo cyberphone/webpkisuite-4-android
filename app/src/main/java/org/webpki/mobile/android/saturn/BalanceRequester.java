@@ -17,31 +17,34 @@
 package org.webpki.mobile.android.saturn;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
+import org.webpki.json.JSONParser;
 import org.webpki.net.HTTPSWrapper;
 
-public class QRCancel extends AsyncTask<Void, String, Boolean> {
+public class BalanceRequester extends AsyncTask<Void, String, Boolean> {
     private SaturnActivity saturnActivity;
-    private String cancelUrl;
+    private String providerUrl;
 
-    public QRCancel (SaturnActivity saturnActivity, String cancelUrl) {
+    public BalanceRequester (SaturnActivity saturnActivity, String providerUrl) {
         this.saturnActivity = saturnActivity;
-        this.cancelUrl = cancelUrl;
+        this.providerUrl = providerUrl;
     }
 
     @Override
     protected Boolean doInBackground (Void... params) {
         try {
-            new HTTPSWrapper().makeGetRequest(cancelUrl);
+            HTTPSWrapper wrapper = new HTTPSWrapper();
+            wrapper.makeGetRequest(providerUrl);
+            JSONParser.parse(wrapper.getData());
         } catch (Exception e) {
+            return false;
         }
         return true;
     }
 
     @Override
     protected void onPostExecute(Boolean success) {
-        saturnActivity.done = true;
-        saturnActivity.simpleDisplay("The operation was cancelled");
-        saturnActivity.closeProxy();
+        Log.i("KLM", success.toString());
     }
 }
