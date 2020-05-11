@@ -129,7 +129,7 @@ public class SaturnActivity extends BaseProxyActivity {
           "border-style:solid;border-color:" + BORDER_WH +
               ";background-color:" + BACKGROUND_WH + ";overflow:hidden;" +
           "white-space:nowrap;box-sizing:border-box}\n" +
-          "div.balance {padding:2pt 5pt;border-width:1px" +
+          "div.balance {margin-top:4pt;padding:2pt 5pt;border-width:1px" +
               ";border-style:solid;border-color:" + BORDER_WH +
               ";border-radius:5pt;background-color:" + BACKGROUND_WH +
               ";display:flex;align-items:center}\n" +
@@ -157,7 +157,7 @@ public class SaturnActivity extends BaseProxyActivity {
           "td.field {font-weight:500;min-width:11em;padding:3pt 6pt 3pt 6pt;border-width:1pt;" +
           "border-style:solid;border-color:#b0b0b0;background-color:black;overflow:hidden;" +
           "white-space:nowrap;box-sizing:border-box}\n" +
-          "div.balance {font-weight:500;padding:2pt 5pt;border-width:1pt" +
+          "div.balance {font-weight:500;margin-top:4pt;padding:2pt 5pt;border-width:1pt" +
               ";border-style:solid;border-color:#b0b0b0;border-radius:5pt" +
               ";background-color:black;display:flex;align-items:center}\n" +
           "div.header {font-size:" + HEADER_FONT_SIZE +
@@ -488,7 +488,7 @@ public class SaturnActivity extends BaseProxyActivity {
             .append("' stroke-width='10'/>" +
                     "</svg></td><td><svg style='width:")
             .append((width * 100) / factor)
-            .append("px;cursor:pointer' " +
+            .append("px;cursor:pointer;vertical-align:middle' " +
                     "viewBox='0 0 320 200' xmlns='http://www.w3.org/2000/svg'>" +
                     "<defs>" +
                     "<clipPath id='cardClip'>" +
