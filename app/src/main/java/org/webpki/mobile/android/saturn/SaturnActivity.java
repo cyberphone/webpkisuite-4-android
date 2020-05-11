@@ -453,7 +453,7 @@ public class SaturnActivity extends BaseProxyActivity {
                             .openRawResource(whiteTheme ?
                                  R.raw.saturnlogo_white : R.raw.saturnlogo_space)),"utf-8").substring(4))
                     .toString();
-           simpleDisplay("Initializing...");
+            simpleDisplay("Initializing...");
         } catch (Exception e) {
             unconditionalAbort("Saturn didn't initialize!");
             return;
@@ -488,67 +488,60 @@ public class SaturnActivity extends BaseProxyActivity {
             .append("' stroke-width='10'/>" +
                     "</svg></td><td><svg style='width:")
             .append((width * 100) / factor)
-            .append("px' ")
+            .append("px;cursor:pointer' " +
+                    "viewBox='0 0 320 200' xmlns='http://www.w3.org/2000/svg'>" +
+                    "<defs>" +
+                    "<clipPath id='cardClip'>" +
+                    "<rect rx='15' ry='15' width='300' height='180' x='0' y='0'/>" +
+                    "</clipPath>")
             .append(whiteTheme ?
-                    "viewBox='0 0 318 190' xmlns='http://www.w3.org/2000/svg'>" +
-                    "<defs>" +
-                    " <clipPath id='cardClip'>" +
-                    "  <rect rx='15' ry='15' height='180' width='300' y='0' x='0'/>" +
-                    " </clipPath>" +
-                    " <filter id='dropShaddow'>" +
-                    "  <feGaussianBlur stdDeviation='2.4'/>" +
-                    " </filter>" +
-                    " <linearGradient y1='0' x1='0' y2='1' x2='1' id='innerCardBorder'>" +
-                    "  <stop offset='0' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
-                    "  <stop offset='0.48' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
-                    "  <stop offset='0.52' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
-                    "  <stop offset='1' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
-                    " </linearGradient>" +
-                    " <linearGradient y1='0' x1='0' y2='1' x2='1' id='outerCardBorder'>" +
-                    "  <stop offset='0' stop-color='#b0b0b0'/>" +
-                    "  <stop offset='0.48' stop-color='#b0b0b0'/>" +
-                    "  <stop offset='0.52' stop-color='#808080'/>" +
-                    "  <stop offset='1' stop-color='#808080'/>" +
-                    " </linearGradient>" +
+                    "<filter id='dropShaddow'>" +
+                    "<feGaussianBlur stdDeviation='2.4'/>" +
+                    "</filter>" +
+                    "<linearGradient y1='0' x1='0' y2='1' x2='1' id='innerCardBorder'>" +
+                    "<stop offset='0' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
+                    "<stop offset='0.48' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
+                    "<stop offset='0.52' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
+                    "<stop offset='1' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
+                    "</linearGradient>" +
+                    "<linearGradient y1='0' x1='0' y2='1' x2='1' id='outerCardBorder'>" +
+                    "<stop offset='0' stop-color='#b0b0b0'/>" +
+                    "<stop offset='0.48' stop-color='#b0b0b0'/>" +
+                    "<stop offset='0.52' stop-color='#808080'/>" +
+                    "<stop offset='1' stop-color='#808080'/>" +
+                    "</linearGradient>" +
                     "</defs>" +
                     "<rect filter='url(#dropShaddow)' rx='16' ry='16' " +
-                    "height='182' width='302' y='4' x='12' fill='#c0c0c0'/>" +
-                    "<svg x='9' y='1' clip-path='url(#cardClip)'>"
-                                       :
-                    "viewBox='0 0 318 196' xmlns='http://www.w3.org/2000/svg'>" +
-                    "<defs>" +
-                    " <clipPath id='cardClip'>" +
-                    "  <rect rx='15' ry='15' height='178' width='298' y='0' x='0'/>" +
-                    " </clipPath>" +
-                    " <linearGradient y1='0' x1='0' y2='1' x2='1' id='innerCardBorder'>" +
-                    "  <stop offset='0' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
-                    "  <stop offset='0.48' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
-                    "  <stop offset='0.52' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
-                    "  <stop offset='1' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
-                    " </linearGradient>" +
-                    " <filter id='dropShaddow'>" +
-                    "  <feGaussianBlur stdDeviation='3.5'/>" +
-                    " </filter>" +
+                    "width='302' height='182' x='12' y='12' fill='#c0c0c0'/>"
+                                        :
+                    "<linearGradient y1='0' x1='0' y2='1' x2='1' id='innerCardBorder'>" +
+                    "<stop offset='0' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
+                    "<stop offset='0.48' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
+                    "<stop offset='0.52' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
+                    "<stop offset='1' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
+                    "</linearGradient>" +
+                    "<filter id='dropShaddow'>" +
+                    "<feGaussianBlur stdDeviation='3.5'/>" +
+                    "</filter>" +
                     "</defs>" +
                     "<rect filter='url(#dropShaddow)' rx='16' ry='16' " +
-                    "height='181' width='303' y='8.5' x='7.5' fill='white'/>" +
-                    "<svg x='10' y='10' clip-path='url(#cardClip)'>")
-            .append("<image id='cardImage' width='300' height='180' " +
-                    "style='opacity:1;cursor:pointer' href='/card/")
+                    "width='305' height='184' x='7' y='8' fill='white'/>")
+            .append("<svg x='10' y='10' clip-path='url(#cardClip)'>" +
+                    "<image id='cardImage' width='300' height='180' href='/card/")
             .append(selectedCard)
             .append("'/></svg>")
 
             .append(whiteTheme ?
-                    "<rect fill='none' x='10' y='2' width='298' height='178' " +
+                    "<rect fill='none' x='11' y='11' width='298' height='178' " +
                     "rx='14.7' ry='14.7' stroke='url(#innerCardBorder)' stroke-width='2.7'/>" +
-                    "<rect fill='none' x='8.5' y='0.5' width='301' height='181' " +
+                    "<rect fill='none' x='9.5' y='9.5' width='301' height='181' " +
                     "rx='16' ry='16' stroke='url(#outerCardBorder)'/>"
                              :
-                    "<rect fill='none' x='12' y='12' width='294' height='174' " +
-                    "rx='15' ry='15' stroke='url(#innerCardBorder)' stroke-width='2'/>" +
-                    "<rect fill='none' x='9.5' y='9.5' width='299' height='179' " +
+                    "<rect fill='none' x='11' y='11' width='298' height='178' " +
+                    "rx='14.75' ry='14.75' stroke='url(#innerCardBorder)' stroke-width='2'/>" +
+                    "<rect fill='none' x='8.5' y='8.5' width='303' height='183' " +
                     "rx='17' ry='17' stroke='#e0e0e0'/>" +
-                    "<rect fill='none' x='10.5' y='10.5' width='297' height='177' " +
+                    "<rect fill='none' x='9.5' y='9.5' width='301' height='181' " +
                     "rx='16' ry='16' stroke='#162c44'/>")
 
             .append("</svg></td><td id='rightArrow' style='visibility:hidden'>" +
