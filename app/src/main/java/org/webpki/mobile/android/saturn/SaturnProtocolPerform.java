@@ -55,7 +55,7 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
             // Since user authorizations are pushed through the Payees they must be encrypted in order
             // to not leak user information to Payees.  Only the proper Payment Provider can decrypt
             // and process user authorizations.
-            SaturnActivity.Account account = saturnActivity.getSelectedCard();
+            Account account = saturnActivity.getSelectedCard();
             if (!saturnActivity.postJSONData(
                 saturnActivity.getTransactionURL(),
                 new PayerAuthorizationEncoder(saturnActivity.authorizationData,

@@ -17,26 +17,75 @@
 package org.webpki.mobile.android.saturn;
 
 import android.os.AsyncTask;
+
 import android.util.Log;
 
+import org.webpki.crypto.AlgorithmPreferences;
+import org.webpki.crypto.AsymKeySignerInterface;
+import org.webpki.crypto.AsymSignatureAlgorithms;
+
+import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
+
+import org.webpki.mobile.android.saturn.common.BalanceRequestEncoder;
+import org.webpki.mobile.android.saturn.common.BalanceResponseDecoder;
+import org.webpki.mobile.android.saturn.common.BaseProperties;
+import org.webpki.mobile.android.saturn.common.KnownExtensions;
+
 import org.webpki.net.HTTPSWrapper;
+
+import java.io.IOException;
+import java.security.PublicKey;
+import java.util.GregorianCalendar;
 
 public class BalanceRequester extends AsyncTask<Void, String, Boolean> {
     private SaturnActivity saturnActivity;
-    private String providerUrl;
+    private Account account;
+    String balance;
 
-    public BalanceRequester (SaturnActivity saturnActivity, String providerUrl) {
+    public BalanceRequester (SaturnActivity saturnActivity, Account account) {
         this.saturnActivity = saturnActivity;
-        this.providerUrl = providerUrl;
+        this.account = account;
     }
 
     @Override
     protected Boolean doInBackground (Void... params) {
         try {
             HTTPSWrapper wrapper = new HTTPSWrapper();
-            wrapper.makeGetRequest(providerUrl);
-            JSONParser.parse(wrapper.getData());
+            wrapper.setRequireSuccess(true);
+            wrapper.setTimeout(60000);
+            wrapper.makeGetRequest(account.authorityUrl);
+            String balanceUrl = JSONParser.parse(wrapper.getData())
+                .getObject(BaseProperties.EXTENSIONS_JSON)
+                    .getString(KnownExtensions.BALANCE_REQUEST);
+            wrapper.setHeader("Content-Type", BaseProperties.JSON_CONTENT_TYPE);
+            byte[] json = BalanceRequestEncoder.encode(balanceUrl,
+                                                       account.currency,
+                                                       account.accountId,
+                                                       account.credentialId,
+                                                       new GregorianCalendar(),
+                                                       "Saturn",
+                                                       "the best",
+                new AsymKeySignerInterface() {
+                    @Override
+                    public PublicKey getPublicKey() throws IOException {
+                        return saturnActivity.sks.getKeyAttributes(
+                            account.optionalBalanceKeyHandle).getCertificatePath()[0].getPublicKey();
+                    }
+                    @Override
+                    public byte[] signData(byte[] data, AsymSignatureAlgorithms algorithm)
+                    throws IOException {
+                        return saturnActivity.sks.signHashedData(
+                            account.optionalBalanceKeyHandle,
+                            algorithm.getAlgorithmId (AlgorithmPreferences.SKS),
+                            null,
+                            false,
+                            null,
+                            algorithm.getDigestAlgorithm().digest(data));
+                    }
+                }).serializeToBytes(JSONOutputFormats.NORMALIZED);
+            wrapper.makePostRequest(balanceUrl, json);
+            balance = new BalanceResponseDecoder(JSONParser.parse(wrapper.getData())).getAmount().toPlainString();
         } catch (Exception e) {
             return false;
         }
@@ -45,6 +94,6 @@ public class BalanceRequester extends AsyncTask<Void, String, Boolean> {
 
     @Override
     protected void onPostExecute(Boolean success) {
-        Log.i("KLM", success.toString());
+        Log.i("KLM", success.toString() + " " + this.balance);
     }
 }

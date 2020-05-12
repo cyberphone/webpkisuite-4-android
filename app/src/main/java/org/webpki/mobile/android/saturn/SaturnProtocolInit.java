@@ -24,8 +24,6 @@ import org.webpki.crypto.HashAlgorithms;
 
 import org.webpki.keygen2.KeyGen2URIs;
 
-import org.webpki.mobile.android.saturn.SaturnActivity.Account;
-
 import org.webpki.mobile.android.saturn.common.BaseProperties;
 import org.webpki.mobile.android.saturn.common.CardDataDecoder;
 import org.webpki.mobile.android.saturn.common.ProviderUserResponseDecoder;

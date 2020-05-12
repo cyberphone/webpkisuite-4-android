@@ -207,60 +207,6 @@ public class SaturnActivity extends BaseProxyActivity {
     int factor;
     DisplayMetrics displayMetrics;
 
-    static class Account {
-        String paymentMethod;
-        String payeeAuthorityUrl;
-        HashAlgorithms requestHashAlgorithm;
-        String credentialId;
-        String accountId;
-        Currencies currency;
-        String authorityUrl;
-        byte[] cardImage;
-        AsymSignatureAlgorithms signatureAlgorithm;
-        int signatureKeyHandle;
-        DataEncryptionAlgorithms dataEncryptionAlgorithm;
-        KeyEncryptionAlgorithms keyEncryptionAlgorithm;
-        PublicKey encryptionKey;
-        String optionalKeyId;
-        Integer optionalBalanceKeyHandle;
-
-        Account(// The core...
-                String paymentMethod,
-                String payeeAuthorityUrl,
-                HashAlgorithms requestHashAlgorithm,
-                String credentialId,
-                String accountId,
-                Currencies currency,
-                String authorityUrl,
-                // Card visuals
-                byte[] cardImage,
-                // Signature
-                int signatureKeyHandle,
-                AsymSignatureAlgorithms signatureAlgorithm,
-                // Encryption
-                KeyEncryptionAlgorithms keyEncryptionAlgorithm,
-                DataEncryptionAlgorithms dataEncryptionAlgorithm,
-                PublicKey encryptionKey,
-                String optionalKeyId,
-                Integer optionalBalanceKeyHandle) {
-            this.paymentMethod = paymentMethod;
-            this.payeeAuthorityUrl = payeeAuthorityUrl;
-            this.requestHashAlgorithm = requestHashAlgorithm;
-            this.credentialId = credentialId;
-            this.accountId = accountId;
-            this.currency = currency;
-            this.authorityUrl = authorityUrl;
-            this.cardImage = cardImage;
-            this.signatureKeyHandle = signatureKeyHandle;
-            this.signatureAlgorithm = signatureAlgorithm;
-            this.keyEncryptionAlgorithm = keyEncryptionAlgorithm;
-            this.dataEncryptionAlgorithm = dataEncryptionAlgorithm;
-            this.encryptionKey = encryptionKey;
-            this.optionalKeyId = optionalKeyId;
-            this.optionalBalanceKeyHandle = optionalBalanceKeyHandle;
-        }
-    }
-
     ArrayList<Account> accountCollection = new ArrayList<>();
 
     byte[] currentHtml;
@@ -468,7 +414,7 @@ public class SaturnActivity extends BaseProxyActivity {
 
     String getBalance(Account account) {
         if (account.optionalBalanceKeyHandle != null) {
-            new BalanceRequester(this, account.authorityUrl).execute();
+            new BalanceRequester(this, account).execute();
         }
         try {
             return "Balance:&nbsp;" + (account.optionalBalanceKeyHandle == null ?
