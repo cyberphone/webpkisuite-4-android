@@ -24,6 +24,7 @@ import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.AsymKeySignerInterface;
 import org.webpki.crypto.AsymSignatureAlgorithms;
 
+import org.webpki.json.JSONAsymKeySigner;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
 
@@ -66,7 +67,7 @@ public class BalanceRequester extends AsyncTask<Void, String, Boolean> {
                                                        new GregorianCalendar(),
                                                        "Saturn",
                                                        "the best",
-                new AsymKeySignerInterface() {
+                new JSONAsymKeySigner(new AsymKeySignerInterface() {
                     @Override
                     public PublicKey getPublicKey() throws IOException {
                         return saturnActivity.sks.getKeyAttributes(
@@ -77,13 +78,14 @@ public class BalanceRequester extends AsyncTask<Void, String, Boolean> {
                     throws IOException {
                         return saturnActivity.sks.signHashedData(
                             account.optionalBalanceKeyHandle,
-                            algorithm.getAlgorithmId (AlgorithmPreferences.SKS),
+                            algorithm.getAlgorithmId(AlgorithmPreferences.SKS),
                             null,
                             false,
                             null,
                             algorithm.getDigestAlgorithm().digest(data));
                     }
-                }).serializeToBytes(JSONOutputFormats.NORMALIZED);
+                }).setSignatureAlgorithm(account.signatureAlgorithm))
+                    .serializeToBytes(JSONOutputFormats.NORMALIZED);
             wrapper.makePostRequest(balanceUrl, json);
             balance = new BalanceResponseDecoder(JSONParser.parse(wrapper.getData())).getAmount().toPlainString();
         } catch (Exception e) {

@@ -48,6 +48,8 @@ import androidx.annotation.Nullable;
 
 import androidx.webkit.WebViewAssetLoader;
 
+import org.webpki.json.JSONAsymKeyEncrypter;
+import org.webpki.json.JSONAsymKeySigner;
 import org.webpki.mobile.android.R;
 
 import java.io.ByteArrayInputStream;
@@ -61,6 +63,7 @@ import java.math.BigDecimal;
 import java.security.PublicKey;
 
 import java.util.ArrayList;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 
 import org.webpki.crypto.AlgorithmPreferences;
@@ -735,11 +738,11 @@ public class SaturnActivity extends BaseProxyActivity {
                     privateMessageEncryptionKey,
                     account.dataEncryptionAlgorithm,
                     tempChallenge,
-                    account.signatureAlgorithm,
+                    new GregorianCalendar(),
                     "WebPKI Suite/Saturn",
                     getPackageManager().getPackageInfo(getPackageName(), 0).versionName,
                     new ClientPlatform("Android", Build.VERSION.RELEASE, Build.MANUFACTURER),
-                    new AsymKeySignerInterface () {
+                    new JSONAsymKeySigner(new AsymKeySignerInterface() {
                         @Override
                         public PublicKey getPublicKey() throws IOException {
                             return sks.getKeyAttributes(
@@ -748,13 +751,15 @@ public class SaturnActivity extends BaseProxyActivity {
                         @Override
                         public byte[] signData(byte[] data, AsymSignatureAlgorithms algorithm) throws IOException {
                             return sks.signHashedData(account.signatureKeyHandle,
-                                                      algorithm.getAlgorithmId (AlgorithmPreferences.SKS),
+                                                      algorithm.getAlgorithmId(AlgorithmPreferences.SKS),
                                                       null,
                                                       false,
                                                       pin.getBytes("UTF-8"),
                                                       algorithm.getDigestAlgorithm().digest(data));
                         }
-                    });
+                    }).setSignatureAlgorithm(account.signatureAlgorithm)
+                      .setOutputPublicKeyInfo(account.optionalKeyId == null)
+                      .setKeyId(account.optionalKeyId));
                 Log.i(SATURN, "Authorization before encryption:\n" + authorizationData);
                 return true;
             } catch (SKSException e) {

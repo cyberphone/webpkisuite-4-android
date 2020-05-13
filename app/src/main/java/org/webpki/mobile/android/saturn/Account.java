@@ -42,6 +42,11 @@ public class Account {
     String optionalKeyId;
     Integer optionalBalanceKeyHandle;
 
+    // External state variables
+    boolean balanceRequestIsRunning;
+    boolean balanceRequestIsReady;
+    String balanceOrNull;  // Null if not ready or if failed
+
     Account(// The core...
             String paymentMethod,
             String payeeAuthorityUrl,
@@ -59,7 +64,9 @@ public class Account {
             KeyEncryptionAlgorithms keyEncryptionAlgorithm,
             DataEncryptionAlgorithms dataEncryptionAlgorithm,
             PublicKey encryptionKey,
+            // Not used in the current server PoC
             String optionalKeyId,
+            // Non-null if the account supports balance requests
             Integer optionalBalanceKeyHandle) {
         this.paymentMethod = paymentMethod;
         this.payeeAuthorityUrl = payeeAuthorityUrl;

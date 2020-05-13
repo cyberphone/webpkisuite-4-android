@@ -20,14 +20,12 @@ import java.io.IOException;
 
 import java.util.GregorianCalendar;
 
-import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.HashAlgorithms;
-import org.webpki.crypto.AsymKeySignerInterface;
 
 import org.webpki.json.JSONArrayWriter;
 import org.webpki.json.JSONCryptoHelper;
 import org.webpki.json.JSONObjectWriter;
-import org.webpki.json.JSONAsymKeySigner;
+import org.webpki.json.JSONSigner;
 import org.webpki.json.DataEncryptionAlgorithms;
 
 import org.webpki.util.ISODateTime;
@@ -48,7 +46,7 @@ public class AuthorizationDataEncoder implements BaseProperties {
                                           String applicationName,
                                           String applicationVersion,
                                           ClientPlatform clientPlatform,
-                                          JSONAsymKeySigner signer) throws IOException {
+                                          JSONSigner signer) throws IOException {
         JSONObjectWriter wr = new JSONObjectWriter()
             .setObject(REQUEST_HASH_JSON, new JSONObjectWriter()
                 .setString(JSONCryptoHelper.ALGORITHM_JSON, 
@@ -76,37 +74,5 @@ public class AuthorizationDataEncoder implements BaseProperties {
                      .setString(VERSION_JSON, clientPlatform.version)
                      .setString(VENDOR_JSON, clientPlatform.vendor))
                  .setSignature(AUTHORIZATION_SIGNATURE_JSON, signer);
-    }
-
-   public static JSONObjectWriter encode(PaymentRequestDecoder paymentRequest,
-                                          HashAlgorithms requestHashAlgorithm,
-                                          String payeeAuthorityUrl,
-                                          String payeeHost,
-                                          String paymentMethod,
-                                          String credentialId,
-                                          String accountId,
-                                          byte[] dataEncryptionKey,
-                                          DataEncryptionAlgorithms dataEncryptionAlgorithm,
-                                          UserResponseItem[] optionalUserResponseItems,
-                                          AsymSignatureAlgorithms signatureAlgorithm,
-                                          String applicationName,
-                                          String applicationVersion,
-                                          ClientPlatform clientPlatform,
-                                          AsymKeySignerInterface signer) throws IOException {
-        return encode(paymentRequest,
-                      requestHashAlgorithm,
-                      payeeAuthorityUrl,
-                      payeeHost,
-                      paymentMethod,
-                      credentialId,
-                      accountId,
-                      dataEncryptionKey,
-                      dataEncryptionAlgorithm,
-                      optionalUserResponseItems,
-                      new GregorianCalendar(),
-                      applicationName,
-                      applicationVersion,
-                      clientPlatform,
-                      new JSONAsymKeySigner(signer).setSignatureAlgorithm(signatureAlgorithm));
     }
 }
