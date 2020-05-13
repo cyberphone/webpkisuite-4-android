@@ -23,6 +23,8 @@ import org.webpki.json.KeyEncryptionAlgorithms;
 
 import org.webpki.mobile.android.saturn.common.Currencies;
 
+import java.math.BigDecimal;
+
 import java.security.PublicKey;
 
 public class Account {
@@ -45,7 +47,7 @@ public class Account {
     // External state variables
     boolean balanceRequestIsRunning;
     boolean balanceRequestIsReady;
-    String balanceOrNull;  // Null if not ready or if failed
+    public String balance; // Money string or null if not ready or if failed
 
     Account(// The core...
             String paymentMethod,

@@ -220,20 +220,61 @@ public class SaturnActivity extends BaseProxyActivity {
         noCache.put("Cache-Control", "no-store");
     }
 
+    int parallell(int potentialCardIndex) {
+        if (potentialCardIndex < 0 || potentialCardIndex >= accountCollection.size() - 1) {
+            return 0;
+        }
+        Account account = accountCollection.get(potentialCardIndex);
+        if (account.optionalBalanceKeyHandle == null || account.balanceRequestIsRunning) {
+            return 0;
+        }
+        new BalanceRequester(this, potentialCardIndex).execute();
+        return 1;
+    }
+
+    void setBalance(int cardIndex) {
+        Account account = accountCollection.get(cardIndex);
+        if (cardIndex == selectedCard) {
+            String argument;
+            if (account.optionalBalanceKeyHandle == null) {
+                argument = "N/A";
+            } else if (account.balanceRequestIsRunning) {
+                if (account.balanceRequestIsReady) {
+                    argument = account.balance == null ? ":-(": account.balance;
+                } else {
+                    argument = SPINNER_FIRST + "yellow" + SPINNER_LAST;
+                }
+            } else {
+                new BalanceRequester(this, cardIndex).execute();
+                setBalance(cardIndex);
+                for (int i = 1, q = 0; i <= 2; i++) {
+                    if ((q += parallell(cardIndex + i)) >= 2) {
+                        break;
+                    }
+                    if ((q += parallell(cardIndex - i)) >= 2) {
+                        break;
+                    }
+                }
+                return;
+            }
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    saturnView.evaluateJavascript(
+                        "document.getElementById('balance').innerHTML = \"Balance:&nbsp;" +
+                            argument + "\";", null);
+                }
+            });
+        }
+    }
+
     final WebViewAssetLoader webLoader = new WebViewAssetLoader.Builder()
             .addPathHandler("/card/", new WebViewAssetLoader.PathHandler() {
                 @Nullable
                 @Override
                 public WebResourceResponse handle(@NonNull String cardIndex) {
                     Log.i("RRR", cardIndex + " old=" + selectedCard);
-                    selectedCard = Integer.parseInt(cardIndex);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            saturnView.evaluateJavascript(
-                                    "document.getElementById('balance').innerHTML = \"" +
-                                            getBalance(getSelectedCard()) + "\";", null);                        }
-                    });
+                    setBalance(selectedCard = Integer.parseInt(cardIndex));
                     return new WebResourceResponse("image/svg+xml",
                                                    "utf-8",
                                                    200,
@@ -413,19 +454,6 @@ public class SaturnActivity extends BaseProxyActivity {
 
         // Start of Saturn
         new SaturnProtocolInit(this).execute();
-    }
-
-    String getBalance(Account account) {
-        if (account.optionalBalanceKeyHandle != null) {
-            new BalanceRequester(this, account).execute();
-        }
-        try {
-            return "Balance:&nbsp;" + (account.optionalBalanceKeyHandle == null ?
-                SPINNER_FIRST + "yellow" + SPINNER_LAST :
-                WalletRequestDecoder.getFormattedMoney(new BigDecimal(3000), account.currency));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     String htmlOneCard(int width) {

@@ -33,20 +33,26 @@ import org.webpki.mobile.android.saturn.common.BalanceResponseDecoder;
 import org.webpki.mobile.android.saturn.common.BaseProperties;
 import org.webpki.mobile.android.saturn.common.KnownExtensions;
 
+import org.webpki.mobile.android.saturn.common.WalletRequestDecoder;
+
 import org.webpki.net.HTTPSWrapper;
 
 import java.io.IOException;
+
 import java.security.PublicKey;
+
 import java.util.GregorianCalendar;
 
 public class BalanceRequester extends AsyncTask<Void, String, Boolean> {
     private SaturnActivity saturnActivity;
-    private Account account;
-    String balance;
+    private int cardIndex;
+    Account account;
 
-    public BalanceRequester (SaturnActivity saturnActivity, Account account) {
+    public BalanceRequester (SaturnActivity saturnActivity, int cardIndex) {
         this.saturnActivity = saturnActivity;
-        this.account = account;
+        this.cardIndex = cardIndex;
+        account = saturnActivity.accountCollection.get(cardIndex);
+        account.balanceRequestIsRunning = true;
     }
 
     @Override
@@ -87,7 +93,10 @@ public class BalanceRequester extends AsyncTask<Void, String, Boolean> {
                 }).setSignatureAlgorithm(account.signatureAlgorithm))
                     .serializeToBytes(JSONOutputFormats.NORMALIZED);
             wrapper.makePostRequest(balanceUrl, json);
-            balance = new BalanceResponseDecoder(JSONParser.parse(wrapper.getData())).getAmount().toPlainString();
+            account.balance =
+                WalletRequestDecoder.getFormattedMoney(
+                    new BalanceResponseDecoder(
+                        JSONParser.parse(wrapper.getData())).getAmount(), account.currency);
         } catch (Exception e) {
             return false;
         }
@@ -96,6 +105,8 @@ public class BalanceRequester extends AsyncTask<Void, String, Boolean> {
 
     @Override
     protected void onPostExecute(Boolean success) {
-        Log.i("KLM", success.toString() + " " + this.balance);
+        account.balanceRequestIsReady = true;
+        Log.i("KLM", success.toString() + " " + account.balance);
+        saturnActivity.setBalance(cardIndex);
     }
 }
