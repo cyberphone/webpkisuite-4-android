@@ -23,6 +23,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -124,6 +125,16 @@ public class SaturnActivity extends BaseProxyActivity {
         "y2='25'/><line x1='72.99' y1='10.16' x2='62.49' y2='28.34'/><line x1='89.83' y1='26.99' " +
         "x2='71.65' y2='37.49'/></g></svg>";
 
+    static final String FAILED_ICON = "<svg style='height:1em' " +
+        "viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'>" +
+        "<circle cx='50' cy='50' fill='#ffff00' r='45' stroke='#ff0000' stroke-width='10'/>" +
+        "<path d='m30,70c10,-8.5 30,-8.5 40,0' fill='none' " +
+        "stroke='#000000' stroke-linecap='round' stroke-width='10'/>" +
+        "<g fill='none' stroke='#007fff' stroke-linecap='round' stroke-width='15'>" +
+        "<line x1='30' x2='30' y1='30' y2='40'/>" +
+        "<line x1='70' x2='70' y1='30' y2='40'/>" +
+        "</g></svg>";
+
     static final String HTML_HEADER_WHITE =
           "<!DOCTYPE html><html><head><title>Saturn</title><style type='text/css'>\n" +
           "body {margin:0;font-size:12pt;color:#000000;font-family:Roboto;background-color:white}\n" +
@@ -220,46 +231,56 @@ public class SaturnActivity extends BaseProxyActivity {
         noCache.put("Cache-Control", "no-store");
     }
 
-    int parallell(int potentialCardIndex) {
-        if (potentialCardIndex < 0 || potentialCardIndex >= accountCollection.size() - 1) {
+    void balanceRequestExecutor(int cardIndex) {
+        new BalanceRequester(this, cardIndex).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    int backgroundBalanceRequests(int potentialCardIndex) {
+        if (potentialCardIndex < 0 || potentialCardIndex >= accountCollection.size()) {
             return 0;
         }
         Account account = accountCollection.get(potentialCardIndex);
-        if (account.optionalBalanceKeyHandle == null || account.balanceRequestIsRunning) {
+        if (account.optionalBalanceKeyHandle == null) {
             return 0;
         }
-        new BalanceRequester(this, potentialCardIndex).execute();
+        if (account.balanceRequestIsRunning) {
+            // Do not restart balance reequests and count those that are unfinished as running
+            return account.balanceRequestIsReady ? 0 : 1;
+        }
+        balanceRequestExecutor(potentialCardIndex);
         return 1;
     }
 
     void setBalance(int cardIndex) {
         Account account = accountCollection.get(cardIndex);
+        SaturnActivity saturnActivity = this;
         if (cardIndex == selectedCard) {
-            String argument;
-            if (account.optionalBalanceKeyHandle == null) {
-                argument = "N/A";
-            } else if (account.balanceRequestIsRunning) {
-                if (account.balanceRequestIsReady) {
-                    argument = account.balance == null ? ":-(": account.balance;
-                } else {
-                    argument = SPINNER_FIRST + "yellow" + SPINNER_LAST;
-                }
-            } else {
-                new BalanceRequester(this, cardIndex).execute();
-                setBalance(cardIndex);
-                for (int i = 1, q = 0; i <= 2; i++) {
-                    if ((q += parallell(cardIndex + i)) >= 2) {
-                        break;
-                    }
-                    if ((q += parallell(cardIndex - i)) >= 2) {
-                        break;
-                    }
-                }
-                return;
-            }
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    String argument;
+                    if (account.optionalBalanceKeyHandle == null) {
+                        argument = "N/A";
+                    } else if (account.balanceRequestIsRunning) {
+                        if (account.balanceRequestIsReady) {
+                            argument = account.balance == null ? FAILED_ICON : account.balance;
+                        } else {
+                            argument = SPINNER_FIRST + "yellow" + SPINNER_LAST;
+                        }
+                    } else {
+                        balanceRequestExecutor(cardIndex);
+                        setBalance(cardIndex);
+                        return;
+                    }
+                    // Permit up to three parallell requests to run at the same time
+                    for (int i = 1, q = 0; i < accountCollection.size(); i++) {
+                        if ((q += backgroundBalanceRequests(cardIndex + i)) >= 3) {
+                            break;
+                        }
+                        if ((q += backgroundBalanceRequests(cardIndex - i)) >= 3) {
+                            break;
+                        }
+                    }
                     saturnView.evaluateJavascript(
                         "document.getElementById('balance').innerHTML = \"Balance:&nbsp;" +
                             argument + "\";", null);
@@ -533,7 +554,7 @@ public class SaturnActivity extends BaseProxyActivity {
             .append("' stroke-width='10'/>" +
                     "</svg></td></tr><tr><td colspan='3' style='text-align:center'>" +
                     "<div style='display:inline-block'>" +
-                    "<div class='balance' id='balance' onClick=\"Saturn.toast('Not implemented in the demo...')\">" +
+                    "<div class='balance' id='balance' onClick=\"Saturn.balanceClicked()\">" +
                     "</div></div></td></tr></table>").toString();
     }
 
@@ -825,6 +846,23 @@ public class SaturnActivity extends BaseProxyActivity {
         this.pin = pin;
         hideSoftKeyBoard();
         paymentEvent();
+    }
+
+    @JavascriptInterface
+    public void balanceClicked() {
+        Account account = getSelectedCard();
+        if (account.optionalBalanceKeyHandle == null) {
+            toast("This service does not support account balances!");
+        } else if (account.balanceRequestIsReady) {
+            account.balanceRequestIsReady = false;
+            toast(account.balance == null ?
+                "Failed, but we give it another try!" : "Retrieving the latest balance...");
+            account.balance = null;
+            account.balanceRequestIsRunning = false;
+            setBalance(selectedCard);
+        } else {
+            toast("Please wait for the result!");
+        }
     }
 
     @JavascriptInterface

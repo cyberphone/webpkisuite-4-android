@@ -106,7 +106,7 @@ public class BalanceRequester extends AsyncTask<Void, String, Boolean> {
     @Override
     protected void onPostExecute(Boolean success) {
         account.balanceRequestIsReady = true;
-        Log.i("KLM", success.toString() + " " + account.balance);
+ //       Log.i("KLM", success.toString() + " " + account.balance);
         saturnActivity.setBalance(cardIndex);
     }
 }
