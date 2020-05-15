@@ -749,7 +749,7 @@ public class SaturnActivity extends BaseProxyActivity {
                  String id = challengeObject.getProperties()[0];
                  String data = challengeObject.getString(id);
                  if (data.isEmpty()) {
-                     toast("Please provide some data", Gravity.BOTTOM);
+                     toast("Please provide some data", Gravity.CENTER_VERTICAL);
                      return false;
                  }
                  temp.add(new UserResponseItem(id, data));
