@@ -639,7 +639,8 @@ public class SaturnActivity extends BaseProxyActivity {
             "      setOpacity(0);\n" +
             "      setArrows();\n" +
             "    } else {\n" +
-            "      Saturn.toast('Swipe to the left or right to change account/card');\n" +
+            "      Saturn.toast('Swipe to the left or right to change account/card', " +
+                      Gravity.BOTTOM + ");\n" +
             "    }\n" +
             "  }\n" +
             "}\n" +
@@ -683,12 +684,12 @@ public class SaturnActivity extends BaseProxyActivity {
             "showPin();\n" +
             "}, 500);\n" +
             "} else {\n" +
-            "Saturn.toast('PIN digit ignored');\n" +
+            "Saturn.toast('PIN digit ignored', " + Gravity.CENTER_VERTICAL + ");\n" +
             "}\n" +
             "}\n" +
             "function validatePin() {\n" +
             "if (pin.length == 0) {\n" +
-            "Saturn.toast('Empty PIN - Ignored');\n" +
+            "Saturn.toast('Empty PIN - Ignored', " + Gravity.CENTER_VERTICAL + ");\n" +
             "} else {\n" +
             "Saturn.performPayment(pin);\n" +
             "}\n" +
@@ -701,7 +702,8 @@ public class SaturnActivity extends BaseProxyActivity {
         StringBuilder html = new StringBuilder(
             "<table id='paydata' style='visibility:hidden;position:absolute;z-index:5'>" +
             "<tr><td id='payeelabel' class='label'>Payee</td><td id='payeefield' " +
-                "class='field' onClick=\"Saturn.toast('Name of merchant')\">")
+                "class='field' onClick=\"Saturn.toast('Name of merchant', " +
+                    Gravity.CENTER_VERTICAL + ")\">")
           .append(HTMLEncoder.encode(walletRequest.paymentRequest.getPayeeCommonName()))
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
@@ -709,13 +711,15 @@ public class SaturnActivity extends BaseProxyActivity {
           .append(walletRequest.getAmountLabel())
           .append(
             "</td><td id='amountfield' " +
-            "class='field' onClick=\"Saturn.toast('Amount to pay')\">")
+                "class='field' onClick=\"Saturn.toast('Amount to pay', " +
+                    Gravity.CENTER_VERTICAL + ")\">")
           .append(walletRequest.getFormattedTotal())
           .append("</td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
             "<tr><td class='label'>PIN</td>" +
             "<td id='pinfield' class='field' " +
-            "onClick=\"Saturn.toast('Use the keyboard below...')\"></td></tr>" +
+                "onClick=\"Saturn.toast('Use the keyboard below...', " +
+                    Gravity.CENTER_VERTICAL + ")\"></td></tr>" +
             "</table>" +
             "<div id='kbd' style='visibility:hidden;position:absolute;width:")
           .append(landscapeMode ? (width * 50) / factor : (width * 88) / factor)
@@ -745,7 +749,7 @@ public class SaturnActivity extends BaseProxyActivity {
                  String id = challengeObject.getProperties()[0];
                  String data = challengeObject.getString(id);
                  if (data.isEmpty()) {
-                     toast("Please provide some data");
+                     toast("Please provide some data", Gravity.BOTTOM);
                      return false;
                  }
                  temp.add(new UserResponseItem(id, data));
@@ -858,24 +862,25 @@ public class SaturnActivity extends BaseProxyActivity {
     @JavascriptInterface
     public void balanceClicked() {
         Account account = getSelectedCard();
+        String message;
         if (account.optionalBalanceKeyHandle == null) {
-            toast("This service does not support account balances!");
+            toast("This service does not support account balances!", Gravity.BOTTOM);
         } else if (account.balanceRequestIsReady) {
             account.balanceRequestIsReady = false;
             toast(account.balance == null ?
-                "Failed, but we give it another try!" : "Retrieving the latest balance...");
+    "Failed, but we give it another try!" : "Retrieving the latest balance...", Gravity.BOTTOM);
             account.balance = null;
             account.balanceRequestIsRunning = false;
             setBalance(selectedCard);
         } else {
-            toast("Please wait for the result!");
+            toast("Please wait for the result!", Gravity.BOTTOM);
         }
     }
 
     @JavascriptInterface
-    public void toast(String message) {
+    public void toast(String message, int gravity) {
         Toast toast = Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
+        toast.setGravity(gravity, 0, 0);
         toast.show();
     }
 
