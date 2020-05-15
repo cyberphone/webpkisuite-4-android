@@ -53,35 +53,26 @@ public class ThemeHolder {
     }
 
     static String addButtonCore(int outerWidth, int outerHeight, int xOffset, int yOffset) {
-        return new StringBuilder("<rect x=\"")
-            .append(xOffset)
-            .append("\" y=\"")
-            .append(yOffset)
-            .append("\" width=\"")
-            .append(outerWidth)
-            .append("\" height=\"")
-            .append(outerHeight)
-            .append("\" opacity=\"0\" fill=\"black\"/>" +
-                    "<rect x=\"")
+        return new StringBuilder("<rect x='")
             .append(xOffset + 6)
-            .append("\" y=\"")
+            .append("' y='")
             .append(yOffset + 6)
-            .append("\" width=\"")
+            .append("' width='")
             .append(outerWidth - 12)
-            .append("\" height=\"")
+            .append("' height='")
             .append(outerHeight - 13)
-            .append("\" rx=\"10\" ry=\"10\" stroke-width=\"2\" stroke=\"")
+            .append("' rx='10' ry='10' stroke-width='2' stroke='")
             .append(whiteTheme ? "#989898" : "orange")
-            .append("\" fill=\"#a5a5a5\"/>" +
-                    "<rect x=\"")
+            .append("' fill='#a5a5a5'/>" +
+                    "<rect x='")
             .append(xOffset + 8)
-            .append("\" y=\"")
+            .append("' y='")
             .append(yOffset + 8)
-            .append("\" width=\"")
+            .append("' width='")
             .append(outerWidth - 16)
-            .append("\" height=\"")
+            .append("' height='")
             .append(outerHeight - 17)
-            .append("\" rx=\"8\" ry=\"8\" fill=\"#fcfcfc\" filter=\"url(#actorsBlur)\"/>").toString();
+            .append("' rx='8' ry='8' fill='#fcfcfc' filter='url(#actorsBlur)'/>").toString();
     }
 
     static String addDigit(int value, int xOffset, int yOffset) {
@@ -89,23 +80,23 @@ public class ThemeHolder {
             .append(value)
             .append("')\">")
             .append(addButtonCore(56, 48, xOffset, yOffset))
-            .append("<text x=\"")
+            .append("<text x='")
             .append(xOffset + 28.5)
-            .append("\" y=\"")
+            .append("' y='")
             .append(yOffset + 33)
-            .append("\" font-family=\"Roboto\" font-size=\"26\" " +
-                    "text-anchor=\"middle\" font-weight=\"bold\">")
+            .append("' font-family='Roboto' font-size='26' " +
+                    "text-anchor='middle' font-weight='bold'>")
             .append(value)
             .append("</text></a>").toString();
     }
 
     public static String getKeyBoard() {
-        StringBuilder s = new StringBuilder("<svg viewBox=\"0 0 416 162\" " +
-                "xmlns=\"http://www.w3.org/2000/svg\" " +
-                "xmlns:xlink=\"http://www.w3.org/1999/xlink\">" +
+        StringBuilder s = new StringBuilder("<svg viewBox='0 0 416 162' " +
+                "xmlns='http://www.w3.org/2000/svg' " +
+                "xmlns:xlink='http://www.w3.org/1999/xlink'>" +
                 "<defs>" +
-                "<filter height=\"150%\" width=\"150%\" y=\"-25%\" x=\"-25%\" id=\"actorsBlur\">" +
-                "  <feGaussianBlur stdDeviation=\"3\"/>" +
+                "<filter height='150%' width='150%' y='-25%' x='-25%' id='actorsBlur'>" +
+                "  <feGaussianBlur stdDeviation='3'/>" +
                 "</filter>" +
                 "</defs>");
 
@@ -119,19 +110,19 @@ public class ThemeHolder {
 
         s.append("<a xlink:href=\"javascript:deleteDigit()\">")
         .append(addButtonCore(56, 48, (90 * 3) + 90, 0))
-        .append("<text x=\"")
+        .append("<text x='")
         .append(((90 * 3) + 90)  + 28)
-        .append("\" y=\"")
+        .append("' y='")
         .append(36.5)
-        .append("\" font-family=\"Roboto\" font-size=\"50\" " +
-                "text-anchor=\"middle\" fill=\"#be1018\">&#171;</text></a>" +
+        .append("' font-family='Roboto' font-size='50' " +
+                "text-anchor='middle' fill='#be1018'>&#171;</text></a>" +
 
                 "<a xlink:href=\"javascript:validatePin()\">")
         .append(addButtonCore(80, 60, 90 * 3 + 90 + 56 - 80, 102))
-        .append("<path fill=\"#009900\" " +
-                "d=\"m 362,131 c 5.4,5.7 8.4,12.4 8.8,13.5 h 2 " +
+        .append("<path fill='#009900' " +
+                "d='m 362,131 c 5.4,5.7 8.4,12.4 8.8,13.5 h 2 " +
                 "c 5,-10.3 10.7,-18.7 17.5,-25.7 h -4 c -6.6,7.5 " +
-                "-8.7,10.5 -14.5,21 -1.8,-3.4 -3,-5.2 -5.8,-8.8 z\"/>" +
+                "-8.7,10.5 -14.5,21 -1.8,-3.4 -3,-5.2 -5.8,-8.8 z'/>" +
                 "</a></svg>");
         return s.toString();
     }
