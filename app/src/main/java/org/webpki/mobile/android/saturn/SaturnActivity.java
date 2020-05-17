@@ -106,6 +106,8 @@ public class SaturnActivity extends BaseProxyActivity {
 
     public static final String SATURN = "Saturn";
 
+    static final String SATURN_SOFTWARE = "WebPKI Suite/Saturn";
+
     static final String SATURN_SETTINGS    = "satset";
     static final String LAST_KEY_ID_JSON   = "lastKey";
 
@@ -223,6 +225,8 @@ public class SaturnActivity extends BaseProxyActivity {
     boolean done;
 
     static boolean whiteTheme;
+
+    static String webPkiVersion;
 
     WebView saturnView;
     int factor;
@@ -461,7 +465,7 @@ public class SaturnActivity extends BaseProxyActivity {
             lastKeyId = -1;
         }
         try {
-
+            webPkiVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
             htmlBodyPrefix = new StringBuilder("}\n" +
                                               "</script>" +
                                               "</head><body onload='positionElements()'>" +
@@ -799,8 +803,8 @@ public class SaturnActivity extends BaseProxyActivity {
                     account.dataEncryptionAlgorithm,
                     tempChallenge,
                     new GregorianCalendar(),
-                    "WebPKI Suite/Saturn",
-                    getPackageManager().getPackageInfo(getPackageName(), 0).versionName,
+                    SATURN_SOFTWARE,
+                    webPkiVersion,
                     new ClientPlatform("Android", Build.VERSION.RELEASE, Build.MANUFACTURER),
                     new JSONAsymKeySigner(new AsymKeySignerInterface() {
                         @Override
