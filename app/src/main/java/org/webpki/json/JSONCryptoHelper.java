@@ -16,6 +16,8 @@
  */
 package org.webpki.json;
 
+import java.lang.reflect.InvocationTargetException;
+
 import java.io.IOException;
 import java.io.Serializable;
 
@@ -142,17 +144,16 @@ public class JSONCryptoHelper implements Serializable {
         public ExtensionHolder addExtension(Class<? extends Extension> extensionClass,
                                             boolean mandatory) throws IOException {
             try {
-                Extension extension = extensionClass.newInstance();
+                Extension extension = extensionClass.getDeclaredConstructor().newInstance();
                 ExtensionEntry extensionEntry = new ExtensionEntry();
                 extensionEntry.extensionClass = extensionClass;
                 extensionEntry.mandatory = mandatory;
                 if ((extensions.put(extension.getExtensionUri(), extensionEntry)) != null) {
                     throw new IOException("Duplicate extension: " + extension.getExtensionUri());
                 }
-            } catch (InstantiationException e) {
-                throw new IOException(e);
-            } catch (IllegalAccessException e) {
-                throw new IOException(e);
+            } catch (InstantiationException | InvocationTargetException | 
+                     NoSuchMethodException | IllegalAccessException e) {
+                throw new IOException (e);
             }
             return this;
         }
@@ -170,8 +171,7 @@ public class JSONCryptoHelper implements Serializable {
 
     /**
      * Public key parameter to Options
-     * <br>KEY_ID_XOR_PUBLIC_KEY One or the other<br>
-     * KEY_ID_OR_PUBLIC_KEY At least of<br>
+     * 
      */
     public enum PUBLIC_KEY_OPTIONS {
         /**
@@ -180,22 +180,22 @@ public class JSONCryptoHelper implements Serializable {
         PLAIN_ENCRYPTION      (),
 
         /**
-         * key encryption but no public key or certificate path
+         * Key encryption but no public key or certificate path
          */
         FORBIDDEN             (), 
 
         /**
-         * key encryption with public key
+         * Key encryption with public key
          */
         REQUIRED              (), 
 
         /**
-         * key encryption with optional public key
+         * Key encryption with optional public key
          */
         OPTIONAL              (), 
 
         /**
-         * key encryption with at least a public key or a key id
+         * Key encryption with at least a public key or a key id
          */
         KEY_ID_OR_PUBLIC_KEY  (),
 
@@ -205,7 +205,7 @@ public class JSONCryptoHelper implements Serializable {
         KEY_ID_XOR_PUBLIC_KEY (),
 
         /**
-         * key encryption with a certificate path
+         * Key encryption with a certificate path
          */
         CERTIFICATE_PATH      ();
         
@@ -248,7 +248,6 @@ public class JSONCryptoHelper implements Serializable {
      * <li>keyId option.  Default: OPTIONAL</li>
      * <li>Permitted extensions.  Default: none</li>
      * </ul>
-     * In addition, the Options class is used for defining external readers for &quot;remoteKey&quot; support.
      *
      */
     public static class Options {
@@ -349,12 +348,11 @@ public class JSONCryptoHelper implements Serializable {
                     if (innerObject.hasProperty(name)) {
                         try {
                             JSONCryptoHelper.Extension extension = 
-                                    extensionEntry.extensionClass.newInstance();
+                                    extensionEntry.extensionClass.getDeclaredConstructor().newInstance();
                             extension.decode(innerObject);
                             extensions.put(name, extension);
-                        } catch (InstantiationException e) {
-                            throw new IOException (e);
-                        } catch (IllegalAccessException e) {
+                        } catch (InstantiationException | InvocationTargetException | 
+                                 NoSuchMethodException | IllegalAccessException e) {
                             throw new IOException (e);
                         }
                     }

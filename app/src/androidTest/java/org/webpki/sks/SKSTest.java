@@ -100,7 +100,6 @@ public class SKSTest {
 
     static SecureKeyStore sks;
 
-
     static boolean reference_implementation;
 
     static boolean standalone_testing;
@@ -1228,7 +1227,7 @@ public class SKSTest {
     public void test15() throws Exception {
         for (int i = 0; i < 2; i++) {
             boolean updatable = i == 0;
-            ProvSess sess = new ProvSess(device, updatable ? new Integer(0) : null);
+            ProvSess sess = new ProvSess(device, updatable ? Integer.valueOf(0) : null);
             GenKey key1 = sess.createKey("Key.1",
                     KeyAlgorithms.NIST_P_256,
                     new KeyProtectionSpec(),
