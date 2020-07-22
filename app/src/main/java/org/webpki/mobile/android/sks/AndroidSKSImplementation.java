@@ -1043,7 +1043,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
         //////////////////////////////////////////////////////////////////////////////////////
         addAlgorithm("https://webpki.github.io/sks/algorithm#ec.nist.p256",
                      "secp256r1",
-                     ALG_EC_KEY | ALG_KEY_GEN).addEcCurve (32, new byte[]
+                     ALG_EC_KEY | ALG_KEY_GEN).addEcCurve(32, new byte[]
               {(byte)0x30, (byte)0x59, (byte)0x30, (byte)0x13, (byte)0x06, (byte)0x07, (byte)0x2A, (byte)0x86,
                (byte)0x48, (byte)0xCE, (byte)0x3D, (byte)0x02, (byte)0x01, (byte)0x06, (byte)0x08, (byte)0x2A,
                (byte)0x86, (byte)0x48, (byte)0xCE, (byte)0x3D, (byte)0x03, (byte)0x01, (byte)0x07, (byte)0x03,
@@ -1059,7 +1059,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
 
         addAlgorithm("https://webpki.github.io/sks/algorithm#ec.nist.p384",
                      "secp384r1",
-                     ALG_EC_KEY | ALG_KEY_GEN).addEcCurve (48, new byte[]
+                     ALG_EC_KEY | ALG_KEY_GEN).addEcCurve(48, new byte[]
               {(byte)0x30, (byte)0x76, (byte)0x30, (byte)0x10, (byte)0x06, (byte)0x07, (byte)0x2A, (byte)0x86,
                (byte)0x48, (byte)0xCE, (byte)0x3D, (byte)0x02, (byte)0x01, (byte)0x06, (byte)0x05, (byte)0x2B,
                (byte)0x81, (byte)0x04, (byte)0x00, (byte)0x22, (byte)0x03, (byte)0x62, (byte)0x00, (byte)0x04,
@@ -1078,7 +1078,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
 
         addAlgorithm("https://webpki.github.io/sks/algorithm#ec.nist.p521",
                      "secp521r1",
-                      ALG_EC_KEY | ALG_KEY_GEN).addEcCurve (66, new byte[]
+                      ALG_EC_KEY | ALG_KEY_GEN).addEcCurve(66, new byte[]
               {(byte)0x30, (byte)0x81, (byte)0x9B, (byte)0x30, (byte)0x10, (byte)0x06, (byte)0x07, (byte)0x2A,
                (byte)0x86, (byte)0x48, (byte)0xCE, (byte)0x3D, (byte)0x02, (byte)0x01, (byte)0x06, (byte)0x05,
                (byte)0x2B, (byte)0x81, (byte)0x04, (byte)0x00, (byte)0x23, (byte)0x03, (byte)0x81, (byte)0x86,
@@ -1255,11 +1255,15 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
 
     Algorithm getEcType(ECKey ecKey) {
         for (String uri : supportedAlgorithms.keySet()) {
-            ECParameterSpec ecParameterSpec = supportedAlgorithms.get(uri).ecParameterSpec;
-            if (ecParameterSpec != null &&
-                    ecKey.getParams().getCurve().equals(ecParameterSpec.getCurve()) &&
-                    ecKey.getParams().getGenerator().equals(ecParameterSpec.getGenerator())) {
-                return supportedAlgorithms.get(uri);
+            ECParameterSpec ref = supportedAlgorithms.get(uri).ecParameterSpec;
+            if (ref != null) {
+                ECParameterSpec actual = ecKey.getParams();
+                if (ref.getCofactor() == actual.getCofactor() &&
+                    ref.getOrder().equals(actual.getOrder()) &&
+                    ref.getCurve().equals(actual.getCurve()) &&
+                    ref.getGenerator().equals(actual.getGenerator())) {
+                    return supportedAlgorithms.get(uri);
+                }
             }
         }
         return null;
