@@ -90,6 +90,70 @@ public class ThemeHolder {
             .append("</text></a>").toString();
     }
 
+    public static StringBuilder getFingerPrintSwitch() {
+        return new StringBuilder(
+                "<svg style='height:12pt' viewBox='0 0 100 50' " +
+                "xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>" +
+                "<rect stroke='")
+            .append(whiteTheme ? "black" : "white")
+            .append(
+                "' stroke-width='3' fill='none' rx='6' y='1.5' x='1.5' height='47' width='97'/>" +
+                "<g fill='")
+            .append(whiteTheme ? "black" : "white")
+            .append(
+                "'>" +
+                  "<circle cy='26' r='6' cx='17'/>" +
+                  "<circle cy='26' r='6' cx='39'/>" +
+                  "<circle cy='26' r='6' cx='61'/>" +
+                  "<circle cy='26' r='6' cx='83'/>" +
+                "</g><a xlink:href=\"javascript:wantPin()\">" +
+                        "<rect width='100' height='50' opacity='0'/>" +
+                    "</a>" +
+                "</svg>");
+    }
+
+    public static StringBuilder getFingerPrintSymbol(String strokeSize,
+                                                     String javaScript,
+                                                     String displayMode,
+                                                     int leftPadding,
+                                                     int height) {
+        return new StringBuilder(
+                "<svg style='height:")
+            .append(height)
+            .append("pt;padding-left:")
+            .append(leftPadding)
+            .append("pt;display:")
+            .append(displayMode)
+            .append(
+                "' viewBox='0 0 34 34' xmlns='http://www.w3.org/2000/svg' " +
+                "xmlns:xlink='http://www.w3.org/1999/xlink'><g stroke='")
+            .append(whiteTheme ? "black" : "white")
+            .append("' stroke-linecap='round' stroke-width='")
+            .append(strokeSize)
+            .append("' fill='none'>")
+            .append(
+                "<path d='M 2.3671537,23.829104 C -1.4883611,11.602125 5,6 5,6'/>" +
+                "<path d='M 7.9345667,3.9672828 C 17.356614,-2.7198321 31.292018,2.2621923 " +
+                    "32.98557,18.040416'/>" +
+                "<path d='M 5.9415655,29.97528 C 5.8977627,27.293051 6.4844791,23.889769 " +
+                    "5.8351751,21.754189 -0.17364441,1.9910089 28.176603,-3.0493321 " +
+                    "29.259392,19.619897 c 0.04341,0.908896 0.02622,5.042147 -0.172847,7.397275'/>" +
+                "<path d='M 10.086529,32.043763 C 10.058709,28.609393 10.350804,24.675115 " +
+                    "9.3265096,20.828601 8.1249875,16.316549 8.1917409,12.304026 11.968,8.95'/>" +
+                "<path d='M 15.239128,8.1283894 C 25.141037,6.8797069 26.493401,18.099933 " +
+                    "26.000916,29.985946'/>" +
+                "<path d='m 13.941565,32.935003 c -0.05949,-2.650859 0.414679,-7.462289 " +
+                    "-0.319662,-11.90003 -4.1477696,-11.0693466 6.512761,-10.232544 " +
+                    "7.375509,-4.960144 0.79618,3.902636 1.053467,9.849901 1.053467,9.849901'/>" +
+                "<path d='m 16.702356,16.333355 c 1.826717,5.055217 1.210888,16.631062 " +
+                    "1.210888,16.631062'/>" +
+                "<path d='m 21.944845,28.932917 0.0084,2.044847'/>" +
+                "</g>" +
+                "<a xlink:href=\"javascript:")
+            .append(javaScript)
+            .append("\"><rect width='34' height='34' opacity='0'/></a></svg>");
+    }
+
     public static String getKeyBoard() {
         StringBuilder s = new StringBuilder("<svg viewBox='0 0 416 162' " +
                 "xmlns='http://www.w3.org/2000/svg' " +

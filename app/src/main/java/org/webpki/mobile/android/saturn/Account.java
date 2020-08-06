@@ -18,12 +18,13 @@ package org.webpki.mobile.android.saturn;
 
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.HashAlgorithms;
+
 import org.webpki.json.DataEncryptionAlgorithms;
 import org.webpki.json.KeyEncryptionAlgorithms;
 
 import org.webpki.mobile.android.saturn.common.Currencies;
 
-import java.math.BigDecimal;
+import org.webpki.sks.BiometricProtection;
 
 import java.security.PublicKey;
 
@@ -42,6 +43,7 @@ public class Account {
     KeyEncryptionAlgorithms keyEncryptionAlgorithm;
     PublicKey encryptionKey;
     String optionalKeyId;
+    BiometricProtection biometricProtection;
     Integer optionalBalanceKeyHandle;
 
     // External state variables
@@ -68,6 +70,8 @@ public class Account {
             PublicKey encryptionKey,
             // Not used in the current server PoC
             String optionalKeyId,
+            // From SKS
+            BiometricProtection biometricProtection,
             // Non-null if the account supports balance requests
             Integer optionalBalanceKeyHandle) {
         this.paymentMethod = paymentMethod;
@@ -84,6 +88,7 @@ public class Account {
         this.dataEncryptionAlgorithm = dataEncryptionAlgorithm;
         this.encryptionKey = encryptionKey;
         this.optionalKeyId = optionalKeyId;
+        this.biometricProtection = biometricProtection;
         this.optionalBalanceKeyHandle = optionalBalanceKeyHandle;
     }
 }

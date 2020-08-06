@@ -156,6 +156,8 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                             cardData.getDataEncryptionAlgorithm(),
                             cardData.getEncryptionKey(),
                             cardData.getOptionalKeyId(),
+                            saturnActivity.sks.getKeyProtectionInfo(
+                                    signatureKey.getKeyHandle()).getBiometricProtection(),
                             balanceKeyHandle
                     );
 

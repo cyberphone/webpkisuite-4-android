@@ -53,7 +53,6 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
         return (nonDirectPayment == null ||
                 nonDirectPayment.getType() == NonDirectPaymentTypes.RESERVATION ?
             "" : "<span class='moneynote'>Upfront fee:</span> ") +
-            "<span class='money'>" +
             getFormattedMoney(paymentRequest.getAmount(), paymentRequest.getCurrency()) +
             (nonDirectPayment == null ? "" : "<br>\u200b");
     }
@@ -89,21 +88,21 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
             "</span><span id='marquee2' class='marquee'>" +
             marquee +
             "</span>\";\n" +
-        "var marquee1 = document.getElementById('marquee1');\n" +
-        "var marquee2 = document.getElementById('marquee2');\n" +
-        "var marqueeWidth = marquee1.offsetWidth;\n" +
-        "var startMarquee = 0;\n" +
-        "var delayMarquee = 0;\n" +
-        "var distance = Math.floor(document.getElementById('payeefield').offsetWidth / 3);\n" +
+        "let marquee1 = document.getElementById('marquee1');\n" +
+        "let marquee2 = document.getElementById('marquee2');\n" +
+        "let marqueeWidth = marquee1.offsetWidth;\n" +
+        "let startMarquee = 0;\n" +
+        "let delayMarquee = 0;\n" +
+        "let distance = Math.floor(document.getElementById('payeefield').offsetWidth / 3);\n" +
         "setInterval(function() {\n" +
-        "  marquee1.style.left = startMarquee + 'px';\n" +
-        "  marquee2.style.left = (startMarquee + distance) + 'px';\n" +
-        "  if (delayMarquee++ > 200) {\n" +
-        "    if (--startMarquee + marqueeWidth + distance == 0) {\n" +
-        "      delayMarquee = 0;\n" +
-        "      startMarquee = 0;\n" +
-        "    }\n" +
-        "  }\n" +
+          "marquee1.style.left = startMarquee + 'px';\n" +
+          "marquee2.style.left = (startMarquee + distance) + 'px';\n" +
+          "if (delayMarquee++ > 200) {\n" +
+            "if (--startMarquee + marqueeWidth + distance == 0) {\n" +
+              "delayMarquee = 0;\n" +
+              "startMarquee = 0;\n" +
+            "}\n" +
+          "}\n" +
         "}, 10);\n";
     }
 

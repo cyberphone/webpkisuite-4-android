@@ -94,6 +94,7 @@ import org.webpki.mobile.android.sks.HardwareKeyStore;
 
 import org.webpki.net.MobileProxyParameters;
 
+import org.webpki.sks.BiometricProtection;
 import org.webpki.sks.KeyProtectionInfo;
 import org.webpki.sks.PassphraseFormat;
 import org.webpki.sks.SKSException;
@@ -335,11 +336,11 @@ public class SaturnActivity extends BaseProxyActivity {
                     .append(htmlBodyPrefix)
                     .append(body)
                     .append("</body></html>").toString().getBytes("utf-8");
-/*
+
             FileOutputStream fos = openFileOutput("html.txt", Context.MODE_PRIVATE);
             fos.write(currentHtml);
             fos.close();
-*/
+
         } catch (Exception e) {
             Log.e("HTM", e.getMessage());
             return;
@@ -413,7 +414,7 @@ public class SaturnActivity extends BaseProxyActivity {
 
     public void simpleDisplay(String simpleHtml) {
         currentForm = FORM.SIMPLE;
-        loadHtml("var simple = document.getElementById('simple');\n" +
+        loadHtml("let simple = document.getElementById('simple');\n" +
                  "simple.style.top = ((Saturn.height() - simple.offsetHeight) / 2) + 'px';\n" +
                  "simple.style.left = ((Saturn.width() - simple.offsetWidth) / 2) + 'px';\n" +
                  "simple.style.visibility='visible';\n",
@@ -425,7 +426,7 @@ public class SaturnActivity extends BaseProxyActivity {
 
     public void messageDisplay(String js, String message) {
         currentForm = FORM.SIMPLE;
-        loadHtml("var message = document.getElementById('message');\n" +
+        loadHtml("let message = document.getElementById('message');\n" +
                  "message.style.top = ((Saturn.height() - message.offsetHeight) / 2) + 'px';\n" +
                  "message.style.visibility='visible';\n" +
                  js,
@@ -581,136 +582,181 @@ public class SaturnActivity extends BaseProxyActivity {
             "cardImage.addEventListener('touchstart', beginSwipe, false);\n" +
             "cardImage.addEventListener('touchmove', e => { e.preventDefault() }, false);\n" +
             "cardImage.addEventListener('touchend', endSwipe, false);\n" +
-            "var card = document.getElementById('card');\n" +
-            "var paydata = document.getElementById('paydata');\n" +
-            "var pinfield = document.getElementById('pinfield');\n" +
+            "let card = document.getElementById('card');\n" +
+            "paydata = document.getElementById('paydata');\n" +
+            "pinfield = document.getElementById('pinfield');\n" +
+            "pinRow = document.getElementById('pinRow');\n" +
             "pinfield.style.maxWidth = document.getElementById('amountfield').style.maxWidth = " +
             "document.getElementById('payeefield').offsetWidth + 'px';\n" +
-            "var payeelabel = document.getElementById('payeelabel');\n" +
-            "var kbd = document.getElementById('kbd');\n" +
+            "let payeelabel = document.getElementById('payeelabel');\n" +
+            "kbd = document.getElementById('kbd');\n" +
+            "fpFrame = document.getElementById('fpFrame');\n" +
             "showPin();\n");
         if (landscapeMode) {
             js.append(
-                "var wGutter = Math.floor((Saturn.width() - kbd.offsetWidth - card.offsetWidth) / 3);\n" +
+                "let wGutter = Math.floor((Saturn.width() - kbd.offsetWidth - card.offsetWidth) / 3);\n" +
                 "card.style.left = wGutter / 2 + 'px';\n" +
                 "card.style.top = (Saturn.height() - card.offsetHeight)/2 + 'px';\n" +
-                "kbd.style.right = wGutter * 1.5 + 'px';\n" +
-                "var hGutter = Math.floor((Saturn.height() - kbd.offsetHeight - paydata.offsetHeight) / 3);\n" +
-                "var kbdTop = Math.floor(Saturn.height() - hGutter - kbd.offsetHeight);\n" +
+                "let kbdRight = wGutter * 1.5;\n" +
+                "kbd.style.right = kbdRight + 'px';\n" +
+                "let hGutter = Math.floor((Saturn.height() - kbd.offsetHeight - paydata.offsetHeight) / 3);\n" +
+                "let kbdTop = Math.floor(Saturn.height() - hGutter - kbd.offsetHeight);\n" +
                 "kbd.style.top = kbdTop + 'px';\n" +
-                "var pGutter = ((kbd.offsetWidth - paydata.offsetWidth + payeelabel.offsetWidth) / 2) + wGutter * 1.5;\n" +
+                "let pGutter = ((kbd.offsetWidth - paydata.offsetWidth + payeelabel.offsetWidth " +
+                    "- document.getElementById('fpField').offsetWidth) / 2) + wGutter * 1.5;\n" +
                 "if (pGutter < 10) pGutter = 10;\n" +
                 "paydata.style.right = pGutter + 'px';\n" +
-                "paydata.style.top = hGutter + 'px';\n"+
-                "kbd.style.visibility='visible';\n");
+                "paydataTop = hGutter;\n" +
+                "let fpFrameTop = (Saturn.height() - pinRow.offsetHeight + paydata.offsetHeight " +
+                    "+ paydataTop - fpFrame.offsetHeight) / 2;\n" +
+                "fpFrame.style.top = fpFrameTop + 'px';\n" +
+                "fpFrame.style.right = ((kbd.offsetWidth - fpFrame.offsetWidth " +
+                    "- document.getElementById('pinSwitch').offsetWidth) / 2 " +
+                    "+ kbdRight) + 'px';\n");
         } else {
             js.append(
                 "card.style.left = ((Saturn.width() - card.offsetWidth) / 2) + 'px';\n" +
-                "var pGutter = ((Saturn.width() - paydata.offsetWidth - payeelabel.offsetWidth) / 2);\n" +
+                "let pGutter = ((Saturn.width() - paydata.offsetWidth - payeelabel.offsetWidth " +
+                    "+ document.getElementById('fpField').offsetWidth) / 2);\n" +
                 "if (pGutter < 10) pGutter = 10;\n" +
                 "paydata.style.left = pGutter + 'px';\n" +
-                "var kbdTop = Saturn.height() - Math.floor(kbd.offsetHeight * 1.20);\n" +
+                "let kbdTop = Saturn.height() - Math.floor(kbd.offsetHeight * 1.20);\n" +
                 "kbd.style.top = kbdTop + 'px';\n" +
                 "kbd.style.left = ((Saturn.width() - kbd.offsetWidth) / 2) + 'px';\n" +
-                "var gutter = (kbdTop - card.offsetHeight - paydata.offsetHeight) / 7;\n" +
+                "let gutter = (kbdTop - card.offsetHeight - paydata.offsetHeight) / 7;\n" +
                 "card.style.top = gutter * 3 + 'px';\n" +
-                "paydata.style.top = (5 * gutter + card.offsetHeight) + 'px';\n" +
-                "kbd.style.visibility='visible';\n");
+                "paydataTop = 5 * gutter + card.offsetHeight;\n" +
+                "let fpFrameTop = (Saturn.height() + paydata.offsetHeight " +
+                    "+ paydataTop - fpFrame.offsetHeight) / 2 - pinRow.offsetHeight;\n" +
+                "fpFrame.style.top = fpFrameTop + 'px';\n" +
+                "fpFrame.style.left = ((Saturn.width() - fpFrame.offsetWidth " +
+                    "+ document.getElementById('pinSwitch').offsetWidth) / 2) + 'px';\n");
         }
         js.append (walletRequest.getOptionalMarqueeCode())
           .append(
-            "card.style.visibility='visible';\n" +
-            "paydata.style.visibility='visible';\n" +
-            "setArrows();\n" +
+              "card.style.visibility='visible';\n" +
+              "paydata.style.visibility='visible';\n" +
+              "setAccountSpecificDetails();\n" +
             "}\n" +
+
             "let swipeStartPosition = null;\n" +
 
-            "function beginSwipe(e) { e.preventDefault(); swipeStartPosition = e.changedTouches[0].clientX };\n" +
+            "function beginSwipe(e) { e.preventDefault(); " +
+                  "swipeStartPosition = e.changedTouches[0].clientX };\n" +
 
             "function endSwipe(e) {\n" +
-            "  if (swipeStartPosition || swipeStartPosition === 0) {\n" +
-            "    let dx = e.changedTouches[0].clientX - swipeStartPosition;\n" +
-            "    swipeStartPosition = null\n" +
-            "    if (Math.abs(dx) > 30) {\n" +
-            "      if (dx > 0 && cardIndex < numberOfAccountsMinus1) {\n" +
-            "        cardIndex++;\n" +
-            "      } else if (dx < 0 && cardIndex > 0) {\n" +
-            "        cardIndex--;\n" +
-            "      } else {\n" +
-            "        return;\n" +
-            "      }\n" +
-            "      cardImage.setAttribute('href', '/card/' + cardIndex);\n" +
-            "      setOpacity(0);\n" +
-            "      setArrows();\n" +
-            "    } else {\n" +
-            "      Saturn.toast('Swipe to the left or right to change account/card', " +
+              "if (swipeStartPosition || swipeStartPosition === 0) {\n" +
+                "let dx = e.changedTouches[0].clientX - swipeStartPosition;\n" +
+                "swipeStartPosition = null\n" +
+                "if (Math.abs(dx) > 30) {\n" +
+                  "if (dx > 0 && cardIndex < numberOfAccountsMinus1) {\n" +
+                    "cardIndex++;\n" +
+                  "} else if (dx < 0 && cardIndex > 0) {\n" +
+                    "cardIndex--;\n" +
+                  "} else {\n" +
+                    "return;\n" +
+                  "}\n" +
+                  "cardImage.setAttribute('href', '/card/' + cardIndex);\n" +
+                  "setOpacity(0);\n" +
+                  "setAccountSpecificDetails();\n" +
+                "} else {\n" +
+                  "Saturn.toast('Swipe to the left or right to change account/card', " +
                       Gravity.BOTTOM + ");\n" +
-            "    }\n" +
-            "  }\n" +
+                "}\n" +
+              "}\n" +
             "}\n" +
+
             "function setOpacity(opacity) {\n" +
-            "  cardImage.style.opacity = opacity;\n" +
-            "  if (opacity < 0.99) {\n" +
-            "    opacity += 0.2;\n" +
-            "    setTimeout(function () {\n" +
-            "      setOpacity(opacity);\n" +
-            "    }, 50);\n" +
-            "  }\n" +
+              "cardImage.style.opacity = opacity;\n" +
+              "if (opacity < 0.99) {\n" +
+                "opacity += 0.2;\n" +
+                "setTimeout(function () {\n" +
+                  "setOpacity(opacity);\n" +
+                "}, 50);\n" +
+              "}\n" +
             "}\n" +
-            "function setArrows() {\n" +
-            "  document.getElementById('leftArrow').style.visibility = " +
-            "  cardIndex == 0 ? 'hidden' : 'visible';\n" +
-            "  document.getElementById('rightArrow').style.visibility = " +
-            "  cardIndex == numberOfAccountsMinus1 ? 'hidden' : 'visible';\n" +
+
+            "function setAccountSpecificDetails() {\n" +
+              "document.getElementById('leftArrow').style.visibility = " +
+              "cardIndex == 0 ? 'hidden' : 'visible';\n" +
+              "document.getElementById('rightArrow').style.visibility = " +
+              "cardIndex == numberOfAccountsMinus1 ? 'hidden' : 'visible';\n" +
+              "let accountProtectionInfo = JSON.parse(Saturn.getAccountProtectionInfo(cardIndex));\n" +
+              "if (accountProtectionInfo.biometric) {\n" +
+                "paydata.style.top = (paydataTop + pinRow.offsetHeight) + 'px';\n" +
+                "document.getElementById('fpField').style.visibility = 'hidden';\n" +
+                "kbd.style.visibility = 'hidden';\n" +
+                "fpFrame.style.visibility = 'visible';\n" +
+                "pinRow.style.visibility = 'hidden';\n" +
+              "} else {\n" +
+                "paydata.style.top = paydataTop + 'px';\n" +
+                "document.getElementById('fpField').style.visibility = 'visible';\n" +
+                "kbd.style.visibility = 'visible';\n" +
+                "fpFrame.style.visibility = 'hidden';\n" +
+                "pinRow.style.visibility = 'visible';\n" +
+              "}\n" +
             "}\n" +
+
             "const numberOfAccountsMinus1 = ")
         .append(accountCollection.size() - 1)
         .append(
             ";\n" +
-            "var cardIndex = ")
+            "let cardIndex = ")
         .append(selectedCard)
         .append(
             ";\n" +
-            "var cardImage = null;\n" +
-            "var pin = '" + HTMLEncoder.encode(pin) + "';\n" +
+            "let cardImage = null;\n" + 
+            "let paydataTop;\n" +
+            "let paydata;\n" +
+            "let pinfield;\n" +
+            "let pinRow;\n" +
+            "let kbd;\n" +
+            "let fpFrame;\n" +
+            "let pin = '" + HTMLEncoder.encode(pin) + "';\n" +
+
             "function showPin() {\n" +
-            "var pwd = \"<span style='font-size:10pt;position:relative;top:-1pt'>\";\n" +
-            "for (var i = 0; i < pin.length; i++) {\n" +
-            "pwd += '\u25cf\u2007';\n" +
+              "let pwd = \"<span style='font-size:10pt;position:relative;top:-1pt'>\";\n" +
+              "for (let i = 0; i < pin.length; i++) {\n" +
+                "pwd += '\u25cf\u2007';\n" +
+              "}\n" +
+              "pinfield.innerHTML = pwd + \"</span><span class='pinfix'>K</span>\";\n" +
             "}\n" +
-            "pinfield.innerHTML = pwd + \"</span><span class='pinfix'>K</span>\";\n" +
-            "}\n" +
+
             "function addDigit(digit) {\n" +
-            "if (pin.length < 16) {\n" +
-            "pinfield.innerHTML = pin.length == 0 ? digit : pinfield.innerHTML.substring(0, pinfield.innerHTML.length - 29)  + digit;\n" +
-            "pin += digit;\n" +
-            "setTimeout(function() {\n" +
-            "showPin();\n" +
-            "}, 500);\n" +
-            "} else {\n" +
-            "Saturn.toast('PIN digit ignored', " + Gravity.CENTER_VERTICAL + ");\n" +
+              "if (pin.length < 16) {\n" +
+                "pinfield.innerHTML = pin.length == 0 ? digit :" +
+                    " pinfield.innerHTML.substring(0, pinfield.innerHTML.length - 29)  + digit;\n" +
+                "pin += digit;\n" +
+                "setTimeout(function() {\n" +
+                  "showPin();\n" +
+                "}, 500);\n" +
+              "} else {\n" +
+                "Saturn.toast('PIN digit ignored', " + Gravity.CENTER_VERTICAL + ");\n" +
+              "}\n" +
             "}\n" +
-            "}\n" +
+
             "function validatePin() {\n" +
-            "if (pin.length == 0) {\n" +
-            "Saturn.toast('Empty PIN - Ignored', " + Gravity.CENTER_VERTICAL + ");\n" +
-            "} else {\n" +
-            "Saturn.performPayment(pin);\n" +
+              "if (pin.length == 0) {\n" +
+                "Saturn.toast('Empty PIN - Ignored', " + Gravity.CENTER_VERTICAL + ");\n" +
+              "} else {\n" +
+                "Saturn.performPayment(pin);\n" +
+              "}\n" +
             "}\n" +
-            "}\n" +
+
             "function deleteDigit() {\n" +
-            "if (pin.length > 0) {\n" +
-            "pin = pin.substring(0, pin.length - 1);\n" +
-            "showPin();\n" +
-            "}\n");
+              "if (pin.length > 0) {\n" +
+                "pin = pin.substring(0, pin.length - 1);\n" +
+                "showPin();\n" +
+              "}\n");
+
         StringBuilder html = new StringBuilder(
             "<table id='paydata' style='visibility:hidden;position:absolute;z-index:5'>" +
             "<tr><td id='payeelabel' class='label'>Payee</td><td id='payeefield' " +
                 "class='field' onClick=\"Saturn.toast('Name of merchant', " +
                     Gravity.CENTER_VERTICAL + ")\">")
           .append(HTMLEncoder.encode(walletRequest.paymentRequest.getPayeeCommonName()))
-          .append("</td></tr>" +
-            "<tr><td colspan='2' style='height:5pt'></td></tr>" +
+          .append("</td><td></td></tr>" +
+            "<tr><td colspan='3' style='height:5pt'></td></tr>" +
             "<tr><td class='label'>")
           .append(walletRequest.getAmountLabel())
           .append(
@@ -718,13 +764,28 @@ public class SaturnActivity extends BaseProxyActivity {
                 "class='field' onClick=\"Saturn.toast('Amount to pay', " +
                     Gravity.CENTER_VERTICAL + ")\">")
           .append(walletRequest.getFormattedTotal())
-          .append("</td></tr>" +
-            "<tr><td colspan='2' style='height:5pt'></td></tr>" +
-            "<tr><td class='label'>PIN</td>" +
+          .append("</td><td></td></tr>" +
+            "<tr><td colspan='3' style='height:5pt'></td></tr>" +
+            "<tr id='pinRow'><td class='label'>PIN</td>" +
             "<td id='pinfield' class='field' " +
                 "onClick=\"Saturn.toast('Use the keyboard below...', " +
-                    Gravity.CENTER_VERTICAL + ")\"></td></tr>" +
+                    Gravity.CENTER_VERTICAL + ")\"></td><td id='fpField'>")
+          .append(ThemeHolder.getFingerPrintSymbol("1.8", "kurt()", "block", 7, 18))
+          .append(
+            "</td></tr>" +
             "</table>" +
+
+            "<table id='fpFrame' style='visibility:hidden;position:absolute'>" +
+            "<tr><td class='label'>Authorize&nbsp;Request</td><td id='pinSwitch'></td></tr>" +
+            "<tr><td colspan='2' style='height:5pt'></td></tr>" +
+            "<tr><td style='text-align:center'>")
+          .append(ThemeHolder.getFingerPrintSymbol("1", "ff", "inline-block", 0, 40))
+          .append(
+            "</td><td>")
+          .append(ThemeHolder.getFingerPrintSwitch())
+          .append(
+            "</td></tr></table>" +
+
             "<div id='kbd' style='visibility:hidden;position:absolute;width:")
           .append(landscapeMode ? (width * 50) / factor : (width * 88) / factor)
           .append("px'>")
@@ -740,6 +801,20 @@ public class SaturnActivity extends BaseProxyActivity {
         if (view != null) {  
             InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
+
+    @JavascriptInterface
+    public String getAccountProtectionInfo(int cardIndex) {
+        // selectedCard doesn't work here due to threading issues
+        BiometricProtection biometricProtection =
+                accountCollection.get(cardIndex).biometricProtection;
+        try {
+            return new JSONObjectWriter()
+                .setBoolean("biometric", biometricProtection != BiometricProtection.NONE)
+                    .toString();
+        } catch (IOException e) {
+            return null;
         }
     }
 
