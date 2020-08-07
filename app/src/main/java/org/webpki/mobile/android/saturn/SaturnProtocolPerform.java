@@ -156,9 +156,11 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
                 FileOutputStream fos =
                         saturnActivity.openFileOutput(SaturnActivity.SATURN_SETTINGS,
                                                       Context.MODE_PRIVATE);
-                JSONObjectWriter settings = new JSONObjectWriter();
-                settings.setInt(SaturnActivity.LAST_KEY_ID_JSON,
-                                saturnActivity.getSelectedCard().signatureKeyHandle);
+                JSONObjectWriter settings = new JSONObjectWriter()
+                    .setInt(SaturnActivity.SETTINGS_LAST_KEY_ID_JSON,
+                            saturnActivity.getSelectedCard().signatureKeyHandle)
+                    .setBoolean(SaturnActivity.SETTINGS_BIOMETRIC_PREFERRED_JSON,
+                                saturnActivity.biometricPreferred);
                 fos.write(settings.serializeToBytes(JSONOutputFormats.NORMALIZED));
                 fos.close();
             } catch (IOException e) {

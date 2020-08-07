@@ -49,17 +49,13 @@ import androidx.annotation.Nullable;
 
 import androidx.webkit.WebViewAssetLoader;
 
-import org.webpki.json.JSONAsymKeyEncrypter;
 import org.webpki.json.JSONAsymKeySigner;
 import org.webpki.mobile.android.R;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
-import java.math.BigDecimal;
 
 import java.security.PublicKey;
 
@@ -71,14 +67,11 @@ import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.AsymKeySignerInterface;
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.CryptoRandom;
-import org.webpki.crypto.HashAlgorithms;
 
 import org.webpki.json.JSONArrayReader;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONParser;
-import org.webpki.json.DataEncryptionAlgorithms;
-import org.webpki.json.KeyEncryptionAlgorithms;
 
 import org.webpki.mobile.android.application.ThemeHolder;
 
@@ -86,7 +79,6 @@ import org.webpki.mobile.android.proxy.BaseProxyActivity;
 
 import org.webpki.mobile.android.saturn.common.AuthorizationDataEncoder;
 import org.webpki.mobile.android.saturn.common.ClientPlatform;
-import org.webpki.mobile.android.saturn.common.Currencies;
 import org.webpki.mobile.android.saturn.common.UserResponseItem;
 import org.webpki.mobile.android.saturn.common.WalletRequestDecoder;
 
@@ -96,7 +88,6 @@ import org.webpki.net.MobileProxyParameters;
 
 import org.webpki.sks.BiometricProtection;
 import org.webpki.sks.KeyProtectionInfo;
-import org.webpki.sks.PassphraseFormat;
 import org.webpki.sks.SKSException;
 
 import org.webpki.util.ArrayUtil;
@@ -109,8 +100,13 @@ public class SaturnActivity extends BaseProxyActivity {
 
     static final String SATURN_SOFTWARE = "WebPKI Suite/Saturn";
 
-    static final String SATURN_SETTINGS    = "satset";
-    static final String LAST_KEY_ID_JSON   = "lastKey";
+    static final String SATURN_SETTINGS                   = "satset";
+
+    int lastKeyId;
+    static final String SETTINGS_LAST_KEY_ID_JSON         = "lastKey";
+
+    boolean biometricPreferred = true;
+    static final String SETTINGS_BIOMETRIC_PREFERRED_JSON = "bioPref";
 
     static final String BACKGROUND_WH = "#f2f2ff";
     static final String BORDER_WH     = "#8080ff";
@@ -212,8 +208,6 @@ public class SaturnActivity extends BaseProxyActivity {
     FORM currentForm = FORM.SIMPLE;
 
     int selectedCard;
-
-    int lastKeyId;
 
     String pin = "";
 
@@ -461,7 +455,8 @@ public class SaturnActivity extends BaseProxyActivity {
             byte[] buffer = new byte[fis.available()];
             fis.read(buffer);
             JSONObjectReader settings = JSONParser.parse(buffer);
-            lastKeyId = settings.getInt(LAST_KEY_ID_JSON);
+            lastKeyId = settings.getInt(SETTINGS_LAST_KEY_ID_JSON);
+            biometricPreferred = settings.getBoolean(SETTINGS_BIOMETRIC_PREFERRED_JSON);
         } catch (IOException e) {
             lastKeyId = -1;
         }
@@ -676,21 +671,30 @@ public class SaturnActivity extends BaseProxyActivity {
               "}\n" +
             "}\n" +
 
+            "function selectAuthMode(biometricMode) {\n" +
+              "Saturn.setAuthPreference(biometricMode);\n" +
+              "setAccountSpecificDetails();\n" +
+            "}\n" +
+
             "function setAccountSpecificDetails() {\n" +
               "document.getElementById('leftArrow').style.visibility = " +
               "cardIndex == 0 ? 'hidden' : 'visible';\n" +
               "document.getElementById('rightArrow').style.visibility = " +
               "cardIndex == numberOfAccountsMinus1 ? 'hidden' : 'visible';\n" +
               "let accountProtectionInfo = JSON.parse(Saturn.getAccountProtectionInfo(cardIndex));\n" +
-              "if (accountProtectionInfo.biometric) {\n" +
+              "if (accountProtectionInfo.wantBiometric) {\n" +
                 "paydata.style.top = (paydataTop + pinRow.offsetHeight) + 'px';\n" +
+                "document.getElementById('pinSwitch').style.visibility = " +
+                    "accountProtectionInfo.supportsPinCodes ? 'visible' : 'hidden';\n" +
                 "document.getElementById('fpField').style.visibility = 'hidden';\n" +
                 "kbd.style.visibility = 'hidden';\n" +
                 "fpFrame.style.visibility = 'visible';\n" +
                 "pinRow.style.visibility = 'hidden';\n" +
               "} else {\n" +
                 "paydata.style.top = paydataTop + 'px';\n" +
-                "document.getElementById('fpField').style.visibility = 'visible';\n" +
+                "document.getElementById('fpField').style.visibility = " +
+                    "accountProtectionInfo.supportsBiometric ? 'visible' : 'hidden';\n" +
+                "document.getElementById('pinSwitch').style.visibility = 'hidden';\n" +
                 "kbd.style.visibility = 'visible';\n" +
                 "fpFrame.style.visibility = 'hidden';\n" +
                 "pinRow.style.visibility = 'visible';\n" +
@@ -770,18 +774,21 @@ public class SaturnActivity extends BaseProxyActivity {
             "<td id='pinfield' class='field' " +
                 "onClick=\"Saturn.toast('Use the keyboard below...', " +
                     Gravity.CENTER_VERTICAL + ")\"></td><td id='fpField'>")
-          .append(ThemeHolder.getFingerPrintSymbol("1.8", "kurt()", "block", 7, 18))
+          .append(ThemeHolder.getFingerPrintSymbol("1.8", "selectAuthMode(true)", "block", 7, 18))
           .append(
             "</td></tr>" +
             "</table>" +
 
             "<table id='fpFrame' style='visibility:hidden;position:absolute'>" +
-            "<tr><td class='label'>Authorize&nbsp;Request</td><td id='pinSwitch'></td></tr>" +
+            "<tr><td class='label'>Authorize&nbsp;Request</td><td></td></tr>" +
             "<tr><td colspan='2' style='height:5pt'></td></tr>" +
             "<tr><td style='text-align:center'>")
-          .append(ThemeHolder.getFingerPrintSymbol("1", "ff", "inline-block", 0, 40))
+          .append(ThemeHolder.getFingerPrintSymbol("1",
+                                                   "Saturn.toast('Use the fingerprint sensor', " +
+                                                       Gravity.BOTTOM + ")",
+                                                   "inline-block", 0, 40))
           .append(
-            "</td><td>")
+            "</td><td id='pinSwitch'>")
           .append(ThemeHolder.getFingerPrintSwitch())
           .append(
             "</td></tr></table>" +
@@ -805,13 +812,22 @@ public class SaturnActivity extends BaseProxyActivity {
     }
 
     @JavascriptInterface
+    public void setAuthPreference(boolean biometricPreferred) {
+        this.biometricPreferred = biometricPreferred;
+    }
+
+    @JavascriptInterface
     public String getAccountProtectionInfo(int cardIndex) {
         // selectedCard doesn't work here due to threading issues
-        BiometricProtection biometricProtection =
-                accountCollection.get(cardIndex).biometricProtection;
+        boolean supportsBiometric =
+            accountCollection.get(cardIndex).biometricProtection != BiometricProtection.NONE;
+        boolean supportsPinCodes =
+            accountCollection.get(cardIndex).biometricProtection != BiometricProtection.EXCLUSIVE;
         try {
             return new JSONObjectWriter()
-                .setBoolean("biometric", biometricProtection != BiometricProtection.NONE)
+                .setBoolean("supportsBiometric", supportsBiometric)
+                .setBoolean("supportsPinCodes", supportsPinCodes)
+                .setBoolean("wantBiometric", supportsBiometric && biometricPreferred)
                     .toString();
         } catch (IOException e) {
             return null;

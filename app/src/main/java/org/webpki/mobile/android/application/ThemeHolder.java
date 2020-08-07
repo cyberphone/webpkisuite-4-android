@@ -63,8 +63,7 @@ public class ThemeHolder {
             .append(outerHeight - 13)
             .append("' rx='10' ry='10' stroke-width='2' stroke='")
             .append(whiteTheme ? "#989898" : "orange")
-            .append("' fill='#a5a5a5'/>" +
-                    "<rect x='")
+            .append("' fill='#a5a5a5'/><rect x='")
             .append(xOffset + 8)
             .append("' y='")
             .append(yOffset + 8)
@@ -106,7 +105,7 @@ public class ThemeHolder {
                   "<circle cy='26' r='6' cx='39'/>" +
                   "<circle cy='26' r='6' cx='61'/>" +
                   "<circle cy='26' r='6' cx='83'/>" +
-                "</g><a xlink:href=\"javascript:wantPin()\">" +
+                "</g><a xlink:href=\"javascript:selectAuthMode(false)\">" +
                         "<rect width='100' height='50' opacity='0'/>" +
                     "</a>" +
                 "</svg>");
