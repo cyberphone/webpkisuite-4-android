@@ -23,6 +23,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 
+import android.hardware.fingerprint.FingerprintManager;
+
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -46,6 +48,10 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import androidx.core.os.CancellationSignal;
+
+import androidx.core.hardware.fingerprint.FingerprintManagerCompat;
 
 import androidx.webkit.WebViewAssetLoader;
 
@@ -629,6 +635,7 @@ public class SaturnActivity extends BaseProxyActivity {
         }
         js.append (walletRequest.getOptionalMarqueeCode())
           .append(
+              "fpFrame.style.maxWidth = (fpFrame.offsetWidth + 20) + 'px';" +
               "card.style.visibility='visible';\n" +
               "paydata.style.visibility='visible';\n" +
               "setAccountSpecificDetails();\n" +
@@ -682,7 +689,7 @@ public class SaturnActivity extends BaseProxyActivity {
               "document.getElementById('rightArrow').style.visibility = " +
               "cardIndex == numberOfAccountsMinus1 ? 'hidden' : 'visible';\n" +
               "let accountProtectionInfo = JSON.parse(Saturn.getAccountProtectionInfo(cardIndex));\n" +
-              "if (accountProtectionInfo.wantBiometric) {\n" +
+              "if (accountProtectionInfo.useBiometrics) {\n" +
                 "paydata.style.top = (paydataTop + pinRow.offsetHeight) + 'px';\n" +
                 "document.getElementById('pinSwitch').style.visibility = " +
                     "accountProtectionInfo.supportsPinCodes ? 'visible' : 'hidden';\n" +
@@ -699,6 +706,7 @@ public class SaturnActivity extends BaseProxyActivity {
                 "fpFrame.style.visibility = 'hidden';\n" +
                 "pinRow.style.visibility = 'visible';\n" +
               "}\n" +
+              "Saturn.setAuthenticationMode(accountProtectionInfo.useBiometrics);\n" +
             "}\n" +
 
             "const numberOfAccountsMinus1 = ")
@@ -743,7 +751,7 @@ public class SaturnActivity extends BaseProxyActivity {
               "if (pin.length == 0) {\n" +
                 "Saturn.toast('Empty PIN - Ignored', " + Gravity.CENTER_VERTICAL + ");\n" +
               "} else {\n" +
-                "Saturn.performPayment(pin);\n" +
+                "Saturn.performPinAuthorizedPayment(pin);\n" +
               "}\n" +
             "}\n" +
 
@@ -781,17 +789,18 @@ public class SaturnActivity extends BaseProxyActivity {
 
             "<table id='fpFrame' style='visibility:hidden;position:absolute'>" +
             "<tr><td class='label'>Authorize&nbsp;Request</td><td></td></tr>" +
-            "<tr><td colspan='2' style='height:5pt'></td></tr>" +
             "<tr><td style='text-align:center'>")
           .append(ThemeHolder.getFingerPrintSymbol("1",
                                                    "Saturn.toast('Use the fingerprint sensor', " +
                                                        Gravity.BOTTOM + ")",
                                                    "inline-block", 0, 40))
           .append(
-            "</td><td id='pinSwitch'>")
+            "</td><td id='pinSwitch' onclick=\"selectAuthMode(false)\">")
           .append(ThemeHolder.getFingerPrintSwitch())
           .append(
-            "</td></tr></table>" +
+            "</td></tr>" +
+            "<tr><td id='fpText' colspan='2' style='height:0px'></td></tr>" +
+            "</table>" +
 
             "<div id='kbd' style='visibility:hidden;position:absolute;width:")
           .append(landscapeMode ? (width * 50) / factor : (width * 88) / factor)
@@ -827,10 +836,63 @@ public class SaturnActivity extends BaseProxyActivity {
             return new JSONObjectWriter()
                 .setBoolean("supportsBiometric", supportsBiometric)
                 .setBoolean("supportsPinCodes", supportsPinCodes)
-                .setBoolean("wantBiometric", supportsBiometric && biometricPreferred)
+                .setBoolean("useBiometrics", supportsBiometric && biometricPreferred)
                     .toString();
         } catch (IOException e) {
             return null;
+        }
+    }
+
+    void setFingerPrintError(String message) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                saturnView.evaluateJavascript(
+                    "document.getElementById('fpText').innerHTML = '" + message + "';", null);
+            }
+        });
+    }
+
+    CancellationSignal fingerPrintAuthenticationInProgess;
+
+    @JavascriptInterface
+    public void setAuthenticationMode(boolean useBiometrics) {
+        Log.e("KKK", "UB" + useBiometrics);
+        if (fingerPrintAuthenticationInProgess != null) {
+            fingerPrintAuthenticationInProgess.cancel();
+            fingerPrintAuthenticationInProgess = null;
+        }
+        if (useBiometrics) {
+            FingerprintManagerCompat fingerprintManager = FingerprintManagerCompat.from(this);
+            if (fingerprintManager.hasEnrolledFingerprints()) {
+                fingerPrintAuthenticationInProgess = new CancellationSignal();
+                Log.e("KKK", "FP SETUP");
+                fingerprintManager.authenticate(
+                    null,
+                    0,
+                    fingerPrintAuthenticationInProgess,
+                    new FingerprintManagerCompat.AuthenticationCallback() {
+
+                        @Override
+                        public void onAuthenticationSucceeded(
+                            FingerprintManagerCompat.AuthenticationResult result) {
+                            Log.e("KKK", "SUCCESS");
+                            performPayment();
+                        }
+
+                        @Override
+                        public void onAuthenticationError(int errMsgId, CharSequence errString) {
+                            Log.e("KKK", "X=" + errString.toString() + " Y=" + errMsgId);
+                            if (errMsgId != FingerprintManager.FINGERPRINT_ERROR_CANCELED) {
+                                setFingerPrintError("Failed to authenticate, try again later");
+                            }
+                        }
+                    },
+                    null);
+            } else {
+                Log.e("KKK", "NO FP");
+                setFingerPrintError("You need to enable the fingerprint reader");
+            }
         }
     }
 
@@ -852,7 +914,7 @@ public class SaturnActivity extends BaseProxyActivity {
             challengeResults = temp.toArray(new UserResponseItem[0]);
             hideSoftKeyBoard();
             showPaymentRequest();
-            paymentEvent();
+            performPayment();
         } catch (Exception e) {
             unconditionalAbort("Challenge data read failure");
         }
@@ -860,7 +922,8 @@ public class SaturnActivity extends BaseProxyActivity {
     }
 
     boolean pinBlockCheck() throws SKSException {
-        if (sks.getKeyProtectionInfo(getSelectedCard().signatureKeyHandle).isPinBlocked()) {
+        if (fingerPrintAuthenticationInProgess == null &&
+            sks.getKeyProtectionInfo(getSelectedCard().signatureKeyHandle).isPinBlocked()) {
             unconditionalAbort("Card blocked due to previous PIN errors!");
             return true;
         }
@@ -908,8 +971,9 @@ public class SaturnActivity extends BaseProxyActivity {
                             return sks.signHashedData(account.signatureKeyHandle,
                                                       algorithm.getAlgorithmId(AlgorithmPreferences.SKS),
                                                       null,
-                                                      false,
-                                                      pin.getBytes("UTF-8"),
+                                                      fingerPrintAuthenticationInProgess != null,
+                                                      fingerPrintAuthenticationInProgess == null ?
+                                                          pin.getBytes("UTF-8") : null,
                                                       algorithm.getDigestAlgorithm().digest(data));
                         }
                     }).setSignatureAlgorithm(account.signatureAlgorithm)
@@ -937,7 +1001,7 @@ public class SaturnActivity extends BaseProxyActivity {
         }
     }
 
-    void paymentEvent() {
+    void performPayment() {
         if (userAuthorizationSucceeded()) {
 
             showHeavyWork(PROGRESS_PAYMENT);
@@ -948,10 +1012,10 @@ public class SaturnActivity extends BaseProxyActivity {
     }
 
     @JavascriptInterface
-    public void performPayment(String pin) {
+    public void performPinAuthorizedPayment(String pin) {
         this.pin = pin;
         hideSoftKeyBoard();
-        paymentEvent();
+        performPayment();
     }
 
     @JavascriptInterface

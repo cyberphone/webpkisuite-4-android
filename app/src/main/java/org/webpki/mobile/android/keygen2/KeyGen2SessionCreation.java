@@ -26,6 +26,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import android.hardware.fingerprint.FingerprintManager;
 import android.os.AsyncTask;
 
 import android.text.Editable;
@@ -44,6 +45,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import android.widget.TextView.OnEditorActionListener;
+
+import androidx.core.hardware.fingerprint.FingerprintManagerCompat;
 
 import org.webpki.mobile.android.proxy.BaseProxyActivity;
 
@@ -277,7 +280,9 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
             }
 
             if (keyGen2Activity.invocationRequest.getQueriedCapabilities().contains(KeyGen2URIs.CLIENT_FEATURES.BIOMETRIC_SUPPORT)) {
-                invocation_response.addSupportedFeature(KeyGen2URIs.CLIENT_FEATURES.BIOMETRIC_SUPPORT);
+                if (FingerprintManagerCompat.from(keyGen2Activity).isHardwareDetected()) {
+                    invocation_response.addSupportedFeature(KeyGen2URIs.CLIENT_FEATURES.BIOMETRIC_SUPPORT);
+                }
             }
 
             keyGen2Activity.postJSONData(keyGen2Activity.getTransactionURL(),

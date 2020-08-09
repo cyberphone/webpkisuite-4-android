@@ -91,24 +91,20 @@ public class ThemeHolder {
 
     public static StringBuilder getFingerPrintSwitch() {
         return new StringBuilder(
-                "<svg style='height:12pt' viewBox='0 0 100 50' " +
-                "xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>" +
+                "<svg style='height:12pt' viewBox='0 0 100 50' xmlns='http://www.w3.org/2000/svg'>" +
                 "<rect stroke='")
-            .append(whiteTheme ? "black" : "white")
+            .append(whiteTheme ? "grey" : "white")
             .append(
                 "' stroke-width='3' fill='none' rx='6' y='1.5' x='1.5' height='47' width='97'/>" +
                 "<g fill='")
-            .append(whiteTheme ? "black" : "white")
+            .append(whiteTheme ? "grey" : "white")
             .append(
                 "'>" +
                   "<circle cy='26' r='6' cx='17'/>" +
                   "<circle cy='26' r='6' cx='39'/>" +
                   "<circle cy='26' r='6' cx='61'/>" +
                   "<circle cy='26' r='6' cx='83'/>" +
-                "</g><a xlink:href=\"javascript:selectAuthMode(false)\">" +
-                        "<rect width='100' height='50' opacity='0'/>" +
-                    "</a>" +
-                "</svg>");
+                "</g></svg>");
     }
 
     public static StringBuilder getFingerPrintSymbol(String strokeSize,
@@ -126,7 +122,7 @@ public class ThemeHolder {
             .append(
                 "' viewBox='0 0 34 34' xmlns='http://www.w3.org/2000/svg' " +
                 "xmlns:xlink='http://www.w3.org/1999/xlink'><g stroke='")
-            .append(whiteTheme ? "black" : "white")
+            .append(whiteTheme ? "blue" : "white")
             .append("' stroke-linecap='round' stroke-width='")
             .append(strokeSize)
             .append("' fill='none'>")
