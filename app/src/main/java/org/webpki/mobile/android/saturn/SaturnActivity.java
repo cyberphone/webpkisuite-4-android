@@ -782,7 +782,7 @@ public class SaturnActivity extends BaseProxyActivity {
             "<td id='pinfield' class='field' " +
                 "onClick=\"Saturn.toast('Use the keyboard below...', " +
                     Gravity.CENTER_VERTICAL + ")\"></td><td id='fpField'>")
-          .append(ThemeHolder.getFingerPrintSymbol("1.8", "selectAuthMode(true)", "block", 7, 18))
+          .append(ThemeHolder.getFingerPrintSymbol("1", "selectAuthMode(true)", "block", 7, 18))
           .append(
             "</td></tr>" +
             "</table>" +
@@ -790,7 +790,7 @@ public class SaturnActivity extends BaseProxyActivity {
             "<table id='fpFrame' style='visibility:hidden;position:absolute'>" +
             "<tr><td class='label'>Authorize&nbsp;Request</td><td></td></tr>" +
             "<tr><td style='text-align:center'>")
-          .append(ThemeHolder.getFingerPrintSymbol("1",
+          .append(ThemeHolder.getFingerPrintSymbol("0.6",
                                                    "Saturn.toast('Use the fingerprint sensor', " +
                                                        Gravity.BOTTOM + ")",
                                                    "inline-block", 0, 40))
