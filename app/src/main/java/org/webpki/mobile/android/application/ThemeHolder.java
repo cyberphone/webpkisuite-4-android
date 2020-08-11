@@ -61,7 +61,7 @@ public class ThemeHolder {
             .append(outerWidth - 12)
             .append("' height='")
             .append(outerHeight - 13)
-            .append("' rx='10' ry='10' stroke-width='2' stroke='")
+            .append("' rx='10' stroke-width='2' stroke='")
             .append(whiteTheme ? "#989898" : "orange")
             .append("' fill='#a5a5a5'/><rect x='")
             .append(xOffset + 8)
@@ -71,7 +71,7 @@ public class ThemeHolder {
             .append(outerWidth - 16)
             .append("' height='")
             .append(outerHeight - 17)
-            .append("' rx='8' ry='8' fill='#fcfcfc' filter='url(#actorsBlur)'/>").toString();
+            .append("' rx='8' fill='#fcfcfc' filter='url(#actorsBlur)'/>").toString();
     }
 
     static String addDigit(int value, int xOffset, int yOffset) {

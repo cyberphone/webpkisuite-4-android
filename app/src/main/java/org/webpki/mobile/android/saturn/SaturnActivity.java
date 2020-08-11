@@ -84,6 +84,7 @@ import org.webpki.mobile.android.application.ThemeHolder;
 import org.webpki.mobile.android.proxy.BaseProxyActivity;
 
 import org.webpki.mobile.android.saturn.common.AuthorizationDataEncoder;
+import org.webpki.mobile.android.saturn.common.UserAuthorizationMethods;
 import org.webpki.mobile.android.saturn.common.ClientPlatform;
 import org.webpki.mobile.android.saturn.common.UserResponseItem;
 import org.webpki.mobile.android.saturn.common.WalletRequestDecoder;
@@ -506,7 +507,7 @@ public class SaturnActivity extends BaseProxyActivity {
                     "viewBox='0 0 320 200' xmlns='http://www.w3.org/2000/svg'>" +
                     "<defs>" +
                     "<clipPath id='cardClip'>" +
-                    "<rect rx='15' ry='15' width='300' height='180' x='0' y='0'/>" +
+                    "<rect rx='15' width='300' height='180' x='0' y='0'/>" +
                     "</clipPath>")
             .append(whiteTheme ?
                     "<filter id='dropShaddow'>" +
@@ -525,7 +526,7 @@ public class SaturnActivity extends BaseProxyActivity {
                     "<stop offset='1' stop-color='#808080'/>" +
                     "</linearGradient>" +
                     "</defs>" +
-                    "<rect filter='url(#dropShaddow)' rx='16' ry='16' " +
+                    "<rect filter='url(#dropShaddow)' rx='16' " +
                     "width='302' height='182' x='12' y='12' fill='#c0c0c0'/>"
                                         :
                     "<linearGradient y1='0' x1='0' y2='1' x2='1' id='innerCardBorder'>" +
@@ -538,7 +539,7 @@ public class SaturnActivity extends BaseProxyActivity {
                     "<feGaussianBlur stdDeviation='3.5'/>" +
                     "</filter>" +
                     "</defs>" +
-                    "<rect filter='url(#dropShaddow)' rx='16' ry='16' " +
+                    "<rect filter='url(#dropShaddow)' rx='16' " +
                     "width='305' height='184' x='7' y='8' fill='white'/>")
             .append("<svg x='10' y='10' clip-path='url(#cardClip)'>" +
                     "<image id='cardImage' width='300' height='180' href='/card/")
@@ -547,16 +548,16 @@ public class SaturnActivity extends BaseProxyActivity {
 
             .append(whiteTheme ?
                     "<rect fill='none' x='11' y='11' width='298' height='178' " +
-                    "rx='14.7' ry='14.7' stroke='url(#innerCardBorder)' stroke-width='2.7'/>" +
+                    "rx='14.7' stroke='url(#innerCardBorder)' stroke-width='2.7'/>" +
                     "<rect fill='none' x='9.5' y='9.5' width='301' height='181' " +
-                    "rx='16' ry='16' stroke='url(#outerCardBorder)'/>"
+                    "rx='16' stroke='url(#outerCardBorder)'/>"
                              :
                     "<rect fill='none' x='11' y='11' width='298' height='178' " +
-                    "rx='14.75' ry='14.75' stroke='url(#innerCardBorder)' stroke-width='2'/>" +
+                    "rx='14.75' stroke='url(#innerCardBorder)' stroke-width='2'/>" +
                     "<rect fill='none' x='8.5' y='8.5' width='303' height='183' " +
-                    "rx='17' ry='17' stroke='#e0e0e0'/>" +
+                    "rx='17' stroke='#e0e0e0'/>" +
                     "<rect fill='none' x='9.5' y='9.5' width='301' height='181' " +
-                    "rx='16' ry='16' stroke='#162c44'/>")
+                    "rx='16' stroke='#162c44'/>")
 
             .append("</svg></td><td id='rightArrow' style='visibility:hidden'>" +
                     "<svg style='width:")
@@ -956,6 +957,8 @@ public class SaturnActivity extends BaseProxyActivity {
                     privateMessageEncryptionKey,
                     account.dataEncryptionAlgorithm,
                     tempChallenge,
+                    fingerPrintAuthenticationInProgess == null ?
+                        UserAuthorizationMethods.PIN : UserAuthorizationMethods.FINGER_PRINT,
                     new GregorianCalendar(),
                     SATURN_SOFTWARE,
                     webPkiVersion,
