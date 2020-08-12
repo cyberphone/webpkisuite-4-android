@@ -36,6 +36,8 @@ import org.webpki.crypto.CertificateInfo;
 import org.webpki.crypto.CertificateUtil;
 import org.webpki.crypto.ExtendedKeyUsages;
 
+import org.webpki.mobile.android.util.WebViewHtmlLoader;
+
 import org.webpki.util.HTMLEncoder;
 import org.webpki.util.ArrayUtil;
 import org.webpki.util.DebugFormatter;
@@ -100,39 +102,40 @@ public class CertificateViewActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cert_view);
-        WebView log_view = (WebView) findViewById(R.id.certData);
+        WebView certView = (WebView) findViewById(R.id.certData);
         Intent intent = getIntent();
-        StringBuilder cert_text = new StringBuilder("<html><body><table cellspacing=\"5\" cellpadding=\"5\">");
+        StringBuilder certText = new StringBuilder("<html><body><table cellspacing=\"5\" cellpadding=\"5\">");
         try {
             CertificateInfo cert_info = new CertificateInfo(CertificateUtil.getCertificateFromBlob(intent.getByteArrayExtra(CERTIFICATE_BLOB)));
-            add(cert_text, "Issuer", HTMLEncoder.encode(cert_info.getIssuer()));
-            add(cert_text, "Serial&nbsp;number", cert_info.getSerialNumber() + " (0x" + cert_info.getSerialNumberInHex() + ")");
-            add(cert_text, "Subject", HTMLEncoder.encode(cert_info.getSubject()));
-            add(cert_text, "Valid&nbsp;from", niceDate(cert_info.getNotBeforeDate()));
-            add(cert_text, "Valid&nbsp;to", niceDate(cert_info.getNotAfterDate()));
+            add(certText, "Issuer", HTMLEncoder.encode(cert_info.getIssuer()));
+            add(certText, "Serial&nbsp;number", cert_info.getSerialNumber() + " (0x" + cert_info.getSerialNumberInHex() + ")");
+            add(certText, "Subject", HTMLEncoder.encode(cert_info.getSubject()));
+            add(certText, "Valid&nbsp;from", niceDate(cert_info.getNotBeforeDate()));
+            add(certText, "Valid&nbsp;to", niceDate(cert_info.getNotAfterDate()));
             String bc = cert_info.getBasicConstraints();
             if (bc != null) {
-                add(cert_text, "Basic&nbsp;constraints", bc);
+                add(certText, "Basic&nbsp;constraints", bc);
             }
-            printURIs(cert_text, "Key&nbsp;usage", cert_info.getKeyUsages());
+            printURIs(certText, "Key&nbsp;usage", cert_info.getKeyUsages());
             String[] ext_key_usages = cert_info.getExtendedKeyUsage();
             if (ext_key_usages != null) {
                 for (int i = 0; i < ext_key_usages.length; i++) {
                     ext_key_usages[i] = ExtendedKeyUsages.getOptionallyTranslatedEku(ext_key_usages[i]);
                 }
-                printURIs(cert_text, "Extended&nbsp;key&nbsp;usage", ext_key_usages);
+                printURIs(certText, "Extended&nbsp;key&nbsp;usage", ext_key_usages);
             }
-            printURIs(cert_text, "Policy&nbsp;OIDs", cert_info.getPolicyOIDs());
-            printURIs(cert_text, "AIA&nbsp;CA&nbsp;issuers", cert_info.getAIACAIssuers());
-            printURIs(cert_text, "OCSP&nbsp;reponders", cert_info.getAIAOCSPResponders());
+            printURIs(certText, "Policy&nbsp;OIDs", cert_info.getPolicyOIDs());
+            printURIs(certText, "AIA&nbsp;CA&nbsp;issuers", cert_info.getAIACAIssuers());
+            printURIs(certText, "OCSP&nbsp;reponders", cert_info.getAIAOCSPResponders());
             String fp = ArrayUtil.toHexString(cert_info.getCertificateHash(), 0, -1, true, ' ');
-            add(cert_text, "SHA1&nbsp;fingerprint", fp.substring(0, 29) + "<br>" + fp.substring(29));
-            add(cert_text, "Key&nbsp;algorithm", cert_info.getPublicKeyAlgorithm());
-            add(cert_text, "Public&nbsp;key", binaryDump(cert_info.getPublicKeyData(), false));
-            cert_text.append("</table>");
+            add(certText, "SHA1&nbsp;fingerprint", fp.substring(0, 29) + "<br>" + fp.substring(29));
+            add(certText, "Key&nbsp;algorithm", cert_info.getPublicKeyAlgorithm());
+            add(certText, "Public&nbsp;key", binaryDump(cert_info.getPublicKeyData(), false));
+            certText.append("</table>");
         } catch (Exception e) {
-            cert_text = new StringBuilder("<html><body><font color=\"red\">FAILED: ").append(e.getMessage());
+            certText =
+                new StringBuilder("<html><body><font color=\"red\">FAILED: ").append(e.getMessage());
         }
-        log_view.loadData(cert_text.append("</body></html>").toString(), "text/html; charset=UTF-8", null);
+        WebViewHtmlLoader.loadHtml(certView, certText.append("</body></html>"));
     }
 }

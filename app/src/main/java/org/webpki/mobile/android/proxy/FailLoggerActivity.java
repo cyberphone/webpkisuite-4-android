@@ -18,6 +18,8 @@ package org.webpki.mobile.android.proxy;
 
 import org.webpki.mobile.android.R;
 
+import org.webpki.mobile.android.util.WebViewHtmlLoader;
+
 import android.os.Bundle;
 
 import android.webkit.WebView;
@@ -34,16 +36,10 @@ public class FailLoggerActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fail_logger);
-        WebView log_view = (WebView) findViewById(R.id.failedData);
+        WebView errorView = (WebView) findViewById(R.id.failedData);
         Intent intent = getIntent();
-        StringBuilder log_message = new StringBuilder("<html><body><pre>");
-        for (char c : intent.getStringExtra(LOG_MESSAGE).toCharArray()) {
-            if (c == '\n') {
-                log_message.append("%0A");
-            } else {
-                log_message.append(c);
-            }
-        }
-        log_view.loadData(log_message.append("</pre></body></html>").toString(), "text/html", null);
+        StringBuilder logMessage = new StringBuilder("<html><body><pre>")
+            .append(intent.getStringExtra(LOG_MESSAGE));
+        WebViewHtmlLoader.loadHtml(errorView, logMessage.append("</pre></body></html>"));
     }
 }

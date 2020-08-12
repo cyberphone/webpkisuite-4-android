@@ -26,6 +26,8 @@ import org.webpki.json.JSONParser;
 
 import org.webpki.mobile.android.R;
 
+import org.webpki.mobile.android.util.WebViewHtmlLoader;
+
 import android.os.Bundle;
 
 import android.webkit.WebView;
@@ -43,30 +45,34 @@ public class ProtocolViewActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_protocol_view);
-        WebView log_view = (WebView) findViewById(R.id.protocolData);
-        log_view.getSettings().setSupportZoom(true);
-        log_view.getSettings().setBuiltInZoomControls(true);
+        WebView logView = (WebView) findViewById(R.id.protocolData);
+        logView.getSettings().setSupportZoom(true);
+        logView.getSettings().setBuiltInZoomControls(true);
         Intent intent = getIntent();
-        StringBuilder log_message = new StringBuilder("<html><body style=\"font-size:8pt;font-family:arial,verdana,helvetica;word-break:break-all\">");
+        StringBuilder logMessage = new StringBuilder("<html><body style=\"font-size:8pt;" +
+            "font-family:arial,verdana,helvetica;word-break:break-all\">");
         try {
             int count = 0;
             boolean received = true;
-            for (byte[] part : (ArrayList<byte[]>) new ObjectInputStream(openFileInput(intent.getStringExtra(LOG_FILE))).readObject()) {
+            for (byte[] part : (ArrayList<byte[]>) new ObjectInputStream(
+                openFileInput(intent.getStringExtra(LOG_FILE))).readObject()) {
                 if (count++ > 0) {
-                    log_message.append("<br>&nbsp;<br>");
+                    logMessage.append("<br>&nbsp;<br>");
                 }
-                log_message.append("<table align=\"center\"><tr><td bgcolor=\"#F0F0F0\" align=\"center\" " +
-                           "style=\"width:100pt;font-size:8pt;font-family:verdana,arial;border:solid;border-width:1px;padding:4px\">&nbsp;")
+                logMessage.append(
+                    "<table align=\"center\"><tr><td bgcolor=\"#F0F0F0\" align=\"center\" " +
+                           "style=\"width:100pt;font-size:8pt;font-family:verdana,arial;" +
+                        "border:solid;border-width:1px;padding:4px\">&nbsp;")
                         .append(count)
                         .append(received ? ": Received from Server" : ": Sent to Server")
                         .append("&nbsp;</td></tr></table>");
                 received = !received;
                 JSONObjectWriter json = new JSONObjectWriter(JSONParser.parse(part));
-                log_message.append(json.serializeToString(JSONOutputFormats.PRETTY_HTML));
+                logMessage.append(json.serializeToString(JSONOutputFormats.PRETTY_HTML));
             }
         } catch (Exception e) {
-            log_message.append("No log data available");
+            logMessage.append("No log data available");
         }
-        log_view.loadData(log_message.append("</body></html>").toString(), "text/html; charset=UTF-8", null);
+         WebViewHtmlLoader.loadHtml(logView, logMessage.append("</body></html>"));
     }
 }
