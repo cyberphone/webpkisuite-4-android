@@ -30,6 +30,8 @@ public class ThemeHolder {
 
     static Boolean whiteTheme;
 
+    public static boolean visuallyImpaired;
+
     public static boolean isWhiteTheme(Context caller) {
         if (whiteTheme == null) {
             whiteTheme = false;
@@ -52,7 +54,7 @@ public class ThemeHolder {
         }
     }
 
-    static String addButtonCore(int outerWidth, int outerHeight, int xOffset, int yOffset) {
+    static StringBuilder addButtonCore(int outerWidth, int outerHeight, int xOffset, int yOffset) {
         return new StringBuilder("<rect x='")
             .append(xOffset + 6)
             .append("' y='")
@@ -71,10 +73,10 @@ public class ThemeHolder {
             .append(outerWidth - 16)
             .append("' height='")
             .append(outerHeight - 17)
-            .append("' rx='8' fill='#fcfcfc' filter='url(#actorsBlur)'/>").toString();
+            .append("' rx='8' fill='#fcfcfc' filter='url(#actorsBlur)'/>");
     }
 
-    static String addDigit(int value, int xOffset, int yOffset) {
+    static StringBuilder addDigit(int value, int xOffset, int yOffset) {
         return new StringBuilder("<a xlink:href=\"javascript:addDigit('")
             .append(value)
             .append("')\">")
@@ -86,7 +88,59 @@ public class ThemeHolder {
             .append("' font-family='Roboto' font-size='26' " +
                     "text-anchor='middle' font-weight='bold'>")
             .append(value)
-            .append("</text></a>").toString();
+            .append("</text></a>");
+    }
+
+    public static StringBuilder getKeyBoard() {
+        int xOffset;
+        int yOffset;
+
+        StringBuilder s = new StringBuilder("<svg viewBox='0 0 416 162' " +
+            "xmlns='http://www.w3.org/2000/svg' " +
+            "xmlns:xlink='http://www.w3.org/1999/xlink'>" +
+            "<defs>" +
+              "<filter height='150%' width='150%' y='-25%' x='-25%' id='actorsBlur'>" +
+                "<feGaussianBlur stdDeviation='3'/>" +
+              "</filter>" +
+            "</defs>");
+
+        for (int i = 0, x = 0; i < 10; i++) {
+            if (i == 4 || i == 7) {
+                x = 0;
+            }
+            s.append(addDigit(i, x, i < 4 ? 0 : i > 6 ? 114 : 57));
+            x += 90;
+        }
+
+        s.append("<a xlink:href=\"javascript:deleteDigit()\">")
+            .append(addButtonCore(56, 48, (90 * 3) + 90, 0))
+            .append("<svg x='")
+            .append(((90 * 3) + 90)  + 18)
+            .append("' y='")
+            .append(14)
+            .append(
+                "' width='20' height='20' viewBox='0 0 20 20'>" +
+                    "<path fill='#be1018' d='m 5,9.9 6.3,9.8 H 7.7 l -7.2,-9.5 V 9.6 l 7.2,-9.4 " +
+                    "H 11.3 Z M 13.2,9.9 19.5,19.7 H 15.9 L 8.7,10.2 8.7,9.6 15.9,0.2 h 3.6 z'/>" +
+                    "</svg>" +
+                    "</a>" +
+
+                    "<a xlink:href=\"javascript:validatePin()\">")
+            .append(addButtonCore(80, 60, xOffset = 90 * 3 + 90 + 56 - 80, yOffset = 102))
+            .append("<svg x='")
+            .append(xOffset + 25)
+            .append("' y='")
+            .append(yOffset + 15)
+            .append(
+                "' width='30' height='30' viewBox='0 0 30 30'>" +
+                    "<path fill='#009900' d='m 0.8,14.2 c 5.4,5.7 8.4,12.4 8.8,13.5 h 2 " +
+                    "C 16.6,17.4 22.3,9 29.1,2 h -4 C 18.5,9.5 16.4,12.5 10.6,23 8.8,19.6 " +
+                    "7.6,17.8 4.8,14.2 Z'/>" +
+                    "</svg>" +
+                    "</a>" +
+
+                    "</svg>");
+        return s;
     }
 
     public static StringBuilder getFingerPrintSwitch() {
@@ -145,43 +199,9 @@ public class ThemeHolder {
                 "</g>" +
                 "<a xlink:href=\"javascript:")
             .append(javaScript)
-            .append("\"><rect width='18' height='20' opacity='0'/></a></svg>");
-    }
-
-    public static String getKeyBoard() {
-        StringBuilder s = new StringBuilder("<svg viewBox='0 0 416 162' " +
-                "xmlns='http://www.w3.org/2000/svg' " +
-                "xmlns:xlink='http://www.w3.org/1999/xlink'>" +
-                "<defs>" +
-                "<filter height='150%' width='150%' y='-25%' x='-25%' id='actorsBlur'>" +
-                "  <feGaussianBlur stdDeviation='3'/>" +
-                "</filter>" +
-                "</defs>");
-
-        for (int i = 0, x = 0; i < 10; i++) {
-            if (i == 4 || i == 7) {
-                x = 0;
-            }
-            s.append(addDigit(i, x, i < 4 ? 0 : i > 6 ? 114 : 57));
-            x += 90;
-        }
-
-        s.append("<a xlink:href=\"javascript:deleteDigit()\">")
-        .append(addButtonCore(56, 48, (90 * 3) + 90, 0))
-        .append("<text x='")
-        .append(((90 * 3) + 90)  + 28)
-        .append("' y='")
-        .append(36.5)
-        .append("' font-family='Roboto' font-size='50' " +
-                "text-anchor='middle' fill='#be1018'>&#171;</text></a>" +
-
-                "<a xlink:href=\"javascript:validatePin()\">")
-        .append(addButtonCore(80, 60, 90 * 3 + 90 + 56 - 80, 102))
-        .append("<path fill='#009900' " +
-                "d='m 362,131 c 5.4,5.7 8.4,12.4 8.8,13.5 h 2 " +
-                "c 5,-10.3 10.7,-18.7 17.5,-25.7 h -4 c -6.6,7.5 " +
-                "-8.7,10.5 -14.5,21 -1.8,-3.4 -3,-5.2 -5.8,-8.8 z'/>" +
-                "</a></svg>");
-        return s.toString();
+            .append(
+                "\"><rect width='18' height='20' opacity='0'/>" +
+                "</a>" +
+                "</svg>");
     }
 }

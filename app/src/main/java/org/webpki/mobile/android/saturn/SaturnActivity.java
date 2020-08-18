@@ -337,11 +337,11 @@ public class SaturnActivity extends BaseProxyActivity {
                     .append(htmlBodyPrefix)
                     .append(body)
                     .append("</body></html>").toString().getBytes("utf-8");
-/*
+
             FileOutputStream fos = openFileOutput("html.txt", Context.MODE_PRIVATE);
             fos.write(currentHtml);
             fos.close();
-*/
+
         } catch (Exception e) {
             Log.e("HTM", e.getMessage());
             return;
@@ -858,7 +858,6 @@ public class SaturnActivity extends BaseProxyActivity {
 
     @JavascriptInterface
     public void setAuthenticationMode(boolean useBiometrics) {
-        Log.e("KKK", "UB" + useBiometrics);
         if (fingerPrintAuthenticationInProgess != null) {
             fingerPrintAuthenticationInProgess.cancel();
             fingerPrintAuthenticationInProgess = null;
@@ -867,7 +866,6 @@ public class SaturnActivity extends BaseProxyActivity {
             FingerprintManagerCompat fingerprintManager = FingerprintManagerCompat.from(this);
             if (fingerprintManager.hasEnrolledFingerprints()) {
                 fingerPrintAuthenticationInProgess = new CancellationSignal();
-                Log.e("KKK", "FP SETUP");
                 fingerprintManager.authenticate(
                     null,
                     0,
@@ -877,13 +875,11 @@ public class SaturnActivity extends BaseProxyActivity {
                         @Override
                         public void onAuthenticationSucceeded(
                             FingerprintManagerCompat.AuthenticationResult result) {
-                            Log.e("KKK", "SUCCESS");
                             performPayment();
                         }
 
                         @Override
                         public void onAuthenticationError(int errMsgId, CharSequence errString) {
-                            Log.e("KKK", "X=" + errString.toString() + " Y=" + errMsgId);
                             if (errMsgId != FingerprintManager.FINGERPRINT_ERROR_CANCELED) {
                                 setFingerPrintError("Failed to authenticate, try again later");
                             }
@@ -891,7 +887,6 @@ public class SaturnActivity extends BaseProxyActivity {
                     },
                     null);
             } else {
-                Log.e("KKK", "NO FP");
                 setFingerPrintError("You need to enable the fingerprint reader");
             }
         }
