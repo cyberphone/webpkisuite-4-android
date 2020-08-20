@@ -61,13 +61,15 @@ public class PropertiesActivity extends ListActivity {
     static final int SETTINGS_DEVICE_CERT      = 4;
     static final int SETTINGS_PROTOCOL_LOG     = 5;
     static final int SETTINGS_THEME            = 6;
+    static final int SETTINGS_ACCESSIBILITY    = 7;
     String[] items = {"About",
                       "Privacy Policy",
                       "Device ID",
                       "User Credentials",
                       "Device Certificate",
                       "Show Protocol Log",
-                      "UI Theme"};
+                      "UI Theme",
+                      "Accessibility"};
 
     AndroidSKSImplementation sks;
 
@@ -88,13 +90,15 @@ public class PropertiesActivity extends ListActivity {
         if (id == SETTINGS_DEVICE_CERT) {
             Intent intent = new Intent(this, CertificateViewActivity.class);
             try {
-                intent.putExtra(CertificateViewActivity.CERTIFICATE_BLOB, sks.getDeviceInfo().getCertificatePath()[0].getEncoded());
+                intent.putExtra(CertificateViewActivity.CERTIFICATE_BLOB,
+                                sks.getDeviceInfo().getCertificatePath()[0].getEncoded());
             } catch (Exception e) {
                 intent.putExtra(CertificateViewActivity.CERTIFICATE_BLOB, new byte[]{});
             }
             startActivity(intent);
         } else if (id == SETTINGS_PRIVACY_POLICY) {
-            Intent intent = new Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://cyberphone.github.io/doc/webpki-android-privacy-policy.html"));
+            Intent intent = new Intent(Intent.ACTION_VIEW).setData(Uri.parse(
+                "https://cyberphone.github.io/doc/webpki-android-privacy-policy.html"));
             startActivity(intent);
         } else if (id == SETTINGS_USER_CREDENTIALS) {
             try {
@@ -106,7 +110,9 @@ public class PropertiesActivity extends ListActivity {
             } catch (SKSException e) {
             }
             showDialog(position);
-        } else if (id == SETTINGS_PROTOCOL_LOG || id == SETTINGS_THEME) {
+        } else if (id == SETTINGS_PROTOCOL_LOG ||
+                   id == SETTINGS_THEME ||
+                   id == SETTINGS_ACCESSIBILITY) {
             super.onListItemClick(l, v, position, id);
             v.showContextMenu();
         } else {
@@ -130,6 +136,13 @@ public class PropertiesActivity extends ListActivity {
                 menu.add(1, 1, Menu.NONE, "White").setChecked(whiteTheme);
                 menu.setGroupCheckable(1, true, true);
                 break;
+            case SETTINGS_ACCESSIBILITY:
+                menu.setHeaderTitle("Accessibility:");
+                boolean visuallyImpaired = Settings.isVisuallyImpaired();
+                menu.add(2, 0, Menu.NONE, "Normal").setChecked(!visuallyImpaired);
+                menu.add(2, 1, Menu.NONE, "Visually Impaired").setChecked(visuallyImpaired);
+                menu.setGroupCheckable(2, true, true);
+                break;
         }
     }
 
@@ -137,6 +150,8 @@ public class PropertiesActivity extends ListActivity {
     public boolean onContextItemSelected(MenuItem item) {
         if (item.getGroupId() == 1) {
             Settings.writeTheme(item.getItemId() == 1);
+        } else if (item.getGroupId() == 2) {
+            Settings.writeAccessibility(item.getItemId() == 1);
         } else {
             Intent intent = new Intent(this, ProtocolViewActivity.class);
             intent.putExtra(ProtocolViewActivity.LOG_FILE, item.getTitle());
@@ -156,9 +171,11 @@ public class PropertiesActivity extends ListActivity {
                     version = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
                 } catch (Exception e) {
                 }
-                about_builder.setMessage("This application was developed by PrimeKey Solutions and WebPKI.org\n\nCurrent version: " + version);
+                about_builder.setMessage("This application was developed by PrimeKey " +
+                    "Solutions and WebPKI.org\n\nCurrent version: " + version);
                 about_builder.setIcon(android.R.drawable.btn_star_big_on);
-                about_builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                about_builder.setPositiveButton(android.R.string.ok,
+                                                new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                     }
                 });
@@ -169,7 +186,8 @@ public class PropertiesActivity extends ListActivity {
                 device_id_builder.setTitle("Device ID");
                 device_id_builder.setIcon(android.R.drawable.ic_menu_info_details);
                 try {
-                    StringBuilder devid = new StringBuilder(DeviceID.getDeviceId(sks.getDeviceInfo().getCertificatePath()[0], false));
+                    StringBuilder devid = new StringBuilder(DeviceID.getDeviceId(
+                            sks.getDeviceInfo().getCertificatePath()[0], false));
                     for (int i = 0, j = 4; i < 4; i++, j += 5) {
                         devid.insert(j, '-');
                     }
@@ -177,7 +195,8 @@ public class PropertiesActivity extends ListActivity {
                 } catch (SKSException e) {
                     device_id_builder.setMessage("Something went wrong");
                 }
-                device_id_builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                device_id_builder.setPositiveButton(android.R.string.ok,
+                                                    new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                     }
                 });
@@ -188,14 +207,17 @@ public class PropertiesActivity extends ListActivity {
                 no_credentials_alert.setTitle("User Credentials");
                 no_credentials_alert.setIcon(android.R.drawable.ic_menu_info_details);
                 no_credentials_alert.setMessage("You have no credentials yet");
-                no_credentials_alert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                no_credentials_alert.setPositiveButton(android.R.string.ok,
+                                                       new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
                     }
                 });
                 return no_credentials_alert.create();
 
             default:
-                Toast.makeText(getApplicationContext(), "Not implemented!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(),
+                               "Not implemented!",
+                               Toast.LENGTH_SHORT).show();
         }
         return null;
     }

@@ -529,8 +529,8 @@ public class SaturnActivity extends BaseProxyActivity {
                 "let hGutter = Math.floor((Saturn.height() - kbd.offsetHeight - paydata.offsetHeight) / 3);\n" +
                 "let kbdTop = Math.floor(Saturn.height() - hGutter - kbd.offsetHeight);\n" +
                 "kbd.style.top = kbdTop + 'px';\n" +
-                "let pGutter = ((kbd.offsetWidth - paydata.offsetWidth + payeelabel.offsetWidth " +
-                    "- document.getElementById('fpField').offsetWidth) / 2) + wGutter * 1.5;\n" +
+                "let pGutter = ((kbd.offsetWidth - paydata.offsetWidth + payeelabel.offsetWidth)" +
+                    " / 2) + wGutter * 1.5;\n" +
                 "if (pGutter < 10) pGutter = 10;\n" +
                 "paydata.style.right = pGutter + 'px';\n" +
                 "paydataTop = hGutter;\n" +
@@ -543,8 +543,8 @@ public class SaturnActivity extends BaseProxyActivity {
         } else {
             js.append(
                 "card.style.left = ((Saturn.width() - card.offsetWidth) / 2) + 'px';\n" +
-                "let pGutter = ((Saturn.width() - paydata.offsetWidth - payeelabel.offsetWidth " +
-                    "+ document.getElementById('fpField').offsetWidth) / 2);\n" +
+                "let pGutter = ((Saturn.width() - paydata.offsetWidth - payeelabel.offsetWidth)" +
+                    " / 2);\n" +
                 "if (pGutter < 10) pGutter = 10;\n" +
                 "paydata.style.left = pGutter + 'px';\n" +
                 "let kbdTop = Saturn.height() - Math.floor(kbd.offsetHeight * 1.20);\n" +
@@ -689,25 +689,25 @@ public class SaturnActivity extends BaseProxyActivity {
 
         StringBuilder html = new StringBuilder(
             "<table id='paydata' style='visibility:hidden;position:absolute;z-index:5'>" +
-            "<tr><td id='payeelabel' class='label'>Payee</td><td id='payeefield' " +
+            "<tr><td id='payeelabel' class='label'>Payee</td><td colspan='2' id='payeefield' " +
                 "class='field' onClick=\"Saturn.toast('Name of merchant', " +
                     Gravity.CENTER_VERTICAL + ")\">")
           .append(HTMLEncoder.encode(walletRequest.paymentRequest.getPayeeCommonName()))
-          .append("</td><td></td></tr>" +
+          .append("</td></tr>" +
             "<tr><td colspan='3' style='height:5pt'></td></tr>" +
             "<tr><td class='label'>")
           .append(walletRequest.getAmountLabel())
           .append(
-            "</td><td id='amountfield' " +
+            "</td><td colspan='2' id='amountfield' " +
                 "class='field' onClick=\"Saturn.toast('Amount to pay', " +
                     Gravity.CENTER_VERTICAL + ")\">")
           .append(walletRequest.getFormattedTotal())
-          .append("</td><td></td></tr>" +
+          .append("</td></tr>" +
             "<tr><td colspan='3' style='height:5pt'></td></tr>" +
             "<tr id='pinRow'><td class='label'>PIN</td>" +
-            "<td id='pinfield' class='field' " +
+            "<td id='pinfield' class='field' style='min-width:unset' " +
                 "onClick=\"Saturn.toast('Use the keyboard below...', " +
-                    Gravity.CENTER_VERTICAL + ")\"></td><td id='fpField'>")
+                    Gravity.CENTER_VERTICAL + ")\"></td><td id='fpField' style='width:10px'>")
           .append(ImageGenerator.getFingerPrintSymbol("1", "selectAuthMode(true)", "block", 7, 18))
           .append(
             "</td></tr>" +
