@@ -71,11 +71,9 @@ public class PropertiesActivity extends ListActivity {
 
     AndroidSKSImplementation sks;
 
-    boolean whiteTheme;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        whiteTheme = ThemeHolder.isWhiteTheme(getBaseContext());
+        Settings.initialize(getApplicationContext());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_properties);
         setListAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, items));
@@ -127,6 +125,7 @@ public class PropertiesActivity extends ListActivity {
                 break;
             case SETTINGS_THEME:
                 menu.setHeaderTitle("Set UI Theme:");
+                boolean whiteTheme = Settings.isWhiteTheme();
                 menu.add(1, 0, Menu.NONE, "Space").setChecked(!whiteTheme);
                 menu.add(1, 1, Menu.NONE, "White").setChecked(whiteTheme);
                 menu.setGroupCheckable(1, true, true);
@@ -137,7 +136,7 @@ public class PropertiesActivity extends ListActivity {
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         if (item.getGroupId() == 1) {
-            ThemeHolder.writeTheme(getBaseContext(), whiteTheme = item.getItemId() == 1);
+            Settings.writeTheme(item.getItemId() == 1);
         } else {
             Intent intent = new Intent(this, ProtocolViewActivity.class);
             intent.putExtra(ProtocolViewActivity.LOG_FILE, item.getTitle());

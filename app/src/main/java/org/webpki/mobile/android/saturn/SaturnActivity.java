@@ -55,11 +55,9 @@ import androidx.core.hardware.fingerprint.FingerprintManagerCompat;
 
 import androidx.webkit.WebViewAssetLoader;
 
-import org.webpki.json.JSONAsymKeySigner;
 import org.webpki.mobile.android.R;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -74,12 +72,14 @@ import org.webpki.crypto.AsymKeySignerInterface;
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.CryptoRandom;
 
+import org.webpki.json.JSONAsymKeySigner;
 import org.webpki.json.JSONArrayReader;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONParser;
 
-import org.webpki.mobile.android.application.ThemeHolder;
+import org.webpki.mobile.android.application.Settings;
+import org.webpki.mobile.android.application.ImageGenerator;
 
 import org.webpki.mobile.android.proxy.BaseProxyActivity;
 
@@ -107,13 +107,7 @@ public class SaturnActivity extends BaseProxyActivity {
 
     static final String SATURN_SOFTWARE = "WebPKI Suite/Saturn";
 
-    static final String SATURN_SETTINGS                   = "satset";
-
     int lastKeyId;
-    static final String SETTINGS_LAST_KEY_ID_JSON         = "lastKey";
-
-    boolean biometricPreferred = true;
-    static final String SETTINGS_BIOMETRIC_PREFERRED_JSON = "bioPref";
 
     static final String BACKGROUND_WH = "#f2f2ff";
     static final String BORDER_WH     = "#8080ff";
@@ -226,8 +220,6 @@ public class SaturnActivity extends BaseProxyActivity {
 
     boolean done;
 
-    static boolean whiteTheme;
-
     static String webPkiVersion;
 
     WebView saturnView;
@@ -278,7 +270,7 @@ public class SaturnActivity extends BaseProxyActivity {
                         if (account.balanceRequestIsReady) {
                             argument = account.balance == null ? FAILED_ICON : account.balance;
                         } else {
-                            argument = SPINNER_FIRST + (whiteTheme ? "black" : "yellow") + SPINNER_LAST;
+                            argument = SPINNER_FIRST + (Settings.isWhiteTheme() ? "black" : "yellow") + SPINNER_LAST;
                         }
                     } else {
                         balanceRequestExecutor(cardIndex);
@@ -332,7 +324,7 @@ public class SaturnActivity extends BaseProxyActivity {
     void loadHtml(final String positionScript, final String body) {
         try {
             currentHtml = new StringBuilder(
-                    whiteTheme ? HTML_HEADER_WHITE : HTML_HEADER_SPACE)
+                    Settings.isWhiteTheme() ? HTML_HEADER_WHITE : HTML_HEADER_SPACE)
                     .append(positionScript)
                     .append(htmlBodyPrefix)
                     .append(body)
@@ -453,20 +445,11 @@ public class SaturnActivity extends BaseProxyActivity {
             }
         });
         displayMetrics = new DisplayMetrics();
-        whiteTheme = ThemeHolder.isWhiteTheme(getBaseContext());
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         factor = (int)(displayMetrics.density * 100);
         landscapeMode = getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
-        try {
-            FileInputStream fis = openFileInput(SaturnActivity.SATURN_SETTINGS);
-            byte[] buffer = new byte[fis.available()];
-            fis.read(buffer);
-            JSONObjectReader settings = JSONParser.parse(buffer);
-            lastKeyId = settings.getInt(SETTINGS_LAST_KEY_ID_JSON);
-            biometricPreferred = settings.getBoolean(SETTINGS_BIOMETRIC_PREFERRED_JSON);
-        } catch (IOException e) {
-            lastKeyId = -1;
-        }
+        Settings.initialize(getApplicationContext());
+        lastKeyId = Settings.getLastKeyId();
         try {
             webPkiVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
             htmlBodyPrefix = new StringBuilder("}\n" +
@@ -476,7 +459,7 @@ public class SaturnActivity extends BaseProxyActivity {
                 .append((int)((Math.max(displayMetrics.heightPixels, displayMetrics.widthPixels)  * 5) / factor))
                 .append("px'")
                 .append(new String(ArrayUtil.getByteArrayFromInputStream(getResources()
-                            .openRawResource(whiteTheme ?
+                            .openRawResource(Settings.isWhiteTheme() ?
                                  R.raw.saturnlogo_white : R.raw.saturnlogo_space)),"utf-8").substring(4))
                     .toString();
             simpleDisplay("Initializing...");
@@ -491,85 +474,27 @@ public class SaturnActivity extends BaseProxyActivity {
         new SaturnProtocolInit(this).execute();
     }
 
-    String htmlOneCard(int width) {
+    StringBuilder htmlOneCard(int width) {
         int arrowWidth = (width * 4) / factor;
-        return new StringBuilder("<table id='card' style='visibility:hidden;position:absolute'>"+
-                    "<tr><td id='leftArrow' style='visibility:hidden'>" +
-                    "<svg style='width:")
-            .append(arrowWidth)
-            .append("px' viewBox='0 0 110 320' xmlns='http://www.w3.org/2000/svg'>" +
-                    "<path d='M100 20 L100 300 L10 160 Z' fill='none' stroke='")
-            .append(whiteTheme ? "black" : "white")
-            .append("' stroke-width='10'/>" +
-                    "</svg></td><td><svg style='width:")
-            .append((width * 100) / factor)
-            .append("px;cursor:pointer;vertical-align:middle' " +
-                    "viewBox='0 0 320 200' xmlns='http://www.w3.org/2000/svg'>" +
-                    "<defs>" +
-                    "<clipPath id='cardClip'>" +
-                    "<rect rx='15' width='300' height='180' x='0' y='0'/>" +
-                    "</clipPath>")
-            .append(whiteTheme ?
-                    "<filter id='dropShaddow'>" +
-                    "<feGaussianBlur stdDeviation='2.4'/>" +
-                    "</filter>" +
-                    "<linearGradient y1='0' x1='0' y2='1' x2='1' id='innerCardBorder'>" +
-                    "<stop offset='0' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
-                    "<stop offset='0.48' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
-                    "<stop offset='0.52' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
-                    "<stop offset='1' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
-                    "</linearGradient>" +
-                    "<linearGradient y1='0' x1='0' y2='1' x2='1' id='outerCardBorder'>" +
-                    "<stop offset='0' stop-color='#b0b0b0'/>" +
-                    "<stop offset='0.48' stop-color='#b0b0b0'/>" +
-                    "<stop offset='0.52' stop-color='#808080'/>" +
-                    "<stop offset='1' stop-color='#808080'/>" +
-                    "</linearGradient>" +
-                    "</defs>" +
-                    "<rect filter='url(#dropShaddow)' rx='16' " +
-                    "width='302' height='182' x='12' y='12' fill='#c0c0c0'/>"
-                                        :
-                    "<linearGradient y1='0' x1='0' y2='1' x2='1' id='innerCardBorder'>" +
-                    "<stop offset='0' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
-                    "<stop offset='0.48' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
-                    "<stop offset='0.52' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
-                    "<stop offset='1' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
-                    "</linearGradient>" +
-                    "<filter id='dropShaddow'>" +
-                    "<feGaussianBlur stdDeviation='3.5'/>" +
-                    "</filter>" +
-                    "</defs>" +
-                    "<rect filter='url(#dropShaddow)' rx='16' " +
-                    "width='305' height='184' x='7' y='8' fill='white'/>")
-            .append("<svg x='10' y='10' clip-path='url(#cardClip)'>" +
-                    "<image id='cardImage' width='300' height='180' href='/card/")
-            .append(selectedCard)
-            .append("'/></svg>")
+        return new StringBuilder(
+                "<table id='card' style='visibility:hidden;position:absolute'>"+
 
-            .append(whiteTheme ?
-                    "<rect fill='none' x='11' y='11' width='298' height='178' " +
-                    "rx='14.7' stroke='url(#innerCardBorder)' stroke-width='2.7'/>" +
-                    "<rect fill='none' x='9.5' y='9.5' width='301' height='181' " +
-                    "rx='16' stroke='url(#outerCardBorder)'/>"
-                             :
-                    "<rect fill='none' x='11' y='11' width='298' height='178' " +
-                    "rx='14.75' stroke='url(#innerCardBorder)' stroke-width='2'/>" +
-                    "<rect fill='none' x='8.5' y='8.5' width='303' height='183' " +
-                    "rx='17' stroke='#e0e0e0'/>" +
-                    "<rect fill='none' x='9.5' y='9.5' width='301' height='181' " +
-                    "rx='16' stroke='#162c44'/>")
+                "<tr><td id='leftArrow' style='visibility:hidden'>")
+            .append(ImageGenerator.getLeftArrow(arrowWidth))
+            .append("</td><td>")
+            .append(ImageGenerator.getStylizedCardImage((width * 100) / factor, selectedCard))
+            .append("</td><td id='rightArrow' style='visibility:hidden'>")
+            .append(ImageGenerator.getRightArrow(arrowWidth))
+            .append(
+                "</td></tr>" +
 
-            .append("</svg></td><td id='rightArrow' style='visibility:hidden'>" +
-                    "<svg style='width:")
-            .append(arrowWidth)
-            .append("px' viewBox='0 0 110 320' xmlns='http://www.w3.org/2000/svg'>" +
-                    "<path d='M10 20 L10 300 L100 160 Z' fill='none' stroke='")
-            .append(whiteTheme ? "black" : "white")
-            .append("' stroke-width='10'/>" +
-                    "</svg></td></tr><tr><td colspan='3' style='text-align:center'>" +
+                "<tr><td colspan='3' style='text-align:center'>" +
                     "<div style='display:inline-block'>" +
                     "<div class='balance' id='balance' onClick=\"Saturn.balanceClicked()\">" +
-                    "</div></div></td></tr></table>").toString();
+                    "</div></div>" +
+                "</td></tr>" +
+
+                "</table>");
     }
 
     Account getSelectedCard() {
@@ -783,7 +708,7 @@ public class SaturnActivity extends BaseProxyActivity {
             "<td id='pinfield' class='field' " +
                 "onClick=\"Saturn.toast('Use the keyboard below...', " +
                     Gravity.CENTER_VERTICAL + ")\"></td><td id='fpField'>")
-          .append(ThemeHolder.getFingerPrintSymbol("1", "selectAuthMode(true)", "block", 7, 18))
+          .append(ImageGenerator.getFingerPrintSymbol("1", "selectAuthMode(true)", "block", 7, 18))
           .append(
             "</td></tr>" +
             "</table>" +
@@ -791,13 +716,13 @@ public class SaturnActivity extends BaseProxyActivity {
             "<table id='fpFrame' style='visibility:hidden;position:absolute'>" +
             "<tr><td class='label'>Authorize&nbsp;Request</td><td></td></tr>" +
             "<tr><td style='text-align:center'>")
-          .append(ThemeHolder.getFingerPrintSymbol("0.6",
+          .append(ImageGenerator.getFingerPrintSymbol("0.6",
                                                    "Saturn.toast('Use the fingerprint sensor', " +
                                                        Gravity.BOTTOM + ")",
                                                    "inline-block", 0, 40))
           .append(
             "</td><td id='pinSwitch' onclick=\"selectAuthMode(false)\">")
-          .append(ThemeHolder.getFingerPrintSwitch())
+          .append(ImageGenerator.getFingerPrintSwitch())
           .append(
             "</td></tr>" +
             "<tr><td id='fpText' colspan='2' style='height:0px'></td></tr>" +
@@ -806,7 +731,7 @@ public class SaturnActivity extends BaseProxyActivity {
             "<div id='kbd' style='visibility:hidden;position:absolute;width:")
           .append(landscapeMode ? (width * 50) / factor : (width * 88) / factor)
           .append("px'>")
-          .append(ThemeHolder.getKeyBoard())
+          .append(ImageGenerator.getKeyBoard())
           .append("</div>");
         html.append(htmlOneCard(landscapeMode ? (width * 4) / 11 : (width * 7) / 10));
         loadHtml(js.toString(), html.toString());
@@ -823,7 +748,7 @@ public class SaturnActivity extends BaseProxyActivity {
 
     @JavascriptInterface
     public void setAuthPreference(boolean biometricPreferred) {
-        this.biometricPreferred = biometricPreferred;
+        Settings.setBiometricPreferred(biometricPreferred);
     }
 
     @JavascriptInterface
@@ -837,7 +762,8 @@ public class SaturnActivity extends BaseProxyActivity {
             return new JSONObjectWriter()
                 .setBoolean("supportsBiometric", supportsBiometric)
                 .setBoolean("supportsPinCodes", supportsPinCodes)
-                .setBoolean("useBiometrics", supportsBiometric && biometricPreferred)
+                .setBoolean("useBiometrics",
+                            supportsBiometric && Settings.isBiometricsPreferred())
                     .toString();
         } catch (IOException e) {
             return null;

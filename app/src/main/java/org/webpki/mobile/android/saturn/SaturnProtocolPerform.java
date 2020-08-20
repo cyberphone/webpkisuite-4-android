@@ -16,16 +16,11 @@
  */
 package org.webpki.mobile.android.saturn;
 
-import android.content.Context;
-
 import android.os.AsyncTask;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-
 import org.webpki.json.JSONDecoder;
-import org.webpki.json.JSONObjectWriter;
-import org.webpki.json.JSONOutputFormats;
+
+import org.webpki.mobile.android.application.Settings;
 
 import org.webpki.mobile.android.proxy.BaseProxyActivity;
 
@@ -152,20 +147,7 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
             saturnActivity.currentForm = SaturnActivity.FORM.SIMPLE;
             saturnActivity.messageDisplay(js.toString(), html.toString());
        } else {
-            try {
-                FileOutputStream fos =
-                        saturnActivity.openFileOutput(SaturnActivity.SATURN_SETTINGS,
-                                                      Context.MODE_PRIVATE);
-                JSONObjectWriter settings = new JSONObjectWriter()
-                    .setInt(SaturnActivity.SETTINGS_LAST_KEY_ID_JSON,
-                            saturnActivity.getSelectedCard().signatureKeyHandle)
-                    .setBoolean(SaturnActivity.SETTINGS_BIOMETRIC_PREFERRED_JSON,
-                                saturnActivity.biometricPreferred);
-                fos.write(settings.serializeToBytes(JSONOutputFormats.NORMALIZED));
-                fos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            Settings.writeLastKeyId(saturnActivity.getSelectedCard().signatureKeyHandle);
             String url = saturnActivity.getRedirectURL();
             if (url.equals(BaseProperties.SATURN_LOCAL_SUCCESS_URI)) {
                 saturnActivity.done = true;

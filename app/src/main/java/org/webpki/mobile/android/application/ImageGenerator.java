@@ -16,43 +16,9 @@
  */
 package org.webpki.mobile.android.application;
 
-import android.content.Context;
+public class ImageGenerator {
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
-public class ThemeHolder {
-
-    private ThemeHolder() {}
-
-    private static final String THEME_FILE = "Theme";
-
-    static Boolean whiteTheme;
-
-    public static boolean visuallyImpaired;
-
-    public static boolean isWhiteTheme(Context caller) {
-        if (whiteTheme == null) {
-            whiteTheme = false;
-            try {
-                FileInputStream fis = caller.openFileInput(THEME_FILE);
-                whiteTheme = fis.read() == 1;
-            } catch (IOException e) {
-            }
-        }
-        return whiteTheme;
-    }
-
-    public static void writeTheme(Context caller, boolean whiteTheme) {
-        ThemeHolder.whiteTheme = whiteTheme;
-        try {
-            FileOutputStream fos = caller.openFileOutput(THEME_FILE, Context.MODE_PRIVATE);
-            fos.write(whiteTheme ? (byte) 1 : (byte) 0);
-            fos.close();
-        } catch (IOException e) {
-        }
-    }
+    private ImageGenerator() {}
 
     static StringBuilder addButtonCore(int outerWidth, int outerHeight, int xOffset, int yOffset) {
         return new StringBuilder("<rect x='")
@@ -64,7 +30,7 @@ public class ThemeHolder {
             .append("' height='")
             .append(outerHeight - 13)
             .append("' rx='10' stroke-width='2' stroke='")
-            .append(whiteTheme ? "#989898" : "orange")
+            .append(Settings.isWhiteTheme() ? "#989898" : "orange")
             .append("' fill='#a5a5a5'/><rect x='")
             .append(xOffset + 8)
             .append("' y='")
@@ -147,11 +113,11 @@ public class ThemeHolder {
         return new StringBuilder(
                 "<svg style='height:12pt' viewBox='0 0 100 50' xmlns='http://www.w3.org/2000/svg'>" +
                 "<rect stroke='")
-            .append(whiteTheme ? "grey" : "white")
+            .append(Settings.isWhiteTheme() ? "grey" : "white")
             .append(
                 "' stroke-width='3' fill='none' rx='6' y='1.5' x='1.5' height='47' width='97'/>" +
                 "<g fill='")
-            .append(whiteTheme ? "grey" : "white")
+            .append(Settings.isWhiteTheme() ? "grey" : "white")
             .append(
                 "'>" +
                   "<circle cy='26' r='6' cx='17'/>" +
@@ -176,7 +142,7 @@ public class ThemeHolder {
             .append(
                 "' viewBox='0 0 18 20' xmlns='http://www.w3.org/2000/svg' " +
                 "xmlns:xlink='http://www.w3.org/1999/xlink'><g stroke='")
-            .append(whiteTheme ? "blue" : "white")
+            .append(Settings.isWhiteTheme() ? "blue" : "white")
             .append("' stroke-linecap='round' stroke-width='")
             .append(strokeSize)
             .append("' fill='none'>")
@@ -203,5 +169,87 @@ public class ThemeHolder {
                 "\"><rect width='18' height='20' opacity='0'/>" +
                 "</a>" +
                 "</svg>");
+    }
+
+    public static StringBuilder getStylizedCardImage(int widthInPixels, int selectedCard) {
+        return new StringBuilder("<svg style='width:")
+            .append(widthInPixels)
+            .append("px;cursor:pointer;vertical-align:middle' " +
+                "viewBox='0 0 320 200' xmlns='http://www.w3.org/2000/svg'>" +
+                "<defs>" +
+                "<clipPath id='cardClip'>" +
+                "<rect rx='15' width='300' height='180' x='0' y='0'/>" +
+                "</clipPath>")
+            .append(Settings.isWhiteTheme() ?
+                "<filter id='dropShaddow'>" +
+                    "<feGaussianBlur stdDeviation='2.4'/>" +
+                    "</filter>" +
+                    "<linearGradient y1='0' x1='0' y2='1' x2='1' id='innerCardBorder'>" +
+                    "<stop offset='0' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
+                    "<stop offset='0.48' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
+                    "<stop offset='0.52' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
+                    "<stop offset='1' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
+                    "</linearGradient>" +
+                    "<linearGradient y1='0' x1='0' y2='1' x2='1' id='outerCardBorder'>" +
+                    "<stop offset='0' stop-color='#b0b0b0'/>" +
+                    "<stop offset='0.48' stop-color='#b0b0b0'/>" +
+                    "<stop offset='0.52' stop-color='#808080'/>" +
+                    "<stop offset='1' stop-color='#808080'/>" +
+                    "</linearGradient>" +
+                    "</defs>" +
+                    "<rect filter='url(#dropShaddow)' rx='16' " +
+                    "width='302' height='182' x='12' y='12' fill='#c0c0c0'/>"
+                :
+                "<linearGradient y1='0' x1='0' y2='1' x2='1' id='innerCardBorder'>" +
+                    "<stop offset='0' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
+                    "<stop offset='0.48' stop-opacity='0.6' stop-color='#e8e8e8'/>" +
+                    "<stop offset='0.52' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
+                    "<stop offset='1' stop-opacity='0.6' stop-color='#b0b0b0'/>" +
+                    "</linearGradient>" +
+                    "<filter id='dropShaddow'>" +
+                    "<feGaussianBlur stdDeviation='3.5'/>" +
+                    "</filter>" +
+                    "</defs>" +
+                    "<rect filter='url(#dropShaddow)' rx='16' " +
+                    "width='305' height='184' x='7' y='8' fill='white'/>")
+
+            .append(
+                "<svg x='10' y='10' clip-path='url(#cardClip)'>" +
+                "<image id='cardImage' width='300' height='180' href='/card/")
+            .append(selectedCard)
+            .append("'/></svg>")
+
+            .append(Settings.isWhiteTheme() ?
+                "<rect fill='none' x='11' y='11' width='298' height='178' " +
+                    "rx='14.7' stroke='url(#innerCardBorder)' stroke-width='2.7'/>" +
+                    "<rect fill='none' x='9.5' y='9.5' width='301' height='181' " +
+                    "rx='16' stroke='url(#outerCardBorder)'/>"
+                :
+                "<rect fill='none' x='11' y='11' width='298' height='178' " +
+                    "rx='14.75' stroke='url(#innerCardBorder)' stroke-width='2'/>" +
+                    "<rect fill='none' x='8.5' y='8.5' width='303' height='183' " +
+                    "rx='17' stroke='#e0e0e0'/>" +
+                    "<rect fill='none' x='9.5' y='9.5' width='301' height='181' " +
+                    "rx='16' stroke='#162c44'/>")
+
+            .append("</svg>");
+    }
+
+    public static StringBuilder getLeftArrow(int arrowWidth) {
+        return new StringBuilder("<svg style='width:")
+            .append(arrowWidth)
+            .append("px' viewBox='0 0 110 320' xmlns='http://www.w3.org/2000/svg'>" +
+                "<path d='M100 20 L100 300 L10 160 Z' fill='none' stroke='")
+            .append(Settings.isWhiteTheme() ? "black" : "white")
+            .append("' stroke-width='10'/></svg>");
+    }
+
+    public static StringBuilder getRightArrow(int arrowWidth) {
+        return new StringBuilder("<svg style='width:")
+            .append(arrowWidth)
+            .append("px' viewBox='0 0 110 320' xmlns='http://www.w3.org/2000/svg'>" +
+                "<path d='M10 20 L10 300 L100 160 Z' fill='none' stroke='")
+            .append(Settings.isWhiteTheme() ? "black" : "white")
+            .append("' stroke-width='10'/></svg>");
     }
 }
