@@ -143,8 +143,7 @@ public class SaturnActivity extends BaseProxyActivity {
         "</g></svg>";
 
     static final String HTML_HEADER_WHITE =
-          "<!DOCTYPE html><html><head><title>Saturn</title><style type='text/css'>\n" +
-          "body {margin:0;font-size:12pt;color:#000000;font-family:Roboto;background-color:white}\n" +
+          "pt;color:black;background-color:white}\n" +
           "td.label {text-align:right;padding:3pt 3pt 3pt 0pt}\n" +
           "td.field {min-width:11em;padding:3pt 6pt 3pt 6pt;border-width:1px" +
               ";border-style:solid;border-color:" + BORDER_WH +
@@ -171,8 +170,7 @@ public class SaturnActivity extends BaseProxyActivity {
           "function positionElements() {\n";
 
     static final String HTML_HEADER_SPACE =
-          "<!DOCTYPE html><html><head><title>Saturn</title><style type='text/css'>\n" +
-          "body {margin:0;font-size:12pt;color:white;font-family:Roboto" +
+          "pt;color:white" +
                ";background:linear-gradient(to bottom right, #162c44, #6d7a8e, #162c44)" +
                ";background-attachment:fixed}\n" +
           "td.label {font-weight:500;text-align:right;padding:3pt 3pt 3pt 0pt}\n" +
@@ -201,6 +199,8 @@ public class SaturnActivity extends BaseProxyActivity {
     String htmlBodyPrefix;
 
     boolean landscapeMode;
+
+    boolean visuallyImpaired;
 
     WalletRequestDecoder walletRequest;
 
@@ -287,8 +287,7 @@ public class SaturnActivity extends BaseProxyActivity {
                         }
                     }
                     saturnView.evaluateJavascript(
-                        "document.getElementById('balance').innerHTML = \"Balance:&nbsp;" +
-                            argument + "\";", null);
+                        "setBalance(\"Balance:&nbsp;" + argument + "\");", null);
                 }
             });
         }
@@ -324,11 +323,14 @@ public class SaturnActivity extends BaseProxyActivity {
     void loadHtml(final String positionScript, final String body) {
         try {
             currentHtml = new StringBuilder(
-                    Settings.isWhiteTheme() ? HTML_HEADER_WHITE : HTML_HEADER_SPACE)
-                    .append(positionScript)
-                    .append(htmlBodyPrefix)
-                    .append(body)
-                    .append("</body></html>").toString().getBytes("utf-8");
+                    "<!DOCTYPE html><html><head><title>Saturn</title><style type='text/css'>\n" +
+                    "body {margin:0;font-family:Roboto;font-size:")
+                .append(visuallyImpaired ? 18 : 12)
+                .append(Settings.isWhiteTheme() ? HTML_HEADER_WHITE : HTML_HEADER_SPACE)
+                .append(positionScript)
+                .append(htmlBodyPrefix)
+                .append(body)
+                .append("</body></html>").toString().getBytes("utf-8");
 
             FileOutputStream fos = openFileOutput("html.txt", Context.MODE_PRIVATE);
             fos.write(currentHtml);
@@ -486,14 +488,16 @@ public class SaturnActivity extends BaseProxyActivity {
             .append("</td><td id='rightArrow' style='visibility:hidden'>")
             .append(ImageGenerator.getRightArrow(arrowWidth))
             .append(
-                "</td></tr>" +
+                "</td></tr>")
 
+            .append(visuallyImpaired ? "" :
                 "<tr><td colspan='3' style='text-align:center'>" +
                     "<div style='display:inline-block'>" +
                     "<div class='balance' id='balance' onClick=\"Saturn.balanceClicked()\">" +
                     "</div></div>" +
-                "</td></tr>" +
+                "</td></tr>")
 
+            .append(
                 "</table>");
     }
 
@@ -502,6 +506,7 @@ public class SaturnActivity extends BaseProxyActivity {
     }
 
     void showPaymentRequest() throws IOException {
+        visuallyImpaired = Settings.isVisuallyImpaired() && !landscapeMode;
         currentForm = FORM.PAYMENTREQUEST;
         int width = displayMetrics.widthPixels;
         StringBuilder js = new StringBuilder(
@@ -604,6 +609,11 @@ public class SaturnActivity extends BaseProxyActivity {
               "}\n" +
             "}\n" +
 
+            "function setBalance(argument) {\n" +
+            "  let e = document.getElementById('balance');\n" +
+            "  if (e) e.innerHTML = argument;\n" +
+            "}\n" +
+
             "function selectAuthMode(biometricMode) {\n" +
               "Saturn.setAuthPreference(biometricMode);\n" +
               "setAccountSpecificDetails();\n" +
@@ -653,7 +663,9 @@ public class SaturnActivity extends BaseProxyActivity {
             "let pin = '" + HTMLEncoder.encode(pin) + "';\n" +
 
             "function showPin() {\n" +
-              "let pwd = \"<span style='font-size:10pt;position:relative;top:-1pt'>\";\n" +
+              "let pwd = \"<span style='position:relative;font-size:")
+        .append(visuallyImpaired ? "15pt;top;-2pt" : "10pt;top:-1pt")
+        .append("'>\";\n" +
               "for (let i = 0; i < pin.length; i++) {\n" +
                 "pwd += '\u25cf\u2007';\n" +
               "}\n" +
@@ -708,7 +720,11 @@ public class SaturnActivity extends BaseProxyActivity {
             "<td id='pinfield' class='field' style='min-width:unset' " +
                 "onClick=\"Saturn.toast('Use the keyboard below...', " +
                     Gravity.CENTER_VERTICAL + ")\"></td><td id='fpField' style='width:10px'>")
-          .append(ImageGenerator.getFingerPrintSymbol("1", "selectAuthMode(true)", "block", 7, 18))
+          .append(ImageGenerator.getFingerPrintSymbol("1",
+                                                      "selectAuthMode(true)",
+                                                      "block",
+                                                      7,
+                                                      visuallyImpaired ? 27 : 18))
           .append(
             "</td></tr>" +
             "</table>" +
@@ -717,9 +733,9 @@ public class SaturnActivity extends BaseProxyActivity {
             "<tr><td class='label'>Authorize&nbsp;Request</td><td></td></tr>" +
             "<tr><td style='text-align:center'>")
           .append(ImageGenerator.getFingerPrintSymbol("0.6",
-                                                   "Saturn.toast('Use the fingerprint sensor', " +
-                                                       Gravity.BOTTOM + ")",
-                                                   "inline-block", 0, 40))
+                                                      "Saturn.toast('Use the fingerprint sensor', " +
+                                                          Gravity.BOTTOM + ")",
+                                                      "inline-block", 0, 40))
           .append(
             "</td><td id='pinSwitch' onclick=\"selectAuthMode(false)\">")
           .append(ImageGenerator.getFingerPrintSwitch())
