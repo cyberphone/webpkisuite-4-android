@@ -293,7 +293,7 @@ public class SaturnActivity extends BaseProxyActivity {
             })
             .build();
 
-    void loadHtml(final String positionScript, final String body) {
+    void loadHtml(final String positionScript, final StringBuilder body) {
         try {
             currentHtml = new StringBuilder(
                     "<!DOCTYPE html><html><head><title>Saturn</title><style type='text/css'>\n" +
@@ -386,10 +386,11 @@ public class SaturnActivity extends BaseProxyActivity {
                  "simple.style.top = ((Saturn.height() - simple.offsetHeight) / 2) + 'px';\n" +
                  "simple.style.left = ((Saturn.width() - simple.offsetWidth) / 2) + 'px';\n" +
                  "simple.style.visibility='visible';\n",
-                 "<table id='simple' style='visibility:hidden;position:absolute'>" +
-                 "<tr><td style='padding:20pt;font-size:" + HEADER_FONT_SIZE + "'>" +
-                 simpleHtml +
-                 "</td></tr></table>");
+                 new StringBuilder (
+                     "<table id='simple' style='visibility:hidden;position:absolute'>" +
+                     "<tr><td style='padding:20pt;font-size:" + HEADER_FONT_SIZE + "'>")
+                     .append(simpleHtml)
+                     .append("</td></tr></table>"));
     }
 
     public void messageDisplay(String js, String message) {
@@ -398,9 +399,10 @@ public class SaturnActivity extends BaseProxyActivity {
                  "message.style.top = ((Saturn.height() - message.offsetHeight) / 2) + 'px';\n" +
                  "message.style.visibility='visible';\n" +
                  js,
-                 "<div id='message' class='message'>" +
-                         message +
-                 "</div>");
+                 new StringBuilder(
+                        "<div id='message' class='message'>")
+                     .append(message)
+                     .append("</div>"));
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -721,9 +723,9 @@ public class SaturnActivity extends BaseProxyActivity {
           .append(landscapeMode ? (width * 50) / factor : (width * 88) / factor)
           .append("px'>")
           .append(ImageGenerator.getKeyBoard())
-          .append("</div>");
-        html.append(htmlOneCard(landscapeMode ? (width * 4) / 11 : (width * 7) / 10));
-        loadHtml(js.toString(), html.toString());
+          .append("</div>")
+          .append(htmlOneCard(landscapeMode ? (width * 4) / 11 : (width * 7) / 10));
+        loadHtml(js.toString(), html);
     }
 
     public void hideSoftKeyBoard() {
