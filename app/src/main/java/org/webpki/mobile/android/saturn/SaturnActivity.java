@@ -114,34 +114,6 @@ public class SaturnActivity extends BaseProxyActivity {
 
     static final String HEADER_FONT_SIZE   = "14pt";
 
-    static final String SPINNER_FIRST = "<svg style='height:1em;animation:spin 2s linear infinite' " +
-        "viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'><g stroke='";
-    static final String SPINNER_LAST = "' stroke-width='10' stroke-linecap='round'>" +
-        "<line x1='95' y1='50' x2='75' y2='50' stroke-opacity='1'/>" +
-        "<line x1='88.97' y1='72.5' x2='71.65' y2='62.5' stroke-opacity='0.94'/>" +
-        "<line x1='72.5' y1='88.97' x2='62.5' y2='71.65' stroke-opacity='0.88'/>" +
-        "<line x1='50' y1='95' x2='50' y2='75' stroke-opacity='0.82'/>" +
-        "<line x1='27.5' y1='88.97' x2='37.5' y2='71.65' stroke-opacity='0.76'/>" +
-        "<line x1='11.02' y1='72.5' x2='28.34' y2='62.5' stroke-opacity='0.7'/>" +
-        "<line x1='5' y1='50' x2='25' y2='50' stroke-opacity='0.64'/>" +
-        "<line x1='11.02' y1='27.5' x2='28.34' y2='37.5' stroke-opacity='0.59'/>" +
-        "<line x1='27.49' y1='11.02' x2='37.49' y2='28.34' stroke-opacity='0.53'/>" +
-        "<line x1='49.99' y1='5' x2='49.99' y2='25' stroke-opacity='0.47'/>" +
-        "<line x1='72.49' y1='11.02' x2='62.49' y2='28.34' stroke-opacity='0.41'/>" +
-        "<line x1='88.97' y1='27.49' x2='71.65' y2='37.49' stroke-opacity='0.35'/>" +
-        "</g>" +
-        "</svg>";
-
-    static final String FAILED_ICON = "<svg style='height:1em' " +
-        "viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'>" +
-        "<circle cx='50' cy='50' fill='#ffff00' r='45' stroke='#ff0000' stroke-width='10'/>" +
-        "<path d='m30,70c10,-8.5 30,-8.5 40,0' fill='none' " +
-        "stroke='#000000' stroke-linecap='round' stroke-width='10'/>" +
-        "<g fill='none' stroke='#007fff' stroke-linecap='round' stroke-width='15'>" +
-        "<line x1='30' x2='30' y1='30' y2='40'/>" +
-        "<line x1='70' x2='70' y1='30' y2='40'/>" +
-        "</g></svg>";
-
     static final String HTML_HEADER_WHITE =
           "pt;color:black;background-color:white}\n" +
           "td.label {text-align:right;padding:3pt 3pt 3pt 0pt}\n" +
@@ -268,9 +240,10 @@ public class SaturnActivity extends BaseProxyActivity {
                         argument = "N/A";
                     } else if (account.balanceRequestIsRunning) {
                         if (account.balanceRequestIsReady) {
-                            argument = account.balance == null ? FAILED_ICON : account.balance;
+                            argument = account.balance == null ?
+                                ImageGenerator.getFailedIcon().toString() : account.balance;
                         } else {
-                            argument = SPINNER_FIRST + (Settings.isWhiteTheme() ? "black" : "yellow") + SPINNER_LAST;
+                            argument = ImageGenerator.getSpinner().toString();
                         }
                     } else {
                         balanceRequestExecutor(cardIndex);
