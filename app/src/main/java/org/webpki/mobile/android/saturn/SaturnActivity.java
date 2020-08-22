@@ -132,14 +132,10 @@ public class SaturnActivity extends BaseProxyActivity {
               ";left:10pt;right:10pt;background-color:#ffffea;color:black;padding:15pt 10pt}" +
           "span.pinfix {color:" + BACKGROUND_WH + "}\n" +
           "span.money {font-weight:500;letter-spacing:1pt}\n" +
-          "span.marquee {color:brown;display:inline-block;position:relative;top:1pt" +
-              ";white-space:nowrap;font-size:10pt}\n" +
           "span.moneynote {color:darkblue}\n" +
           "@keyframes spin {100% {transform:rotate(360deg);}}\n" +
-          "</style>\n" +
-          "<script>\n" +
-          "'use strict';\n" +
-          "function positionElements() {\n";
+          "span.marquee {color:brown;display:inline-block;position:relative;top:1pt" +
+              ";white-space:nowrap;font-size:";
 
     static final String HTML_HEADER_SPACE =
           "pt;color:white" +
@@ -159,14 +155,10 @@ public class SaturnActivity extends BaseProxyActivity {
               ";left:10pt;right:10pt;background-color:white;color:black;padding:15pt 10pt}" +
           "span.pinfix {color:black}\n" +
           "span.money {font-weight:500;letter-spacing:1pt}\n" +
-          "span.marquee {color:orange;display:inline-block;position:relative;top:1pt" +
-              ";white-space:nowrap;font-size:10pt}\n" +
           "span.moneynote {color:lightblue}\n" +
           "@keyframes spin {100% {transform:rotate(360deg);}}\n" +
-          "</style>\n" +
-          "<script>\n" +
-          "'use strict';\n" +
-          "function positionElements() {\n";
+          "span.marquee {color:orange;display:inline-block;position:relative;top:1pt" +
+          ";white-space:nowrap;font-size:";
 
     String htmlBodyPrefix;
 
@@ -300,6 +292,12 @@ public class SaturnActivity extends BaseProxyActivity {
                     "body {margin:0;font-family:Roboto;font-size:")
                 .append(visuallyImpaired ? 18 : 12)
                 .append(Settings.isWhiteTheme() ? HTML_HEADER_WHITE : HTML_HEADER_SPACE)
+                .append(visuallyImpaired ? 15 : 10)
+                .append("pt}\n" +
+                  "</style>\n" +
+                  "<script>\n" +
+                  "'use strict';\n" +
+                  "function positionElements() {\n")
                 .append(positionScript)
                 .append(htmlBodyPrefix)
                 .append(body)
@@ -457,11 +455,11 @@ public class SaturnActivity extends BaseProxyActivity {
                 "<table id='card' style='visibility:hidden;position:absolute'>"+
 
                 "<tr><td id='leftArrow' style='visibility:hidden'>")
-            .append(ImageGenerator.getLeftArrow(arrowWidth))
+            .append(ImageGenerator.getLeftArrow(arrowWidth, visuallyImpaired))
             .append("</td><td>")
             .append(ImageGenerator.getStylizedCardImage((width * 100) / factor, selectedCard))
             .append("</td><td id='rightArrow' style='visibility:hidden'>")
-            .append(ImageGenerator.getRightArrow(arrowWidth))
+            .append(ImageGenerator.getRightArrow(arrowWidth, visuallyImpaired))
             .append(
                 "</td></tr>")
 
@@ -722,9 +720,10 @@ public class SaturnActivity extends BaseProxyActivity {
             "<div id='kbd' style='visibility:hidden;position:absolute;width:")
           .append(landscapeMode ? (width * 50) / factor : (width * 88) / factor)
           .append("px'>")
-          .append(ImageGenerator.getKeyBoard())
+          .append(ImageGenerator.getKeyBoard(visuallyImpaired))
           .append("</div>")
-          .append(htmlOneCard(landscapeMode ? (width * 4) / 11 : (width * 7) / 10));
+          .append(htmlOneCard(landscapeMode ? (width * 4) / 11 :
+              (width * (visuallyImpaired ? 9 : 7)) / 10));
         loadHtml(js.toString(), html);
     }
 

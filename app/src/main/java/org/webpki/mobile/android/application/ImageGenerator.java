@@ -20,7 +20,10 @@ public class ImageGenerator {
 
     private ImageGenerator() {}
 
-    static StringBuilder addButtonCore(int outerWidth, int outerHeight, int xOffset, int yOffset) {
+    private static StringBuilder addButtonCore(int outerWidth,
+                                               int outerHeight,
+                                               int xOffset,
+                                               int yOffset) {
         return new StringBuilder("<rect x='")
             .append(xOffset + 6)
             .append("' y='")
@@ -42,63 +45,104 @@ public class ImageGenerator {
             .append("' rx='8' fill='#fcfcfc' filter='url(#actorsBlur)'/>");
     }
 
-    static StringBuilder addDigit(int value, int xOffset, int yOffset) {
+    private static StringBuilder addDigit(boolean visuallyImpaired,
+                                          int value,
+                                          int width,
+                                          int height,
+                                          int xOffset,
+                                          int yOffset) {
         return new StringBuilder("<a xlink:href=\"javascript:addDigit('")
             .append(value)
             .append("')\">")
-            .append(addButtonCore(56, 48, xOffset, yOffset))
+            .append(addButtonCore(width, height, xOffset, yOffset))
             .append("<text x='")
-            .append(xOffset + 28.5)
+            .append(xOffset + (double)(width + 1) / 2)
             .append("' y='")
-            .append(yOffset + 33)
-            .append("' font-family='Roboto' font-size='26' " +
-                    "text-anchor='middle' font-weight='bold'>")
+            .append(yOffset + (visuallyImpaired ? 43 : 33))
+            .append("' font-family='Roboto' font-size='")
+            .append(visuallyImpaired ? 38 : 26)
+            .append("' text-anchor='middle' font-weight='bold'>")
             .append(value)
             .append("</text></a>");
     }
 
-    public static StringBuilder getKeyBoard() {
+    public static StringBuilder getKeyBoard(boolean visuallyImpaired) {
         int xOffset;
         int yOffset;
 
-        StringBuilder s = new StringBuilder("<svg viewBox='0 0 416 162' " +
-            "xmlns='http://www.w3.org/2000/svg' " +
-            "xmlns:xlink='http://www.w3.org/1999/xlink'>" +
-            "<defs>" +
-              "<filter height='150%' width='150%' y='-25%' x='-25%' id='actorsBlur'>" +
-                "<feGaussianBlur stdDeviation='3'/>" +
-              "</filter>" +
-            "</defs>");
+        StringBuilder s = new StringBuilder("<svg viewBox='0 0 416 ")
+            .append(visuallyImpaired ? 210 : 162)
+            .append(
+                "' xmlns='http://www.w3.org/2000/svg' " +
+                    "xmlns:xlink='http://www.w3.org/1999/xlink'>" +
+                "<defs>" +
+                    "<filter height='150%' width='150%' y='-25%' x='-25%' id='actorsBlur'>" +
+                        "<feGaussianBlur stdDeviation='3'/>" +
+                    "</filter>" +
+                "</defs>");
+/*
+   s.append("<rect width='416' height='")
+    .append(visuallyImpaired ? 210 : 162)
+    .append("' fill='white'/>");
 
-        for (int i = 0, x = 0; i < 10; i++) {
-            if (i == 4 || i == 7) {
-                x = 0;
+ */
+
+        int width = visuallyImpaired ? 68 : 56;
+        int distance = visuallyImpaired ? 87 : 90;
+        int height = visuallyImpaired ? 60 : 48;
+        int middle = visuallyImpaired ? 76 : 57;
+        int last = middle + middle;
+        xOffset = 0;
+        for (int digit = 0; digit < 10; digit++) {
+            if (digit == 4 || digit == 7) {
+                xOffset = 0;
             }
-            s.append(addDigit(i, x, i < 4 ? 0 : i > 6 ? 114 : 57));
-            x += 90;
+            yOffset = digit < 4 ? 0 : digit > 6 ? last : middle;
+            s.append(addDigit(visuallyImpaired,
+                              digit,
+                              width,
+                              height,
+                              xOffset,
+                              yOffset));
+            xOffset += distance;
         }
 
+        int deleteSize = visuallyImpaired ? 30 : 20;
         s.append("<a xlink:href=\"javascript:deleteDigit()\">")
-            .append(addButtonCore(56, 48, (90 * 3) + 90, 0))
+            .append(addButtonCore(width, height, distance * 4, 0))
             .append("<svg x='")
-            .append(((90 * 3) + 90)  + 18)
+            .append(distance * 4  + (width - deleteSize) / 2)
             .append("' y='")
-            .append(14)
+            .append(((height - deleteSize) / 2) - 0.5)
             .append(
-                "' width='20' height='20' viewBox='0 0 20 20'>" +
+                "' width='")
+            .append(deleteSize)
+            .append("' height='")
+            .append(deleteSize)
+            .append("' viewBox='0 0 20 20'>" +
                     "<path fill='#be1018' d='m 5,9.9 6.3,9.8 H 7.7 l -7.2,-9.5 V 9.6 l 7.2,-9.4 " +
                     "H 11.3 Z M 13.2,9.9 19.5,19.7 H 15.9 L 8.7,10.2 8.7,9.6 15.9,0.2 h 3.6 z'/>" +
                     "</svg>" +
-                    "</a>" +
+                    "</a>");
 
-                    "<a xlink:href=\"javascript:validatePin()\">")
-            .append(addButtonCore(80, 60, xOffset = 90 * 3 + 90 + 56 - 80, yOffset = 102))
+        int validateWidth = visuallyImpaired ? 100 : 80;
+        int validateHeight = visuallyImpaired ? 78 : 60;
+        int validateSize = visuallyImpaired ? 50 : 30;
+        s.append("<a xlink:href=\"javascript:validatePin()\">")
+            .append(addButtonCore(validateWidth,
+                                  validateHeight,
+                                  xOffset = distance * 4 + width - validateWidth,
+                                  yOffset = middle * 2 + height - validateHeight))
             .append("<svg x='")
-            .append(xOffset + 25)
+            .append(xOffset + (validateWidth - validateSize) / 2)
             .append("' y='")
-            .append(yOffset + 15)
+            .append(yOffset + (validateHeight - validateSize) / 2)
             .append(
-                "' width='30' height='30' viewBox='0 0 30 30'>" +
+                "' width='")
+            .append(validateSize)
+            .append("' height='")
+            .append(validateSize)
+            .append("' viewBox='0 0 30 30'>" +
                     "<path fill='#009900' d='m 0.8,14.2 c 5.4,5.7 8.4,12.4 8.8,13.5 h 2 " +
                     "C 16.6,17.4 22.3,9 29.1,2 h -4 C 18.5,9.5 16.4,12.5 10.6,23 8.8,19.6 " +
                     "7.6,17.8 4.8,14.2 Z'/>" +
@@ -235,21 +279,27 @@ public class ImageGenerator {
             .append("</svg>");
     }
 
-    public static StringBuilder getLeftArrow(int arrowWidth) {
+    public static StringBuilder getLeftArrow(int arrowWidth, boolean visuallyImpaired) {
+        String arrowColor = Settings.isWhiteTheme() ? "black" : "white";
         return new StringBuilder("<svg style='width:")
             .append(arrowWidth)
             .append("px' viewBox='0 0 110 320' xmlns='http://www.w3.org/2000/svg'>" +
-                "<path d='M100 20 L100 300 L10 160 Z' fill='none' stroke='")
-            .append(Settings.isWhiteTheme() ? "black" : "white")
+                "<path d='M100 20 L100 300 L10 160 Z' fill='")
+            .append(visuallyImpaired ? arrowColor : "none")
+            .append("' stroke='")
+            .append(arrowColor)
             .append("' stroke-width='10'/></svg>");
     }
 
-    public static StringBuilder getRightArrow(int arrowWidth) {
+    public static StringBuilder getRightArrow(int arrowWidth, boolean visuallyImpaired) {
+        String arrowColor = Settings.isWhiteTheme() ? "black" : "white";
         return new StringBuilder("<svg style='width:")
             .append(arrowWidth)
             .append("px' viewBox='0 0 110 320' xmlns='http://www.w3.org/2000/svg'>" +
-                "<path d='M10 20 L10 300 L100 160 Z' fill='none' stroke='")
-            .append(Settings.isWhiteTheme() ? "black" : "white")
+                "<path d='M10 20 L10 300 L100 160 Z' fill='")
+            .append(visuallyImpaired ? arrowColor : "none")
+            .append("' stroke='")
+            .append(arrowColor)
             .append("' stroke-width='10'/></svg>");
     }
 
