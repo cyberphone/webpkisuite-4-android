@@ -153,15 +153,17 @@ public class ImageGenerator {
         return s;
     }
 
-    public static StringBuilder getFingerPrintSwitch() {
-        return new StringBuilder(
-                "<svg style='height:12pt' viewBox='0 0 100 50' xmlns='http://www.w3.org/2000/svg'>" +
+    public static StringBuilder getFingerPrintSwitch(boolean visuallyImpaired) {
+        String switchColor = Settings.isWhiteTheme() ? "blue" : "white";
+        return new StringBuilder("<svg style='height:")
+            .append(visuallyImpaired ? 18 : 12)
+            .append("pt' viewBox='0 0 100 50' xmlns='http://www.w3.org/2000/svg'>" +
                 "<rect stroke='")
-            .append(Settings.isWhiteTheme() ? "grey" : "white")
+            .append(switchColor)
             .append(
                 "' stroke-width='3' fill='none' rx='6' y='1.5' x='1.5' height='47' width='97'/>" +
                 "<g fill='")
-            .append(Settings.isWhiteTheme() ? "grey" : "white")
+            .append(switchColor)
             .append(
                 "'>" +
                   "<circle cy='26' r='6' cx='17'/>" +
@@ -280,7 +282,7 @@ public class ImageGenerator {
     }
 
     public static StringBuilder getLeftArrow(int arrowWidth, boolean visuallyImpaired) {
-        String arrowColor = Settings.isWhiteTheme() ? "black" : "white";
+        String arrowColor = Settings.isWhiteTheme() ? "blue" : "white";
         return new StringBuilder("<svg style='width:")
             .append(arrowWidth)
             .append("px' viewBox='0 0 110 320' xmlns='http://www.w3.org/2000/svg'>" +
@@ -292,7 +294,7 @@ public class ImageGenerator {
     }
 
     public static StringBuilder getRightArrow(int arrowWidth, boolean visuallyImpaired) {
-        String arrowColor = Settings.isWhiteTheme() ? "black" : "white";
+        String arrowColor = Settings.isWhiteTheme() ? "blue" : "white";
         return new StringBuilder("<svg style='width:")
             .append(arrowWidth)
             .append("px' viewBox='0 0 110 320' xmlns='http://www.w3.org/2000/svg'>" +

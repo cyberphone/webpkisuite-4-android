@@ -125,15 +125,11 @@ public class SaturnActivity extends BaseProxyActivity {
               ";border-style:solid;border-color:" + BORDER_WH +
               ";border-radius:5pt;background-color:" + BACKGROUND_WH +
               ";display:flex;align-items:center}\n" +
-          "div.header {font-size:" + HEADER_FONT_SIZE +
-              ";visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
           "div.message {visibility:hidden;position:absolute;box-shadow:3pt 3pt 3pt lightgrey" +
               ";border-width:1px;border-color:grey;border-style:solid;border-radius:10pt" +
               ";left:10pt;right:10pt;background-color:#ffffea;color:black;padding:15pt 10pt}" +
           "span.pinfix {color:" + BACKGROUND_WH + "}\n" +
-          "span.money {font-weight:500;letter-spacing:1pt}\n" +
           "span.moneynote {color:darkblue}\n" +
-          "@keyframes spin {100% {transform:rotate(360deg);}}\n" +
           "span.marquee {color:brown;display:inline-block;position:relative;top:1pt" +
               ";white-space:nowrap;font-size:";
 
@@ -148,15 +144,11 @@ public class SaturnActivity extends BaseProxyActivity {
           "div.balance {font-weight:500;margin-top:4pt;padding:2pt 5pt;border-width:1pt" +
               ";border-style:solid;border-color:#b0b0b0;border-radius:5pt" +
               ";background-color:black;display:flex;align-items:center}\n" +
-          "div.header {font-size:" + HEADER_FONT_SIZE +
-              ";visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
           "div.message {visibility:hidden;position:absolute;box-shadow:0pt 0pt 8pt white" +
               ";border-width:1pt;border-color:#162c44;border-style:solid;border-radius:10pt" +
               ";left:10pt;right:10pt;background-color:white;color:black;padding:15pt 10pt}" +
           "span.pinfix {color:black}\n" +
-          "span.money {font-weight:500;letter-spacing:1pt}\n" +
           "span.moneynote {color:lightblue}\n" +
-          "@keyframes spin {100% {transform:rotate(360deg);}}\n" +
           "span.marquee {color:orange;display:inline-block;position:relative;top:1pt" +
           ";white-space:nowrap;font-size:";
 
@@ -294,6 +286,10 @@ public class SaturnActivity extends BaseProxyActivity {
                 .append(Settings.isWhiteTheme() ? HTML_HEADER_WHITE : HTML_HEADER_SPACE)
                 .append(visuallyImpaired ? 15 : 10)
                 .append("pt}\n" +
+                  "div.header {font-size:" + HEADER_FONT_SIZE +
+                      ";visibility:hidden;position:absolute;width:100%;text-align:center}\n" +
+                  "span.money {font-weight:500;letter-spacing:1pt}\n" +
+                  "@keyframes spin {100% {transform:rotate(360deg);}}\n" +
                   "</style>\n" +
                   "<script>\n" +
                   "'use strict';\n" +
@@ -531,6 +527,11 @@ public class SaturnActivity extends BaseProxyActivity {
                 "let gutter = (kbdTop - card.offsetHeight - paydata.offsetHeight) / 7;\n" +
                 "card.style.top = gutter * 3 + 'px';\n" +
                 "paydataTop = 5 * gutter + card.offsetHeight;\n" +
+                // Fix
+                "let dist1 = kbdTop - paydataTop - paydata.offsetHeight;\n" +
+                "let dist2 = Saturn.height() - kbdTop - kbd.offsetHeight;\n" +
+                "if (dist1 < dist2) kbd.style.top = (paydataTop + paydata.offsetHeight + (dist1 + dist2) / 2) + 'px';\n" +
+                // End fix
                 "let fpFrameTop = (Saturn.height() + paydata.offsetHeight " +
                     "+ paydataTop - fpFrame.offsetHeight) / 2 - pinRow.offsetHeight;\n" +
                 "fpFrame.style.top = fpFrameTop + 'px';\n" +
@@ -708,10 +709,12 @@ public class SaturnActivity extends BaseProxyActivity {
           .append(ImageGenerator.getFingerPrintSymbol("0.6",
                                                       "Saturn.toast('Use the fingerprint sensor', " +
                                                           Gravity.BOTTOM + ")",
-                                                      "inline-block", 0, 40))
+                                                      "inline-block",
+                                                      0,
+                                                      visuallyImpaired ? 60 : 40))
           .append(
             "</td><td id='pinSwitch' onclick=\"selectAuthMode(false)\">")
-          .append(ImageGenerator.getFingerPrintSwitch())
+          .append(ImageGenerator.getFingerPrintSwitch(visuallyImpaired))
           .append(
             "</td></tr>" +
             "<tr><td id='fpText' colspan='2' style='height:0px'></td></tr>" +
