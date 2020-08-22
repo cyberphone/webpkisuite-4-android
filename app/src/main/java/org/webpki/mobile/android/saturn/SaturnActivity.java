@@ -298,11 +298,11 @@ public class SaturnActivity extends BaseProxyActivity {
                 .append(htmlBodyPrefix)
                 .append(body)
                 .append("</body></html>").toString().getBytes("utf-8");
-
+/*
             FileOutputStream fos = openFileOutput("html.txt", Context.MODE_PRIVATE);
             fos.write(currentHtml);
             fos.close();
-
+*/
         } catch (Exception e) {
             Log.e("HTM", e.getMessage());
             return;
