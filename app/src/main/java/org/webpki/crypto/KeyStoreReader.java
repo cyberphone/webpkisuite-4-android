@@ -33,7 +33,7 @@ public class KeyStoreReader {
         try {
             // JKS magic number + version (2)
             byte[] jks = {(byte) 0xfe, (byte) 0xed, (byte) 0xfe, (byte) 0xed, 0, 0, 0, 2};
-            String type = "BKS";
+            String type = "JKS";
             for (int i = 0; i < 8; i++) {
                 if (buffer[i] != jks[i]) {
                     type = "PKCS12";

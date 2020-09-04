@@ -176,7 +176,7 @@ public class HTTPSWrapper {
                 if (allow_invalidcert) {
                     trust_managers = new TrustManager[]{new HttpsWrapperTrustManager()};
                     if (trust_store == null) {
-                        trust_store = KeyStore.getInstance("BKS");
+                        trust_store = KeyStore.getInstance("JKS");
                     }
                 } else if (trust_store != null) {
                     TrustManagerFactory tmf = TrustManagerFactory.getInstance("X509");
