@@ -21,6 +21,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 
 import android.content.Intent;
+
 import android.content.res.Configuration;
 
 import android.hardware.fingerprint.FingerprintManager;
@@ -66,6 +67,8 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+
+import java.util.concurrent.Executors;
 
 import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.AsymKeySignerInterface;
@@ -192,7 +195,7 @@ public class SaturnActivity extends BaseProxyActivity {
     }
 
     void balanceRequestExecutor(int cardIndex) {
-        new BalanceRequester(this, cardIndex).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        new BalanceRequester(this, cardIndex).executeOnExecutor(Executors.newCachedThreadPool());
     }
 
     int backgroundBalanceRequests(int potentialCardIndex) {
@@ -441,7 +444,7 @@ public class SaturnActivity extends BaseProxyActivity {
         showHeavyWork(PROGRESS_INITIALIZING);
 
         // Start of Saturn
-        new SaturnProtocolInit(this).execute();
+        new SaturnProtocolInit(this).executeOnExecutor(Executors.newCachedThreadPool());
     }
 
     StringBuilder htmlOneCard(int width) {
@@ -923,7 +926,7 @@ public class SaturnActivity extends BaseProxyActivity {
             showHeavyWork(PROGRESS_PAYMENT);
 
             // Threaded payment process
-            new SaturnProtocolPerform(this).execute();
+            new SaturnProtocolPerform(this).executeOnExecutor(Executors.newCachedThreadPool());
         }
     }
 
