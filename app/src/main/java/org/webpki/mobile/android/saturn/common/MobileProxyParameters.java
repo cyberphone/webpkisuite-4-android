@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package org.webpki.net;
+package org.webpki.mobile.android.saturn.common;
 
 public interface MobileProxyParameters {
 

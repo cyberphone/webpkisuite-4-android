@@ -29,7 +29,7 @@ import org.webpki.keygen2.KeyCreationRequestDecoder;
 import org.webpki.keygen2.InvocationRequestDecoder;
 import org.webpki.keygen2.ProvisioningInitializationRequestDecoder;
 
-import org.webpki.net.MobileProxyParameters;
+import org.webpki.mobile.android.saturn.common.MobileProxyParameters;
 
 public class KeyGen2Activity extends BaseProxyActivity {
     public static final String KEYGEN2 = "KeyGen2";

@@ -57,7 +57,8 @@ import org.webpki.mobile.android.saturn.SaturnActivity;
 import org.webpki.mobile.android.webauth.WebAuthActivity;
 
 import org.webpki.net.HTTPSWrapper;
-import org.webpki.net.MobileProxyParameters;
+
+import org.webpki.mobile.android.saturn.common.MobileProxyParameters;
 
 import org.webpki.mobile.android.sks.AndroidSKSImplementation;
 import org.webpki.mobile.android.sks.HardwareKeyStore;

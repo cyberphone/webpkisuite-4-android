@@ -88,10 +88,9 @@ import org.webpki.mobile.android.saturn.common.UserAuthorizationMethods;
 import org.webpki.mobile.android.saturn.common.ClientPlatform;
 import org.webpki.mobile.android.saturn.common.UserResponseItem;
 import org.webpki.mobile.android.saturn.common.WalletRequestDecoder;
+import org.webpki.mobile.android.saturn.common.MobileProxyParameters;
 
 import org.webpki.mobile.android.sks.HardwareKeyStore;
-
-import org.webpki.net.MobileProxyParameters;
 
 import org.webpki.sks.BiometricProtection;
 import org.webpki.sks.KeyProtectionInfo;
