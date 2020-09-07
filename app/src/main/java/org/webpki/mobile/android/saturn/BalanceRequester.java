@@ -70,9 +70,6 @@ public class BalanceRequester extends AsyncTask<Void, String, Boolean> {
                                                        account.currency,
                                                        account.accountId,
                                                        account.credentialId,
-                                                       new GregorianCalendar(),
-                                                       SaturnActivity.SATURN_SOFTWARE,
-                                                       saturnActivity.webPkiVersion,
                 new JSONAsymKeySigner(new AsymKeySignerInterface() {
                     @Override
                     public PublicKey getPublicKey() throws IOException {
