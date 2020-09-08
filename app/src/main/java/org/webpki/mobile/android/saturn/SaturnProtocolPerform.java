@@ -17,6 +17,7 @@
 package org.webpki.mobile.android.saturn;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import org.webpki.json.JSONDecoder;
 
@@ -44,6 +45,8 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
     
     String merchantHtmlAlert;
 
+    String optionalReceiptUrl;
+
     @Override
     protected Boolean doInBackground (Void... params) {
         try {
@@ -51,15 +54,17 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
             // to not leak user information to Payees.  Only the proper Payment Provider can decrypt
             // and process user authorizations.
             Account account = saturnActivity.getSelectedCard();
+            PayerAuthorizationEncoder payerAuthorization = new PayerAuthorizationEncoder(
+                    saturnActivity.authorizationData,
+                    account.authorityUrl,
+                    account.paymentMethod,
+                    account.dataEncryptionAlgorithm,
+                    account.encryptionKey,
+                    account.optionalKeyId,
+                    account.keyEncryptionAlgorithm);
             if (!saturnActivity.postJSONData(
                 saturnActivity.getTransactionURL(),
-                new PayerAuthorizationEncoder(saturnActivity.authorizationData,
-                                              account.authorityUrl,
-                                              account.paymentMethod,
-                                              account.dataEncryptionAlgorithm,
-                                              account.encryptionKey,
-                                              account.optionalKeyId,
-                                              account.keyEncryptionAlgorithm),
+                payerAuthorization,
                 BaseProxyActivity.RedirectPermitted.OPTIONAL)) {
                 JSONDecoder returnMessage = saturnActivity.parseJSONResponse();
                 if (returnMessage instanceof ProviderUserResponseDecoder) {
@@ -71,6 +76,10 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
                     merchantHtmlAlert = ((WalletAlertDecoder)returnMessage).getText();
                 }
                 return true;
+            }
+            if (saturnActivity.walletRequest.optionalReceiptBaseUrl != null) {
+                optionalReceiptUrl = saturnActivity.walletRequest.optionalReceiptBaseUrl +
+                                     payerAuthorization.getReceiptPathElement();
             }
         } catch (Exception e) {
             saturnActivity.logException(e);
@@ -148,6 +157,7 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
             saturnActivity.messageDisplay(js.toString(), html.toString());
        } else {
             Settings.writeLastKeyId(saturnActivity.getSelectedCard().signatureKeyHandle);
+            Log.e("XXX", optionalReceiptUrl == null ? "NO RECEIPT" : optionalReceiptUrl);
             String url = saturnActivity.getRedirectURL();
             if (url.equals(BaseProperties.SATURN_LOCAL_SUCCESS_URI)) {
                 saturnActivity.done = true;

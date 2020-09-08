@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 
+import org.webpki.crypto.HashAlgorithms;
+
 import org.webpki.json.JSONEncoder;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
@@ -28,6 +30,8 @@ import org.webpki.json.JSONAsymKeyEncrypter;
 
 import org.webpki.json.DataEncryptionAlgorithms;
 import org.webpki.json.KeyEncryptionAlgorithms;
+
+import org.webpki.util.Base64URL;
 
 public class PayerAuthorizationEncoder extends JSONEncoder implements BaseProperties {
     
@@ -45,16 +49,16 @@ public class PayerAuthorizationEncoder extends JSONEncoder implements BaseProper
                                      DataEncryptionAlgorithms dataEncryptionAlgorithm,
                                      PublicKey keyEncryptionKey,
                                      String optionalKeyId,
-                                     KeyEncryptionAlgorithms keyEncryptionAlgorithm) throws GeneralSecurityException, IOException {
+                                     KeyEncryptionAlgorithms keyEncryptionAlgorithm)
+    throws GeneralSecurityException, IOException {
         this.providerAuthorityUrl = providerAuthorityUrl;
         this.paymentMethod = paymentMethod;
         this.encryptedData =
             JSONObjectWriter.createEncryptionObject(
                     unencryptedAuthorizationData.serializeToBytes(JSONOutputFormats.NORMALIZED),
-                                                                  dataEncryptionAlgorithm,
-                                                                  new JSONAsymKeyEncrypter(keyEncryptionKey,
-                                                                                           keyEncryptionAlgorithm)
-                                                                        .setKeyId(optionalKeyId));
+                    dataEncryptionAlgorithm,
+                    new JSONAsymKeyEncrypter(keyEncryptionKey,
+                                             keyEncryptionAlgorithm).setKeyId(optionalKeyId));
     }
 
     @Override
@@ -62,6 +66,12 @@ public class PayerAuthorizationEncoder extends JSONEncoder implements BaseProper
         wr.setString(PROVIDER_AUTHORITY_URL_JSON, providerAuthorityUrl)
           .setString(PAYMENT_METHOD_JSON, paymentMethod)
           .setObject(ENCRYPTED_AUTHORIZATION_JSON, encryptedData);
+    }
+
+    public String getReceiptPathElement() throws IOException {
+        return Base64URL.encode(
+            HashAlgorithms.SHA256.digest(
+                encryptedData.serializeToBytes(JSONOutputFormats.CANONICALIZED)));
     }
 
     @Override
