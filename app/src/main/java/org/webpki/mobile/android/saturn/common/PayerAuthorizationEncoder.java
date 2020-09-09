@@ -68,7 +68,7 @@ public class PayerAuthorizationEncoder extends JSONEncoder implements BaseProper
           .setObject(ENCRYPTED_AUTHORIZATION_JSON, encryptedData);
     }
 
-    public String getReceiptPathElement() throws IOException {
+    public String getAuthorizationHash() throws IOException {
         return Base64URL.encode(
             HashAlgorithms.SHA256.digest(
                 encryptedData.serializeToBytes(JSONOutputFormats.CANONICALIZED)));

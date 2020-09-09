@@ -38,7 +38,7 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
 
     public String noMatchingMethodsUrl;
 
-    public String optionalReceiptBaseUrl;
+    public String optionalReceiptUrl;
 
     public PaymentRequestDecoder paymentRequest;
 
@@ -133,7 +133,7 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
             pmd.payeeAuthorityUrl = o.getString(PAYEE_AUTHORITY_URL_JSON);
             paymentMethodList.add(pmd);
         } while (methodList.hasMore());
-        optionalReceiptBaseUrl = rd.getStringConditional(RECEIPT_BASE_URL_JSON);
+        optionalReceiptUrl = rd.getStringConditional(RECEIPT_URL_JSON);
         paymentRequest = new PaymentRequestDecoder(rd.getObject(PAYMENT_REQUEST_JSON));
         nonDirectPayment = paymentRequest.getNonDirectPayment();
         noMatchingMethodsUrl = rd.getStringConditional(NO_MATCHING_METHODS_URL_JSON);

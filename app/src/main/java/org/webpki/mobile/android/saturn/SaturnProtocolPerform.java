@@ -47,6 +47,8 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
 
     String optionalReceiptUrl;
 
+    String authorizationHash;
+
     @Override
     protected Boolean doInBackground (Void... params) {
         try {
@@ -62,11 +64,11 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
                     account.encryptionKey,
                     account.optionalKeyId,
                     account.keyEncryptionAlgorithm);
-            // We create a receipt URL before sending the authorization because the return
+            // We fetch receipt URL before sending the authorization because the return
             // may fail while the payment succeeded.
-            if (saturnActivity.walletRequest.optionalReceiptBaseUrl != null) {
-                optionalReceiptUrl = saturnActivity.walletRequest.optionalReceiptBaseUrl +
-                    payerAuthorization.getReceiptPathElement();
+            if (saturnActivity.walletRequest.optionalReceiptUrl != null) {
+                optionalReceiptUrl = saturnActivity.walletRequest.optionalReceiptUrl;
+                authorizationHash = payerAuthorization.getAuthorizationHash();
             }
             if (!saturnActivity.postJSONData(
                 saturnActivity.getTransactionURL(),
@@ -105,7 +107,7 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
     protected void onPostExecute(Boolean alertUser) {
         // It is vital to never lose track of payments that may have gone through
         // even when the return failed.
-        Log.e("XXX", optionalReceiptUrl == null ? "NO RECEIPT" : optionalReceiptUrl);
+        Log.e("XXX", optionalReceiptUrl == null ? "NO RECEIPT" : optionalReceiptUrl + " h=" + authorizationHash);
         if (saturnActivity.userHasAborted()) {
             return;
         }
