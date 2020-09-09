@@ -62,10 +62,18 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
                     account.encryptionKey,
                     account.optionalKeyId,
                     account.keyEncryptionAlgorithm);
+            // We create a receipt URL before sending the authorization because the return
+            // may fail while the payment succeeded.
+            if (saturnActivity.walletRequest.optionalReceiptBaseUrl != null) {
+                optionalReceiptUrl = saturnActivity.walletRequest.optionalReceiptBaseUrl +
+                    payerAuthorization.getReceiptPathElement();
+            }
             if (!saturnActivity.postJSONData(
                 saturnActivity.getTransactionURL(),
                 payerAuthorization,
                 BaseProxyActivity.RedirectPermitted.OPTIONAL)) {
+                // In this case there should be no receipt so we clear this variable
+                optionalReceiptUrl = null;
                 JSONDecoder returnMessage = saturnActivity.parseJSONResponse();
                 if (returnMessage instanceof ProviderUserResponseDecoder) {
                     encryptedMessage =
@@ -76,10 +84,6 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
                     merchantHtmlAlert = ((WalletAlertDecoder)returnMessage).getText();
                 }
                 return true;
-            }
-            if (saturnActivity.walletRequest.optionalReceiptBaseUrl != null) {
-                optionalReceiptUrl = saturnActivity.walletRequest.optionalReceiptBaseUrl +
-                                     payerAuthorization.getReceiptPathElement();
             }
         } catch (Exception e) {
             saturnActivity.logException(e);
@@ -99,6 +103,9 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
 
     @Override
     protected void onPostExecute(Boolean alertUser) {
+        // It is vital to never lose track of payments that may have gone through
+        // even when the return failed.
+        Log.e("XXX", optionalReceiptUrl == null ? "NO RECEIPT" : optionalReceiptUrl);
         if (saturnActivity.userHasAborted()) {
             return;
         }
@@ -157,7 +164,6 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
             saturnActivity.messageDisplay(js.toString(), html.toString());
        } else {
             Settings.writeLastKeyId(saturnActivity.getSelectedCard().signatureKeyHandle);
-            Log.e("XXX", optionalReceiptUrl == null ? "NO RECEIPT" : optionalReceiptUrl);
             String url = saturnActivity.getRedirectURL();
             if (url.equals(BaseProperties.SATURN_LOCAL_SUCCESS_URI)) {
                 saturnActivity.done = true;
