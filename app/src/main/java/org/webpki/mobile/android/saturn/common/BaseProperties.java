@@ -52,7 +52,6 @@ public interface BaseProperties {
     String CLIENT_GEO_LOCATION_JSON         = "clientGeoLocation";          // Optional security data that client devices may supply
     String LOG_DATA_JSON                    = "logData";                    // Insertion of external log data
     String REFERENCE_ID_JSON                = "referenceId";                // Unique reference in a message
-    String PAYEE_JSON                       = "payee";                      // Payee object used in PaymentRequest
     String LOCAL_PAYEE_ID_JSON              = "localPayeeId";               // Provider's local ID of Payee
     String TEST_MODE_JSON                   = "testMode";                   // Test mode = no real money involved
     String ENCRYPTED_AUTHORIZATION_JSON     = "encryptedAuthorization";     // Encrypted Payer authorization data
@@ -63,6 +62,18 @@ public interface BaseProperties {
     String SUPPORTED_PAYMENT_METHODS_JSON   = "supportedPaymentMethods";    // List of accepted payment methods (URLs)
     String PAYMENT_METHOD_JSON              = "paymentMethod";              // Payment method (URL)
     String AUTHORIZATION_SIGNATURE_JSON     = "authorizationSignature";     // User and bank authorization signature
+    String STATUS_JSON                      = "status";                     // See Receipts
+    String PAYMENT_METHOD_NAME_JSON         = "paymentMethodName";          //    -"-
+    String PAYEE_REQUEST_ID_JSON            = "payeeRequestId";             //    -"-
+    String RECEIPT_SIGNATURE_JSON           = "receiptSignature";           //    -"-
+    String PROVIDER_DATA_JSON               = "providerData";               //    -"-
+    String TAX_JSON                         = "tax";                        //    -"-
+    String TAX_PERCENTAGE_JSON              = "taxPercentage";              //    -"-
+    String SUBTOTAL_JSON                    = "subtotal";                   //    -"-
+    String LINE_ITEMS_JSON                  = "lineItems";                  //    -"-
+    String SKU_JSON                         = "sku";                        //    -"-
+    String QUANTITY_JSON                    = "quantity";                   //    -"-
+    String DESCRIPTION_JSON                 = "description";                //    -"-
     String USER_AUTHORIZATION_METHOD_JSON   = "userAuthorizationMethod";    // PIN, Fingerprint, etc.
     String REQUEST_SIGNATURE_JSON           = "requestSignature";           // Payee signature
     String SUB_TYPE_JSON                    = "subType";                    // For non-direct payments
