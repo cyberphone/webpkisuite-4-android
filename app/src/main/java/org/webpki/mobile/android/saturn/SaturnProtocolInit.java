@@ -87,7 +87,11 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
         }
         saturnActivity.noMoreWorkToDo();
         if (success) {
-            saturnActivity.setTitle("Requester: " + saturnActivity.getRequestingHost());
+            saturnActivity.setTitle("Requester: " +
+                (saturnActivity.localTesting ?
+                    (saturnActivity.walletRequest.paymentRequest.getPayeeCommonName()
+                        .equals("Planet Gas") ? "planetgas.com" : "spaceshop.com")
+                    : saturnActivity.getRequestingHost()));
             try {
                 if (saturnActivity.accountCollection.isEmpty()) {
                     String noMatchingMethodsUrl = saturnActivity.walletRequest.noMatchingMethodsUrl;

@@ -104,11 +104,15 @@ public class CertificateViewActivity extends Activity {
         setContentView(R.layout.activity_cert_view);
         WebView certView = (WebView) findViewById(R.id.certData);
         Intent intent = getIntent();
-        StringBuilder certText = new StringBuilder("<html><body><table cellspacing=\"5\" cellpadding=\"5\">");
+        StringBuilder certText =
+            new StringBuilder("<html><body><table cellspacing=\"5\" cellpadding=\"5\">");
         try {
-            CertificateInfo cert_info = new CertificateInfo(CertificateUtil.getCertificateFromBlob(intent.getByteArrayExtra(CERTIFICATE_BLOB)));
+            CertificateInfo cert_info =
+                new CertificateInfo(CertificateUtil.getCertificateFromBlob(
+                    intent.getByteArrayExtra(CERTIFICATE_BLOB)));
             add(certText, "Issuer", HTMLEncoder.encode(cert_info.getIssuer()));
-            add(certText, "Serial&nbsp;number", cert_info.getSerialNumber() + " (0x" + cert_info.getSerialNumberInHex() + ")");
+            add(certText, "Serial&nbsp;number", cert_info.getSerialNumber() +
+                " (0x" + cert_info.getSerialNumberInHex() + ")");
             add(certText, "Subject", HTMLEncoder.encode(cert_info.getSubject()));
             add(certText, "Valid&nbsp;from", niceDate(cert_info.getNotBeforeDate()));
             add(certText, "Valid&nbsp;to", niceDate(cert_info.getNotAfterDate()));
@@ -120,7 +124,8 @@ public class CertificateViewActivity extends Activity {
             String[] ext_key_usages = cert_info.getExtendedKeyUsage();
             if (ext_key_usages != null) {
                 for (int i = 0; i < ext_key_usages.length; i++) {
-                    ext_key_usages[i] = ExtendedKeyUsages.getOptionallyTranslatedEku(ext_key_usages[i]);
+                    ext_key_usages[i] =
+                        ExtendedKeyUsages.getOptionallyTranslatedEku(ext_key_usages[i]);
                 }
                 printURIs(certText, "Extended&nbsp;key&nbsp;usage", ext_key_usages);
             }
@@ -128,13 +133,17 @@ public class CertificateViewActivity extends Activity {
             printURIs(certText, "AIA&nbsp;CA&nbsp;issuers", cert_info.getAIACAIssuers());
             printURIs(certText, "OCSP&nbsp;reponders", cert_info.getAIAOCSPResponders());
             String fp = ArrayUtil.toHexString(cert_info.getCertificateHash(), 0, -1, true, ' ');
-            add(certText, "SHA1&nbsp;fingerprint", fp.substring(0, 29) + "<br>" + fp.substring(29));
+            add(certText, "SHA256&nbsp;thumbprint",
+                fp.substring(0, 47) + "<br>" + fp.substring(47));
             add(certText, "Key&nbsp;algorithm", cert_info.getPublicKeyAlgorithm());
             add(certText, "Public&nbsp;key", binaryDump(cert_info.getPublicKeyData(), false));
             certText.append("</table>");
         } catch (Exception e) {
             certText =
                 new StringBuilder("<html><body><font color=\"red\">FAILED: ").append(e.getMessage());
+                for (StackTraceElement ste : e.getStackTrace()) {
+                    certText.append("<br>").append(ste.toString());
+                }
         }
         WebViewHtmlLoader.loadHtml(certView, certText.append("</body></html>"));
     }

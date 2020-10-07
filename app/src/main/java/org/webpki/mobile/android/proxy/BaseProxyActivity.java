@@ -129,6 +129,9 @@ public abstract class BaseProxyActivity extends Activity {
 
     private byte[] initialRequestObject;
 
+    //TODO check this a bit more
+    public boolean localTesting;
+
     protected abstract String getProtocolName();
 
     protected abstract void abortTearDown();
@@ -395,6 +398,8 @@ public abstract class BaseProxyActivity extends Activity {
         httpsWrapper.makeGetRequest(boot_url);
         initialRequestObject = httpsWrapper.getData();
         serverCertificate = httpsWrapper.getServerCertificates()[0];
+        localTesting = serverCertificate.getIssuerX500Principal()
+            .getName().equals("CN=WebPKI.org TLS Root CA");
         byte[] eeCert = intent.getByteArrayExtra("eeCert");
         if (eeCert != null && !ArrayUtil.compare(eeCert, serverCertificate.getEncoded())) {
             throw new IOException("Certificate mismatch");
