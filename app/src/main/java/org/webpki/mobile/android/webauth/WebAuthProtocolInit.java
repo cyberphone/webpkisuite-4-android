@@ -34,19 +34,19 @@ import android.view.View;
 
 import android.view.inputmethod.EditorInfo;
 
+import org.webpki.mobile.android.R;
+
 import java.io.IOException;
 
 import java.security.cert.X509Certificate;
 
-import java.security.interfaces.RSAPublicKey;
-
-import org.webpki.mobile.android.R;
 
 import org.webpki.sks.AppUsage;
 import org.webpki.sks.EnumeratedKey;
 import org.webpki.sks.KeyAttributes;
 
 import org.webpki.crypto.AlgorithmPreferences;
+import org.webpki.crypto.KeyAlgorithms;
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.CertificateFilter;
 import org.webpki.crypto.KeyContainerTypes;
@@ -101,10 +101,10 @@ public class WebAuthProtocolInit extends AsyncTask<Void, String, Boolean> {
                 }
                 X509Certificate[] cert_path = ka.getCertificatePath();
                 boolean did_it = false;
-                boolean rsa_flag = cert_path[0].getPublicKey() instanceof RSAPublicKey;
                 AsymSignatureAlgorithms signature_algorithm = null;
                 for (AsymSignatureAlgorithms sig_alg : webAuthActivity.authenticationRequest.getSignatureAlgorithms()) {
-                    if (rsa_flag == sig_alg.isRsa() && HardwareKeyStore.isSupported(sig_alg.getAlgorithmId(AlgorithmPreferences.SKS))) {
+                    if (KeyAlgorithms.getKeyAlgorithm(cert_path[0].getPublicKey()).getKeyType() == sig_alg.getKeyType() &&
+                        HardwareKeyStore.isSupported(sig_alg.getAlgorithmId(AlgorithmPreferences.SKS))) {
                         signature_algorithm = sig_alg;
                         did_it = true;
                         break;
