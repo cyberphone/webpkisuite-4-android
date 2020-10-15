@@ -34,6 +34,8 @@ import org.webpki.mobile.android.saturn.common.WalletAlertDecoder;
 
 import org.webpki.util.HTMLEncoder;
 
+import java.util.concurrent.Executors;
+
 public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
     private SaturnActivity saturnActivity;
 
@@ -165,7 +167,14 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
             saturnActivity.currentForm = SaturnActivity.FORM.SIMPLE;
             saturnActivity.messageDisplay(js.toString(), html.toString());
        } else {
+            // We were apparently successful.
             Settings.writeLastKeyId(saturnActivity.getSelectedCard().signatureKeyHandle);
+
+            // Are we expecting a receipt?
+            if (saturnActivity.walletRequest.optionalReceiptUrl != null) {
+                new ReceiptRequester(saturnActivity)
+                    .executeOnExecutor(Executors.newCachedThreadPool());
+            }
             String url = saturnActivity.getRedirectURL();
             if (url.equals(BaseProperties.SATURN_LOCAL_SUCCESS_URI)) {
                 saturnActivity.done = true;
