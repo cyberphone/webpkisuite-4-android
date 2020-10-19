@@ -16,9 +16,6 @@
  */
 package org.webpki.mobile.android.sks;
 
-import android.os.Build;
-import android.util.Log;
-
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
@@ -44,7 +41,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 
+import javax.security.auth.x500.X500Principal;
+
 import org.webpki.sks.SKSException;
+
+import android.util.Log;
+
+import android.os.Build;
 
 import android.content.Context;
 
@@ -53,8 +56,6 @@ import android.provider.Settings;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 import android.security.keystore.KeyProtection;
-
-import javax.security.auth.x500.X500Principal;
 
 // This class holds all interfaces between SKS and the AndroidKeyStore.
 // It also provides SKS/AndroidKeyStore initialization and serialization support. 
