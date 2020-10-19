@@ -16,6 +16,7 @@
  */
 package org.webpki.mobile.android.sks;
 
+import android.os.Build;
 import android.util.Log;
 
 import java.io.ObjectInputStream;
@@ -99,16 +100,20 @@ public abstract class HardwareKeyStore {
                     new SecureRandom().nextBytes(serial);
                     KeyPairGenerator kpg = KeyPairGenerator.getInstance(
                             KeyProperties.KEY_ALGORITHM_EC, ANDROID_KEYSTORE);
-                    kpg.initialize(new KeyGenParameterSpec.Builder(
+                    KeyGenParameterSpec.Builder builder =
+                    new KeyGenParameterSpec.Builder(
                             DEVICE_KEY_NAME, KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_VERIFY)
                             .setAlgorithmParameterSpec(new ECGenParameterSpec("secp256r1"))
                             .setDigests(KeyProperties.DIGEST_SHA256)
                             .setCertificateSerialNumber(new BigInteger(1, serial))
                             .setCertificateNotBefore(new Date(System.currentTimeMillis() - 600000L))
                             .setCertificateSubject(new X500Principal("serialNumber=" +
-                                    (androidId == null ? "N/A" : androidId) + ",CN=Android SKS"))
-                            .setAttestationChallenge("webpki.org".getBytes("utf-8"))
-                            .build());
+                                    (androidId == null ? "N/A" : androidId) + ",CN=Android SKS"));
+                    if (Build.VERSION.SDK_INT > 24) {
+                        // Some Android 7 devices seem awfully broken...
+                        builder.setAttestationChallenge("webpki.org".getBytes("utf-8"));
+                    }
+                    kpg.initialize(builder.build());
                     KeyPair keyPair = kpg.generateKeyPair();
                     deviceKey = keyPair.getPrivate();
                     Log.i(LOG_NAME, "Created a key");
