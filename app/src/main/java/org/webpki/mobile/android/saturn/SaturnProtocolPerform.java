@@ -172,7 +172,7 @@ public class SaturnProtocolPerform extends AsyncTask<Void, String, Boolean> {
 
             // Are we expecting a receipt?
             if (saturnActivity.walletRequest.optionalReceiptUrl != null) {
-                new ReceiptRequester(saturnActivity)
+                new ReceiptCollectionProcess(saturnActivity)
                     .executeOnExecutor(Executors.newCachedThreadPool());
             }
             String url = saturnActivity.getRedirectURL();

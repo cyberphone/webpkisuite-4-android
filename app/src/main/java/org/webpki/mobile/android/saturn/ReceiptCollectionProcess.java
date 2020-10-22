@@ -20,42 +20,30 @@ import android.os.AsyncTask;
 
 import android.view.Gravity;
 
-import org.webpki.json.JSONParser;
+import org.webpki.mobile.android.database.Database;
+import org.webpki.mobile.android.database.ReceiptData;
 
-import org.webpki.mobile.android.saturn.common.ReceiptDecoder;
-
-import org.webpki.net.HTTPSWrapper;
-
-import java.io.IOException;
-
-public class ReceiptRequester extends AsyncTask<Void, String, Boolean> {
+public class ReceiptCollectionProcess extends AsyncTask<Void, String, Boolean> {
 
     SaturnActivity saturnActivity;
-    String receiptUrl;
-    ReceiptDecoder receipt;
+    ReceiptData receiptData;
 
-    ReceiptRequester(SaturnActivity saturnActivity) {
+    ReceiptCollectionProcess(SaturnActivity saturnActivity) {
         this.saturnActivity = saturnActivity;
-        this.receiptUrl = saturnActivity.walletRequest.optionalReceiptUrl;
+        this.receiptData = new ReceiptData(saturnActivity.walletRequest.optionalReceiptUrl);
     }
 
     @Override
     protected Boolean doInBackground (Void... params) {
-        try {
-            HTTPSWrapper wrapper = new HTTPSWrapper();
-            wrapper.setRequireSuccess(true);
-            wrapper.setTimeout(60000);
-            wrapper.makeGetRequest(receiptUrl);
-            byte[] receiptJson = wrapper.getData();
-            receipt = new ReceiptDecoder(JSONParser.parse(receiptJson));
-        } catch (Exception e) {
-            return false;
-        }
-        return true;
+        return receiptData.tryToPopulate();
     }
 
     @Override
     protected void onPostExecute(Boolean success) {
-        saturnActivity.toast(success ? "RECEIPT SUCCESS" + receipt.getPayeeCommonName() : "RECEIPT FAIL", Gravity.CENTER_VERTICAL);
+        String res = "RECEIPT SUCCESS";
+        if (success) {
+            Database.AddReceipt(receiptData, saturnActivity);
+        }
+        saturnActivity.toast(success ? res : "RECEIPT FAIL", Gravity.CENTER_VERTICAL);
     }
 }
