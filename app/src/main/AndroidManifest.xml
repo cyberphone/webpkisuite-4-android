@@ -114,6 +114,10 @@
             android:name=".receipts.ReceiptListActivity"
             android:label="List of Receipts">
         </activity>
+        <activity
+            android:name=".receipts.ReceiptViewActivity"
+            android:label="Customer Receipt">
+        </activity>
     </application>
 
 </manifest>

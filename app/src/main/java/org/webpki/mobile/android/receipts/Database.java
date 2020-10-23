@@ -26,8 +26,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import android.provider.BaseColumns;
 
-import java.util.Date;
-
 public class Database extends SQLiteOpenHelper {
 
     static final int DATABASE_VERSION = 5;
@@ -113,7 +111,7 @@ public class Database extends SQLiteOpenHelper {
         values.put(ReceiptsEntry.AMOUNT, receiptData.amount);
         values.put(ReceiptsEntry.CURRENCY, receiptData.currency);
         values.put(ReceiptsEntry.PAYEE_TIME_STAMP, receiptData.payeeTimeStamp);
-        values.put(ReceiptsEntry.JSON_RECEIPT, receiptData.jsonRreceipt);
+        values.put(ReceiptsEntry.JSON_RECEIPT, receiptData.jsonReceipt);
         values.put(ReceiptsEntry.LOGOTYPE_HASH, receiptData.logotypeHash);
         db.insertWithOnConflict(ReceiptsEntry.RECEIPTS_TABLE, null, values,
                                 SQLiteDatabase.CONFLICT_REPLACE);
@@ -126,15 +124,31 @@ public class Database extends SQLiteOpenHelper {
                                 SQLiteDatabase.CONFLICT_IGNORE);
     }
 
-    public static Cursor getReceiptSelection(Context context) {
+    static Cursor getReceiptSelection(Context context) {
         SQLiteDatabase db = getInstance(context);
-        return db.rawQuery("SELECT " + ReceiptsEntry._ID + "," +
+        return db.rawQuery("SELECT rowId," +  // Always INTEGER
                                 "date(" + ReceiptsEntry.PAYEE_TIME_STAMP +
                                       ",'unixepoch','localtime')," +
                                 ReceiptsEntry.COMMON_NAME + "," +
                                 ReceiptsEntry.AMOUNT + "||' '||" +
                                 ReceiptsEntry.CURRENCY +
                                 " FROM " + ReceiptsEntry.RECEIPTS_TABLE,
+                           new String[0]);
+    }
+
+    static Cursor getReceipt(Context context, int rowId) {
+        SQLiteDatabase db = getInstance(context);
+        return db.rawQuery("SELECT " +
+                ReceiptsEntry.RECEIPTS_TABLE + "." + ReceiptsEntry.JSON_RECEIPT + "," +
+                LogotypesEntry.LOGOTYPES_TABLE + "." + LogotypesEntry.IMAGE_DATA + "," +
+                LogotypesEntry.LOGOTYPES_TABLE + "." + LogotypesEntry.MIME_TYPE +
+                " FROM " + ReceiptsEntry.RECEIPTS_TABLE +
+                " JOIN " + LogotypesEntry.LOGOTYPES_TABLE +
+                " WHERE " +
+                ReceiptsEntry.RECEIPTS_TABLE + ".rowId = " + rowId +
+                " AND " +
+                LogotypesEntry.LOGOTYPES_TABLE + "._id = " +
+                     ReceiptsEntry.RECEIPTS_TABLE + "." + ReceiptsEntry.LOGOTYPE_HASH,
                            new String[0]);
     }
 }

@@ -30,7 +30,7 @@ public class ReceiptData {
     HTTPSWrapper wrapper;
 
     String receiptUrl;
-    byte[] jsonRreceipt;
+    byte[] jsonReceipt;
     String amount;
     String currency;
     String commonName;
@@ -49,8 +49,8 @@ public class ReceiptData {
     public boolean tryToPopulate() {
         try {
             wrapper.makeGetRequest(receiptUrl);
-            jsonRreceipt = wrapper.getData();
-            ReceiptDecoder receipt = new ReceiptDecoder(JSONParser.parse(jsonRreceipt));
+            jsonReceipt = wrapper.getData();
+            ReceiptDecoder receipt = new ReceiptDecoder(JSONParser.parse(jsonReceipt));
             amount = receipt.getAmount().toPlainString();
             currency = receipt.getCurrency().toString();
             commonName = receipt.getPayeeCommonName();
