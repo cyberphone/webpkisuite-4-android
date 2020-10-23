@@ -110,7 +110,10 @@
             android:name=".application.CredentialsActivity"
             android:label="@string/title_activity_credentials">
         </activity>
-        
+        <activity
+            android:name=".receipts.ReceiptListActivity"
+            android:label="List of Receipts">
+        </activity>
     </application>
 
 </manifest>

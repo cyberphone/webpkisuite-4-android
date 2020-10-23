@@ -18,6 +18,7 @@ package org.webpki.mobile.android.application;
 
 import org.webpki.crypto.DeviceID;
 
+import org.webpki.mobile.android.receipts.ReceiptListActivity;
 import org.webpki.sks.SKSException;
 
 import org.webpki.mobile.android.R;
@@ -55,14 +56,16 @@ import android.content.Intent;
 public class PropertiesActivity extends ListActivity {
 
     static final int SETTINGS_ABOUT            = 0;
-    static final int SETTINGS_PRIVACY_POLICY   = 1;
-    static final int SETTINGS_DEVICE_ID        = 2;
-    static final int SETTINGS_USER_CREDENTIALS = 3;
-    static final int SETTINGS_DEVICE_CERT      = 4;
-    static final int SETTINGS_PROTOCOL_LOG     = 5;
-    static final int SETTINGS_THEME            = 6;
-    static final int SETTINGS_ACCESSIBILITY    = 7;
+    static final int SETTINGS_RECEIPTS         = 1;
+    static final int SETTINGS_PRIVACY_POLICY   = 2;
+    static final int SETTINGS_DEVICE_ID        = 3;
+    static final int SETTINGS_USER_CREDENTIALS = 4;
+    static final int SETTINGS_DEVICE_CERT      = 5;
+    static final int SETTINGS_PROTOCOL_LOG     = 6;
+    static final int SETTINGS_THEME            = 7;
+    static final int SETTINGS_ACCESSIBILITY    = 8;
     String[] items = {"About",
+                      "List of Receipts",
                       "Privacy Policy",
                       "Device ID",
                       "User Credentials",
@@ -86,6 +89,11 @@ public class PropertiesActivity extends ListActivity {
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
+        if (id == SETTINGS_RECEIPTS) {
+            Intent intent = new Intent(this, ReceiptListActivity.class);
+            startActivity(intent);
+            return;
+        }
         sks = HardwareKeyStore.createSKS("Dialog", getBaseContext(), true);
         if (id == SETTINGS_DEVICE_CERT) {
             Intent intent = new Intent(this, CertificateViewActivity.class);

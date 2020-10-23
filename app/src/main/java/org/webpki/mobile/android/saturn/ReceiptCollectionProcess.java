@@ -18,15 +18,18 @@ package org.webpki.mobile.android.saturn;
 
 import android.os.AsyncTask;
 
+import android.os.SystemClock;
+
 import android.view.Gravity;
 
-import org.webpki.mobile.android.database.Database;
-import org.webpki.mobile.android.database.ReceiptData;
+import org.webpki.mobile.android.receipts.Database;
+import org.webpki.mobile.android.receipts.ReceiptData;
 
 public class ReceiptCollectionProcess extends AsyncTask<Void, String, Boolean> {
 
     SaturnActivity saturnActivity;
     ReceiptData receiptData;
+    long delay = 30000;
 
     ReceiptCollectionProcess(SaturnActivity saturnActivity) {
         this.saturnActivity = saturnActivity;
@@ -35,15 +38,25 @@ public class ReceiptCollectionProcess extends AsyncTask<Void, String, Boolean> {
 
     @Override
     protected Boolean doInBackground (Void... params) {
-        return receiptData.tryToPopulate();
+        for (int i = 0; i < 13; i++) {
+            if (receiptData.tryToPopulate()) {
+                return true;
+            }
+            SystemClock.sleep(delay);
+            if (i == 3) {
+                delay = delay << 1;
+            }
+        }
+        return false;
     }
 
     @Override
     protected void onPostExecute(Boolean success) {
-        String res = "RECEIPT SUCCESS";
         if (success) {
             Database.AddReceipt(receiptData, saturnActivity);
         }
-        saturnActivity.toast(success ? res : "RECEIPT FAIL", Gravity.CENTER_VERTICAL);
+        // Here there should of course be a more intelligent service for
+        // dealing with failed receipts but that is for another day...
+        saturnActivity.toast(success ? "RECEIPT RECEIVED" : "RECEIPT FAIL", Gravity.CENTER_VERTICAL);
     }
 }

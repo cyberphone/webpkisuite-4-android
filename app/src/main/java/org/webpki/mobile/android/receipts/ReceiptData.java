@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package org.webpki.mobile.android.database;
+package org.webpki.mobile.android.receipts;
 
 import org.webpki.crypto.HashAlgorithms;
 
@@ -54,7 +54,7 @@ public class ReceiptData {
             amount = receipt.getAmount().toPlainString();
             currency = receipt.getCurrency().toString();
             commonName = receipt.getPayeeCommonName();
-            payeeTimeStamp = receipt.getPayeeTimeStamp().getTimeInMillis();
+            payeeTimeStamp = (receipt.getPayeeTimeStamp().getTimeInMillis() + 500) / 1000;
             String authorityUrl = receipt.getPayeeAuthorityUrl();
             wrapper.makeGetRequest(authorityUrl);
             String logotypeUrl =

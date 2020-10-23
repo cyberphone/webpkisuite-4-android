@@ -14,19 +14,23 @@
  *  limitations under the License.
  *
  */
-package org.webpki.mobile.android.database;
+package org.webpki.mobile.android.receipts;
 
 import android.content.ContentValues;
 import android.content.Context;
+
+import android.database.Cursor;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import android.provider.BaseColumns;
 
+import java.util.Date;
+
 public class Database extends SQLiteOpenHelper {
 
-    static final int DATABASE_VERSION = 4;
+    static final int DATABASE_VERSION = 5;
     static final String DATABASE_NAME = "Saturn.db";
 
     public Database(Context context) {
@@ -120,5 +124,17 @@ public class Database extends SQLiteOpenHelper {
         values.put(LogotypesEntry.MIME_TYPE, receiptData.mimeType);
         db.insertWithOnConflict(LogotypesEntry.LOGOTYPES_TABLE, null, values,
                                 SQLiteDatabase.CONFLICT_IGNORE);
-     }
+    }
+
+    public static Cursor getReceiptSelection(Context context) {
+        SQLiteDatabase db = getInstance(context);
+        return db.rawQuery("SELECT " + ReceiptsEntry._ID + "," +
+                                "date(" + ReceiptsEntry.PAYEE_TIME_STAMP +
+                                      ",'unixepoch','localtime')," +
+                                ReceiptsEntry.COMMON_NAME + "," +
+                                ReceiptsEntry.AMOUNT + "||' '||" +
+                                ReceiptsEntry.CURRENCY +
+                                " FROM " + ReceiptsEntry.RECEIPTS_TABLE,
+                           new String[0]);
+    }
 }
