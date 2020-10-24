@@ -18,6 +18,7 @@ package org.webpki.mobile.android.receipts;
 
 import org.webpki.crypto.HashAlgorithms;
 
+import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONParser;
 
 import org.webpki.mobile.android.saturn.common.BaseProperties;
@@ -34,10 +35,11 @@ public class ReceiptData {
     String amount;
     String currency;
     String commonName;
+    String homePage;
     byte[] logotype;
     byte[] logotypeHash;
     String mimeType;
-    long payeeTimeStamp;
+    long timeStamp;
 
     public ReceiptData(String receiptUrl) {
         this.receiptUrl = receiptUrl;
@@ -54,14 +56,20 @@ public class ReceiptData {
             amount = receipt.getAmount().toPlainString();
             currency = receipt.getCurrency().toString();
             commonName = receipt.getPayeeCommonName();
-            payeeTimeStamp = (receipt.getPayeeTimeStamp().getTimeInMillis() + 500) / 1000;
+            // Unix "epoch" time is in seconds
+            timeStamp = (receipt.getPayeeTimeStamp().getTimeInMillis() + 500) / 1000;
             String authorityUrl = receipt.getPayeeAuthorityUrl();
             wrapper.makeGetRequest(authorityUrl);
-            String logotypeUrl =
-                JSONParser.parse(wrapper.getData()).getString(BaseProperties.LOGOTYPE_URL_JSON);
+            JSONObjectReader authorityObject = JSONParser.parse(wrapper.getData());
+            // We don't need the full-blown decoder here since we only access a
+            // couple of items that we also hope will never change
+            homePage = authorityObject.getString(BaseProperties.HOME_PAGE_JSON);
+            // Retrieve the actual logotype binary and its mime type
+            String logotypeUrl = authorityObject.getString(BaseProperties.LOGOTYPE_URL_JSON);
             wrapper.makeGetRequest(logotypeUrl);
             logotype = wrapper.getData();
             mimeType = wrapper.getContentType();
+            // The primary key to the logotype data
             logotypeHash = HashAlgorithms.SHA256.digest(logotype);
         } catch (Exception e) {
             return false;

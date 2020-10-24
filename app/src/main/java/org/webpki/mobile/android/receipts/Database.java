@@ -28,7 +28,7 @@ import android.provider.BaseColumns;
 
 public class Database extends SQLiteOpenHelper {
 
-    static final int DATABASE_VERSION = 5;
+    static final int DATABASE_VERSION = 7;
     static final String DATABASE_NAME = "Saturn.db";
 
     public Database(Context context) {
@@ -57,8 +57,9 @@ public class Database extends SQLiteOpenHelper {
             // 0 = OK, MAX_RETRIES = Permanently failed
             ReceiptsEntry.STATUS +           " INTEGER," +
             // Reused as try time for receipts that haven't yet been properly received
-            ReceiptsEntry.PAYEE_TIME_STAMP + " INTEGER," +
+            ReceiptsEntry.TIME_STAMP +       " INTEGER," +
             ReceiptsEntry.COMMON_NAME +      " TEXT," +
+            ReceiptsEntry.HOME_PAGE +        " TEXT," +
             ReceiptsEntry.AMOUNT +           " TEXT," +
             ReceiptsEntry.CURRENCY +         " TEXT," +
             ReceiptsEntry.JSON_RECEIPT +     " BLOB," +
@@ -70,8 +71,9 @@ public class Database extends SQLiteOpenHelper {
     public static class ReceiptsEntry implements BaseColumns {
         public static final String RECEIPTS_TABLE   = "RECEIPTS";
         public static final String STATUS           = "status";
-        public static final String PAYEE_TIME_STAMP = "payeeTimeStamp";
+        public static final String TIME_STAMP       = "timeStamp";
         public static final String COMMON_NAME      = "commonName";
+        public static final String HOME_PAGE        = "homePage";
         public static final String AMOUNT           = "amount";
         public static final String CURRENCY         = "currency";
         public static final String JSON_RECEIPT     = "jsonReceipt";
@@ -107,10 +109,11 @@ public class Database extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put(ReceiptsEntry._ID, receiptData.receiptUrl);
         values.put(ReceiptsEntry.STATUS, 0);
-        values.put(ReceiptsEntry.COMMON_NAME,receiptData.commonName);
+        values.put(ReceiptsEntry.COMMON_NAME, receiptData.commonName);
+        values.put(ReceiptsEntry.HOME_PAGE, receiptData.homePage);
         values.put(ReceiptsEntry.AMOUNT, receiptData.amount);
         values.put(ReceiptsEntry.CURRENCY, receiptData.currency);
-        values.put(ReceiptsEntry.PAYEE_TIME_STAMP, receiptData.payeeTimeStamp);
+        values.put(ReceiptsEntry.TIME_STAMP, receiptData.timeStamp);
         values.put(ReceiptsEntry.JSON_RECEIPT, receiptData.jsonReceipt);
         values.put(ReceiptsEntry.LOGOTYPE_HASH, receiptData.logotypeHash);
         db.insertWithOnConflict(ReceiptsEntry.RECEIPTS_TABLE, null, values,
@@ -127,7 +130,7 @@ public class Database extends SQLiteOpenHelper {
     static Cursor getReceiptSelection(Context context) {
         SQLiteDatabase db = getInstance(context);
         return db.rawQuery("SELECT rowId," +  // Always INTEGER
-                                "date(" + ReceiptsEntry.PAYEE_TIME_STAMP +
+                                "date(" + ReceiptsEntry.TIME_STAMP +
                                       ",'unixepoch','localtime')," +
                                 ReceiptsEntry.COMMON_NAME + "," +
                                 ReceiptsEntry.AMOUNT + "||' '||" +
@@ -140,6 +143,7 @@ public class Database extends SQLiteOpenHelper {
         SQLiteDatabase db = getInstance(context);
         return db.rawQuery("SELECT " +
                 ReceiptsEntry.RECEIPTS_TABLE + "." + ReceiptsEntry.JSON_RECEIPT + "," +
+                ReceiptsEntry.RECEIPTS_TABLE + "." + ReceiptsEntry.HOME_PAGE + "," +
                 LogotypesEntry.LOGOTYPES_TABLE + "." + LogotypesEntry.IMAGE_DATA + "," +
                 LogotypesEntry.LOGOTYPES_TABLE + "." + LogotypesEntry.MIME_TYPE +
                 " FROM " + ReceiptsEntry.RECEIPTS_TABLE +
