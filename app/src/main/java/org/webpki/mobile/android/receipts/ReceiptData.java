@@ -26,6 +26,8 @@ import org.webpki.mobile.android.saturn.common.ReceiptDecoder;
 
 import org.webpki.net.HTTPSWrapper;
 
+import java.util.GregorianCalendar;
+
 public class ReceiptData {
 
     HTTPSWrapper wrapper;
@@ -56,17 +58,17 @@ public class ReceiptData {
             amount = receipt.getAmount().toPlainString();
             currency = receipt.getCurrency().toString();
             commonName = receipt.getPayeeCommonName();
-            // Unix "epoch" time is in seconds
-            timeStamp = (receipt.getPayeeTimeStamp().getTimeInMillis() + 500) / 1000;
-            String authorityUrl = receipt.getPayeeAuthorityUrl();
-            wrapper.makeGetRequest(authorityUrl);
+            // Unix "epoch" time is in seconds but compensated for time-zone
+            long epoch = receipt.getPayeeTimeStamp().getTimeInMillis();
+            epoch += new GregorianCalendar().getTimeZone().getOffset(epoch);
+            timeStamp = (epoch + 500) / 1000;
+            wrapper.makeGetRequest(receipt.getPayeeAuthorityUrl());
             JSONObjectReader authorityObject = JSONParser.parse(wrapper.getData());
             // We don't need the full-blown decoder here since we only access a
             // couple of items that we also hope will never change
             homePage = authorityObject.getString(BaseProperties.HOME_PAGE_JSON);
             // Retrieve the actual logotype binary and its mime type
-            String logotypeUrl = authorityObject.getString(BaseProperties.LOGOTYPE_URL_JSON);
-            wrapper.makeGetRequest(logotypeUrl);
+            wrapper.makeGetRequest(authorityObject.getString(BaseProperties.LOGOTYPE_URL_JSON));
             logotype = wrapper.getData();
             mimeType = wrapper.getContentType();
             // The primary key to the logotype data

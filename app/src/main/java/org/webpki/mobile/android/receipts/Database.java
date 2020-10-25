@@ -144,6 +144,9 @@ public class Database extends SQLiteOpenHelper {
         return db.rawQuery("SELECT " +
                 ReceiptsEntry.RECEIPTS_TABLE + "." + ReceiptsEntry.JSON_RECEIPT + "," +
                 ReceiptsEntry.RECEIPTS_TABLE + "." + ReceiptsEntry.HOME_PAGE + "," +
+                "datetime(" +
+                    ReceiptsEntry.RECEIPTS_TABLE + "." + ReceiptsEntry.TIME_STAMP +
+                    ",'unixepoch')" + "," +
                 LogotypesEntry.LOGOTYPES_TABLE + "." + LogotypesEntry.IMAGE_DATA + "," +
                 LogotypesEntry.LOGOTYPES_TABLE + "." + LogotypesEntry.MIME_TYPE +
                 " FROM " + ReceiptsEntry.RECEIPTS_TABLE +

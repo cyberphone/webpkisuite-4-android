@@ -32,11 +32,15 @@ import android.database.Cursor;
 
 import android.os.Bundle;
 
+import android.text.Html;
 import android.util.Base64;
 
+import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
+import org.webpki.json.JSONObjectReader;
+import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONParser;
 
 import org.webpki.mobile.android.R;
@@ -50,7 +54,7 @@ import org.webpki.mobile.android.util.WebViewHtmlLoader;
 
 public class ReceiptViewActivity extends Activity {
 
-    static final String ROW_ID_EXTRA = "rowId";
+    static final String ROW_ID_EXTRA    = "rowId";
 
     private static int LOGOTYPE_AREA = 80;  // We give logotypes the same area to play around in
 
@@ -69,7 +73,6 @@ public class ReceiptViewActivity extends Activity {
         "<!DOCTYPE html><html><head>" +
         "<meta charset='utf-8'>" +
         "<style type='text/css'>" +
-            " .header {font-size:1.6em;padding-bottom:1em}" +
             " .para {padding-bottom:0.4em}" +
             " .tftable {border-collapse:collapse;" + BOX_SHADOW + ";" +
                 "margin-bottom:" + BOX_SHADOW_OFFSET + "}" +
@@ -82,7 +85,10 @@ public class ReceiptViewActivity extends Activity {
             " .json {word-break:break-all;background-color:#f8f8f8;padding:1em;" +
             BORDER + ";" + BOX_SHADOW + "}" +
             " .icon {margin:0 auto 0.5em auto;max-width:90%;display:block;visibility:hidden}" +
-            " body {margin:10pt;font-size:8pt;color:#000000;font-family:Roboto" +
+            " body {margin:10pt;font-size:";
+
+    private static final String HTML_REST_ELEMENT =
+                "pt;color:#000000;font-family:Roboto" +
                 ";background-color:white}" +
             " code {font-size:9pt}" +
             " @media (max-width:800px) {code {font-size:8pt;}}" +
@@ -102,31 +108,58 @@ public class ReceiptViewActivity extends Activity {
         "<body>";
 
     ReceiptDecoder receiptDecoder;
-
     StringBuilder html;
+    int rowId;
+    WebView receiptView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_receipt_view);
-        WebView receiptView = (WebView) findViewById(R.id.receiptView);
+        receiptView = (WebView) findViewById(R.id.receiptView);
         WebSettings webSettings = receiptView.getSettings();
         webSettings.setJavaScriptEnabled(true);
+        receiptView.addJavascriptInterface (this, "Saturn");
 
-        html = new StringBuilder(HTML_TOP_ELEMENT);
+        rowId = getIntent().getIntExtra(ROW_ID_EXTRA, 1);
 
-        int rowId = getIntent().getIntExtra(ROW_ID_EXTRA, 1);
+        renderReceipt(false);
+    }
+
+    @JavascriptInterface
+    public void switchViewFromInside(final boolean jsonFlag) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                renderReceipt(jsonFlag);
+            }
+        });
+    }
+
+    public void renderReceipt(boolean jsonFlag) {
+
+        html = new StringBuilder(HTML_TOP_ELEMENT + "8" + HTML_REST_ELEMENT);
 
         Cursor cursor = Database.getReceipt(this, rowId);
         if (cursor.moveToNext()) {
             try {
-                receiptDecoder = new ReceiptDecoder(JSONParser.parse(cursor.getBlob(0)));
-                html.append("<img class='icon' src='data:")
-                    .append(cursor.getString(3))
-                    .append(";base64,")
-                    .append(Base64.encodeToString(cursor.getBlob(2), Base64.NO_WRAP))
-                    .append("' onload=\"adjustImage(this)\">");
-                buildHtmlReceipt(cursor.getString(1));
+                JSONObjectReader jsonReceipt = JSONParser.parse(cursor.getBlob(0));
+                if (jsonFlag) {
+                    html.append("<div style='margin-bottom:1.3em;font-weight:bold'>Receipt in JSON format</div><div class='json'>")
+                        .append(jsonReceipt.serializeToString(JSONOutputFormats.PRETTY_HTML))
+                        .append("</div><div onclick='Saturn.switchViewFromInside(false)' " +
+                                "style='margin-top:1.5em;color:blue'>Switch to normal view</div>");
+                } else {
+                    receiptDecoder = new ReceiptDecoder(jsonReceipt);
+                    html.append("<img class='icon' src='data:")
+                        .append(cursor.getString(4))
+                        .append(";base64,")
+                        .append(Base64.encodeToString(cursor.getBlob(3), Base64.NO_WRAP))
+                        .append("' onload=\"adjustImage(this)\">");
+                    buildHtmlReceipt(cursor.getString(1), cursor.getString(2));
+                    html.append("</div><div  onclick='Saturn.switchViewFromInside(true)' " +
+                                "style='margin-top:1.5em;color:blue'>Switch to JSON view</div>");
+                }
             } catch (Exception e) {
                 fatalError(e.getMessage());
             }
@@ -139,7 +172,7 @@ public class ReceiptViewActivity extends Activity {
     }
 
     private void fatalError(String message) {
-        html = new StringBuilder(HTML_TOP_ELEMENT)
+        html = new StringBuilder("<html><body>")
             .append("div style='color:red'>Failure:")
             .append(message)
             .append("</div>");
@@ -160,13 +193,15 @@ public class ReceiptViewActivity extends Activity {
     }
 
     static String displayUtcTime(GregorianCalendar dateTime) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss 'GMT'", Locale.US);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss 'UTC'", Locale.US);
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         return sdf.format(dateTime.getTime());
     }
 
     static String showMoney(ReceiptDecoder receiptDecoder, BigDecimal amount) throws IOException {
-        return receiptDecoder.getCurrency().amountToDisplayString(amount, false);
+        return amount == null ? "N/A" : receiptDecoder.getCurrency().plainAmountString(amount) +
+                                            " " +
+                                            receiptDecoder.getCurrency().toString();
     }
 
     static String optional(Object o) {
@@ -228,7 +263,7 @@ public class ReceiptViewActivity extends Activity {
         }
     }
 
-    private void buildHtmlReceipt(String payeeHomePage) throws IOException {
+    private void buildHtmlReceipt(String payeeHomePage, String localTime) throws IOException {
         // Optional Address Information
         if (receiptDecoder.getOptionalPhysicalAddress() != null ||
             receiptDecoder.getOptionalPhoneNumber() != null ||
@@ -275,20 +310,20 @@ public class ReceiptViewActivity extends Activity {
         if (optionalTaxRecord != null) {
             coreData.addHeader("Tax");
         }
-        coreData.addHeader("Time Stamp")
-            .addHeader("Reference Id")
-            .addCell("<a href='" +
-                payeeHomePage +
-                "' target='_blank'>" + receiptDecoder.getPayeeCommonName() + "</a>")
-            .addCell(showMoney(receiptDecoder, receiptDecoder.getAmount()),
-                HtmlTable.RIGHT_ALIGN);
+        coreData.addHeader("Local Time")
+                .addHeader("Reference Id")
+                .addCell("<a href='" +
+                            payeeHomePage +
+                            "' target='_blank'>" + receiptDecoder.getPayeeCommonName() + "</a>")
+                .addCell(showMoney(receiptDecoder, receiptDecoder.getAmount()),
+                         HtmlTable.RIGHT_ALIGN);
         if (optionalSubtotal != null) {
             coreData.addCell(showMoney(receiptDecoder, optionalSubtotal),
-                HtmlTable.RIGHT_ALIGN);
+                             HtmlTable.RIGHT_ALIGN);
         }
         if (optionalDiscount != null) {
             coreData.addCell(showMoney(receiptDecoder, optionalDiscount),
-                HtmlTable.RIGHT_ALIGN);
+                             HtmlTable.RIGHT_ALIGN);
         }
         if (optionalTaxRecord != null) {
             coreData.addCell(showMoney(receiptDecoder, optionalTaxRecord.getAmount()) +
@@ -296,8 +331,8 @@ public class ReceiptViewActivity extends Activity {
                 optionalTaxRecord.getPercentage().toPlainString() +
                 "%)");
         }
-        html.append(coreData.addCell(displayUtcTime(receiptDecoder.getPayeeTimeStamp()))
-            .addCell(receiptDecoder.getPayeeReferenceId(), HtmlTable.RIGHT_ALIGN)
+        html.append(coreData.addCell(localTime)
+                            .addCell(receiptDecoder.getPayeeReferenceId(), HtmlTable.RIGHT_ALIGN)
             .render());
 
         // Order Data
@@ -310,7 +345,7 @@ public class ReceiptViewActivity extends Activity {
         orderData.addHeader("Quantity");
         if (receiptDecoder.getOptionalLineItemElements()
             .contains(ReceiptLineItem.OptionalElements.PRICE)) {
-            orderData.addHeader("Price");
+            orderData.addHeader("Price/Unit");
         }
         if (receiptDecoder.getOptionalLineItemElements()
             .contains(ReceiptLineItem.OptionalElements.SUBTOTAL)) {
@@ -332,28 +367,20 @@ public class ReceiptViewActivity extends Activity {
             }
             orderData.addCell(quantity, HtmlTable.RIGHT_ALIGN);
             if (receiptDecoder.getOptionalLineItemElements()
-                .contains(ReceiptLineItem.OptionalElements.PRICE)) {
+                    .contains(ReceiptLineItem.OptionalElements.PRICE)) {
                 BigDecimal price = lineItem.getOptionalPrice();
-                String priceText = "";
-                if (price != null) {
-                    priceText = showMoney(receiptDecoder, price);
-                    if (lineItem.getOptionalUnit() != null) {
-                        priceText += "/" + lineItem.getOptionalUnit();
-                    }
-                }
-                orderData.addCell(priceText, HtmlTable.RIGHT_ALIGN);
+                orderData.addCell(showMoney(receiptDecoder, price), HtmlTable.RIGHT_ALIGN);
             }
             if (receiptDecoder.getOptionalLineItemElements()
-                .contains(ReceiptLineItem.OptionalElements.SUBTOTAL)) {
+                    .contains(ReceiptLineItem.OptionalElements.SUBTOTAL)) {
                 BigDecimal subtotal = lineItem.getOptionalSubtotal();
-                orderData.addCell(subtotal == null ? "" : showMoney(receiptDecoder, subtotal),
-                    HtmlTable.RIGHT_ALIGN);
+                orderData.addCell(showMoney(receiptDecoder, subtotal), HtmlTable.RIGHT_ALIGN);
             }
             if (receiptDecoder.getOptionalLineItemElements()
                 .contains(ReceiptLineItem.OptionalElements.DISCOUNT)) {
                 BigDecimal discount = lineItem.getOptionalDiscount();
-                orderData.addCell(discount == null ? "" : showMoney(receiptDecoder, discount),
-                    HtmlTable.RIGHT_ALIGN + ";color:red");
+                orderData.addCell(showMoney(receiptDecoder, discount),
+                                  HtmlTable.RIGHT_ALIGN + ";color:red");
             }
         }
         html.append(orderData.render());

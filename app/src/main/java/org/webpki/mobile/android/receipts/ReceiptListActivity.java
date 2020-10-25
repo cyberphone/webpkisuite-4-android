@@ -26,11 +26,9 @@ import android.os.Bundle;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.widget.Toast;
 
 import org.webpki.mobile.android.R;
 
-import org.webpki.mobile.android.application.CertificateViewActivity;
 import org.webpki.mobile.android.util.WebViewHtmlLoader;
 
 public class ReceiptListActivity extends Activity {
