@@ -29,6 +29,8 @@ import android.webkit.WebView;
 
 import org.webpki.mobile.android.R;
 
+import org.webpki.mobile.android.application.Settings;
+
 import org.webpki.mobile.android.util.WebViewHtmlLoader;
 
 public class ReceiptListActivity extends Activity {
@@ -40,6 +42,7 @@ public class ReceiptListActivity extends Activity {
         WebSettings webSettings = receiptList.getSettings();
         webSettings.setJavaScriptEnabled(true);
         receiptList.addJavascriptInterface (this, "Saturn");
+        Settings.initialize(getApplicationContext());
 
         StringBuilder listText =
             new StringBuilder("<html><body><table cellspacing=\"5\" cellpadding=\"5\">");

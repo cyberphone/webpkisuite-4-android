@@ -45,6 +45,8 @@ import org.webpki.json.JSONParser;
 
 import org.webpki.mobile.android.R;
 
+import org.webpki.mobile.android.application.Settings;
+
 import org.webpki.mobile.android.saturn.common.ReceiptDecoder;
 import org.webpki.mobile.android.saturn.common.ReceiptLineItem;
 import org.webpki.mobile.android.saturn.common.ReceiptShippingRecord;
@@ -56,7 +58,7 @@ public class ReceiptViewActivity extends Activity {
 
     static final String ROW_ID_EXTRA    = "rowId";
 
-    private static int LOGOTYPE_AREA = 80;  // We give logotypes the same area to play around in
+    private static int LOGOTYPE_AREA = 100;  // We give logotypes the same area to play around in
 
     private static final String BORDER =
         "border-width:1px;border-style:solid;border-color:#a9a9a9";
@@ -119,7 +121,10 @@ public class ReceiptViewActivity extends Activity {
         receiptView = (WebView) findViewById(R.id.receiptView);
         WebSettings webSettings = receiptView.getSettings();
         webSettings.setJavaScriptEnabled(true);
+        webSettings.setSupportZoom(true);
+        webSettings.setBuiltInZoomControls(true);
         receiptView.addJavascriptInterface (this, "Saturn");
+
 
         rowId = getIntent().getIntExtra(ROW_ID_EXTRA, 1);
 
@@ -138,7 +143,9 @@ public class ReceiptViewActivity extends Activity {
 
     public void renderReceipt(boolean jsonFlag) {
 
-        html = new StringBuilder(HTML_TOP_ELEMENT + "8" + HTML_REST_ELEMENT);
+        html = new StringBuilder(HTML_TOP_ELEMENT)
+            .append(Settings.isVisuallyImpaired() ? 12 : 8)
+            .append(HTML_REST_ELEMENT);
 
         Cursor cursor = Database.getReceipt(this, rowId);
         if (cursor.moveToNext()) {
