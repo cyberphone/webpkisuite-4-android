@@ -180,7 +180,7 @@ public class ReceiptViewActivity extends Activity {
 
     private void fatalError(String message) {
         html = new StringBuilder("<html><body>")
-            .append("div style='color:red'>Failure:")
+            .append("<div style='color:red'>Failure:")
             .append(message)
             .append("</div>");
     }

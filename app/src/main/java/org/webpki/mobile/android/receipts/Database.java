@@ -28,7 +28,7 @@ import android.provider.BaseColumns;
 
 public class Database extends SQLiteOpenHelper {
 
-    static final int DATABASE_VERSION = 7;
+    static final int DATABASE_VERSION = 1;
     static final String DATABASE_NAME = "Saturn.db";
 
     public Database(Context context) {
