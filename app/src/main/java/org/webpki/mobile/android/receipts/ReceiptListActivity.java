@@ -45,11 +45,17 @@ public class ReceiptListActivity extends Activity {
         Settings.initialize(getApplicationContext());
 
         StringBuilder listText =
-            new StringBuilder("<html><body><table cellspacing=\"5\" cellpadding=\"5\">");
+            new StringBuilder("<html><body>"+
+                "<div>Dear tester, here there should be a receipt search dialog " +
+                "but it won't be available until the next release&nbsp;&#x1f60f;</div>" +
+                "<div style='margin-top:0.5em'>Click on a table entry to view the receipt.</div>" +
+                "<div style='overflow-x:auto'>" +
+                "<table style='margin:1em auto 0 auto' cellspacing='5' cellpadding='5'>" +
+                "<tr style='text-align:center'><th>Received</th><th>Merchant</th><th>Total</th></tr>");
 
         Cursor cursor = Database.getReceiptSelection(this);
         while(cursor.moveToNext()) {
-            listText.append("<tr onclick='Saturn.selectReceipt(")
+            listText.append("<tr style='background-color:#e0e0e8' onclick='Saturn.selectReceipt(")
                     .append(cursor.getInt(0))
                     .append(")'>");
             for (int i = 1 ; i < cursor.getColumnCount(); i++) {
@@ -61,7 +67,7 @@ public class ReceiptListActivity extends Activity {
         }
         cursor.close();
 
-        WebViewHtmlLoader.loadHtml(receiptList, listText.append("</table></body></html>"));
+        WebViewHtmlLoader.loadHtml(receiptList, listText.append("</div></table></body></html>"));
     }
 
     @JavascriptInterface

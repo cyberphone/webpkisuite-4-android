@@ -55,7 +55,7 @@ public class CertificateViewActivity extends Activity {
 
 
     private void add(StringBuilder s, String header, String data) {
-        s.append("<tr valign=\"middle\" bgcolor=\"#e0e0e8\"><td>")
+        s.append("<tr valign='middle' bgcolor='#e0e0e8'><td>")
          .append(header)
          .append("</td><td><code>")
          .append(data)
@@ -105,7 +105,7 @@ public class CertificateViewActivity extends Activity {
         WebView certView = (WebView) findViewById(R.id.certData);
         Intent intent = getIntent();
         StringBuilder certText =
-            new StringBuilder("<html><body><table cellspacing=\"5\" cellpadding=\"5\">");
+            new StringBuilder("<html><body><table cellspacing='5' cellpadding='5'>");
         try {
             CertificateInfo cert_info =
                 new CertificateInfo(CertificateUtil.getCertificateFromBlob(
@@ -140,7 +140,7 @@ public class CertificateViewActivity extends Activity {
             certText.append("</table>");
         } catch (Exception e) {
             certText =
-                new StringBuilder("<html><body><font color=\"red\">FAILED: ").append(e.getMessage());
+                new StringBuilder("<html><body><font color='red'>FAILED: ").append(e.getMessage());
                 for (StackTraceElement ste : e.getStackTrace()) {
                     certText.append("<br>").append(ste.toString());
                 }
