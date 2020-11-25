@@ -60,7 +60,7 @@ import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.AsymEncryptionAlgorithms;
 import org.webpki.crypto.KeyAlgorithms;
 import org.webpki.crypto.KeyTypes;
-import org.webpki.crypto.MACAlgorithms;
+import org.webpki.crypto.HmacAlgorithms;
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.SignatureWrapper;
 import org.webpki.crypto.SymEncryptionAlgorithms;
@@ -1853,7 +1853,7 @@ public class SKSTest {
                     KeyAlgorithms.NIST_P_256,
                     new KeyProtectionSpec(good_pin, pinPolicy),
                     keyUsage,
-                    new String[]{MACAlgorithms.HMAC_SHA256.getAlgorithmId(AlgorithmPreferences.SKS)}).setCertificate(cn());
+                    new String[]{HmacAlgorithms.HMAC_SHA256.getAlgorithmId(AlgorithmPreferences.SKS)}).setCertificate(cn());
             key.setSymmetricKey(symmetricKey);
             sess.closeSession();
             assertTrue("IMPORTED must be set", key.getKeyProtectionInfo().getKeyBackup() == KeyProtectionInfo.KEYBACKUP_IMPORTED);
@@ -1877,17 +1877,17 @@ public class SKSTest {
                 KeyAlgorithms.NIST_P_256,
                 new KeyProtectionSpec(good_pin, pinPolicy),
                 AppUsage.AUTHENTICATION,
-                new String[]{MACAlgorithms.HMAC_SHA256.getAlgorithmId(AlgorithmPreferences.SKS)}).setCertificate(cn());
+                new String[]{HmacAlgorithms.HMAC_SHA256.getAlgorithmId(AlgorithmPreferences.SKS)}).setCertificate(cn());
         key.setSymmetricKey(symmetricKey);
         sess.closeSession();
         assertTrue("Not symmetric key", device.sks.getKeyAttributes(key.keyHandle).isSymmetricKey());
-        byte[] result = key.performHMAC(MACAlgorithms.HMAC_SHA256,
+        byte[] result = key.performHMAC(HmacAlgorithms.HMAC_SHA256,
                                         new KeyAuthorization(good_pin), 
                                         TEST_STRING);
-        assertTrue("HMAC error", ArrayUtil.compare(result, MACAlgorithms.HMAC_SHA256.digest(symmetricKey, TEST_STRING)));
+        assertTrue("HMAC error", ArrayUtil.compare(result, HmacAlgorithms.HMAC_SHA256.digest(symmetricKey, TEST_STRING)));
         try {
             sess.sks.performHmac(key.keyHandle,
-                    MACAlgorithms.HMAC_SHA512.getAlgorithmId(AlgorithmPreferences.SKS),
+                    HmacAlgorithms.HMAC_SHA512.getAlgorithmId(AlgorithmPreferences.SKS),
                     null,
                     false,
                     good_pin.getBytes("UTF-8"),
@@ -1984,7 +1984,7 @@ public class SKSTest {
 
     @Test
     public void test42() throws Exception {
-        for (MACAlgorithms hmac : MACAlgorithms.values()) {
+        for (HmacAlgorithms hmac : HmacAlgorithms.values()) {
             byte[] data = TEST_STRING;
             byte[] symmetricKey = new byte[20];
             new SecureRandom().nextBytes(symmetricKey);
@@ -2175,7 +2175,7 @@ public class SKSTest {
             verify.update(TEST_STRING);
             assertTrue("Bad signature", verify.verify(result));
             try {
-                key.performHMAC(MACAlgorithms.HMAC_SHA256, 
+                key.performHMAC(HmacAlgorithms.HMAC_SHA256, 
                                 new KeyAuthorization(good_pin), 
                                 TEST_STRING);
                 fail("Sym key!");
