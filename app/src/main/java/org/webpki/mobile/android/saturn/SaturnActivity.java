@@ -283,7 +283,8 @@ public class SaturnActivity extends BaseProxyActivity {
         try {
             currentHtml = new StringBuilder(
                     "<!DOCTYPE html><html><head><title>Saturn</title><style type='text/css'>\n" +
-                    "body {margin:0;font-family:Roboto;font-size:")
+                    "html {height:100%}\n" +
+                    "body {height:100%;margin:0;font-family:Roboto;font-size:")
                 .append(visuallyImpaired ? 18 : 12)
                 .append(Settings.isWhiteTheme() ? HTML_HEADER_WHITE : HTML_HEADER_SPACE)
                 .append(visuallyImpaired ? 15 : 10)
