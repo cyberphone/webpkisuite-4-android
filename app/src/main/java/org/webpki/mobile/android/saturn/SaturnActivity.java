@@ -137,7 +137,7 @@ public class SaturnActivity extends BaseProxyActivity {
 
     static final String HTML_HEADER_SPACE =
           "pt;color:white" +
-               ";background:linear-gradient(to bottom right, #162c44, #6d7a8e, #162c44)" +
+               ";background:linear-gradient(to bottom right, #000050, #0101a6 40%, #3030ff 50%, #0101a6 60%, #000050)" +
                ";background-attachment:fixed}\n" +
           "td.label {font-weight:500;text-align:right;padding:3pt 3pt 3pt 0pt}\n" +
           "td.field {font-weight:500;min-width:11em;padding:3pt 6pt 3pt 6pt;border-width:1pt" +
@@ -707,8 +707,8 @@ public class SaturnActivity extends BaseProxyActivity {
             "</table>" +
 
             "<table id='fpFrame' style='visibility:hidden;position:absolute'>" +
-            "<tr><td class='label'>Authorize&nbsp;Request</td><td></td></tr>" +
-            "<tr><td style='text-align:center'>")
+            "<tr><td class='label' style='text-align:center'>Authorize</td><td></td></tr>" +
+            "<tr><td style='text-align:center;padding-top:3pt'>")
           .append(ImageGenerator.getFingerPrintSymbol("0.6",
                                                       "Saturn.toast('Use the fingerprint sensor', " +
                                                           Gravity.BOTTOM + ")",
