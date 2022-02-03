@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2020 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2021 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -35,8 +35,6 @@ import org.webpki.sks.SecureKeyStore;
 import org.webpki.util.ISODateTime;
 
 abstract class KeyGen2Validator extends JSONDecoder {
-
-    private static final long serialVersionUID = 1L;
 
     static String validateID(String name, String value) throws IOException {
         int l = value.length();

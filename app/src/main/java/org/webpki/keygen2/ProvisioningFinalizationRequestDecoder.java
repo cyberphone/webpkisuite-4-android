@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2020 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2021 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package org.webpki.keygen2;
 import java.io.IOException;
 
 import java.util.ArrayList;
-
+import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
 
 import org.webpki.sks.SecureKeyStore;
@@ -34,8 +34,6 @@ import org.webpki.json.JSONObjectReader;
 import static org.webpki.keygen2.KeyGen2Constants.*;
 
 public class ProvisioningFinalizationRequestDecoder extends ClientDecoder {
-
-    private static final long serialVersionUID = 1L;
 
     public class PostOperation {
 
@@ -280,7 +278,7 @@ public class ProvisioningFinalizationRequestDecoder extends ClientDecoder {
         }
 
 
-        IssuedCredential(JSONObjectReader rd) throws IOException {
+        IssuedCredential(JSONObjectReader rd) throws IOException, GeneralSecurityException {
             id = rd.getString(ID_JSON);
             certificatePath = rd.getCertificatePath();
             mac = KeyGen2Validator.getMac(rd);
@@ -434,7 +432,7 @@ public class ProvisioningFinalizationRequestDecoder extends ClientDecoder {
 
 
     @Override
-    void readServerRequest(JSONObjectReader rd) throws IOException {
+    void readServerRequest(JSONObjectReader rd) throws IOException, GeneralSecurityException {
         /////////////////////////////////////////////////////////////////////////////////////////
         // Session properties
         /////////////////////////////////////////////////////////////////////////////////////////

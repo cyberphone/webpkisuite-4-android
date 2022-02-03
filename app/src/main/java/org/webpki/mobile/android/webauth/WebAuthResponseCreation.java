@@ -18,6 +18,8 @@ package org.webpki.mobile.android.webauth;
 
 import java.io.IOException;
 
+import java.security.GeneralSecurityException;
+
 import java.security.cert.X509Certificate;
 
 import java.util.GregorianCalendar;
@@ -32,7 +34,7 @@ import org.webpki.webauth.AuthenticationResponseEncoder;
 
 import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.AsymSignatureAlgorithms;
-import org.webpki.crypto.SignerInterface;
+import org.webpki.crypto.X509SignerInterface;
 
 import org.webpki.json.JSONX509Signer;
 
@@ -60,7 +62,7 @@ public class WebAuthResponseCreation extends AsyncTask<Void, String, String> {
             publishProgress(BaseProxyActivity.PROGRESS_AUTHENTICATING);
 
             JSONX509Signer signer = new JSONX509Signer(
-                    new SignerInterface() {
+                    new X509SignerInterface() {
                         @Override
                         public X509Certificate[] getCertificatePath() throws IOException {
                             X509Certificate[] certificate_path = webauth_activity.sks.getKeyAttributes(key_handle).getCertificatePath();
@@ -71,16 +73,23 @@ public class WebAuthResponseCreation extends AsyncTask<Void, String, String> {
                         }
 
                         @Override
-                        public byte[] signData(byte[] data, AsymSignatureAlgorithms sign_alg) throws IOException {
-                            return webauth_activity.sks.signHashedData(key_handle,
-                                                                       sign_alg.getAlgorithmId(AlgorithmPreferences.SKS),
-                                                                       null,
-                                                                       false,
-                                                                       authorization.getBytes("UTF-8"),
-                                                                       sign_alg.getDigestAlgorithm().digest(data));
+                        public byte[] signData(byte[] data)
+                                throws IOException, GeneralSecurityException {
+                            return webauth_activity.sks.signHashedData(
+                                    key_handle,
+                                    getAlgorithm().getAlgorithmId(AlgorithmPreferences.SKS),
+                                    null,
+                                    false,
+                                    authorization.getBytes("UTF-8"),
+                                    getAlgorithm().getDigestAlgorithm().digest(data));
+                        }
+
+                        @Override
+                        public AsymSignatureAlgorithms getAlgorithm() throws
+                                IOException, GeneralSecurityException {
+                            return webauth_activity.matchingKeys.get(key_handle);
                         }
                     });
-            signer.setSignatureAlgorithm(webauth_activity.matchingKeys.get(key_handle));
             AuthenticationResponseEncoder authentication_response =
                     new AuthenticationResponseEncoder(signer,
                                                       webauth_activity.authenticationRequest,

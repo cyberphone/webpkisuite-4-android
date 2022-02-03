@@ -23,13 +23,13 @@ import java.security.PublicKey;
 
 import org.webpki.crypto.HashAlgorithms;
 
+import org.webpki.crypto.encryption.ContentEncryptionAlgorithms;
+import org.webpki.crypto.encryption.KeyEncryptionAlgorithms;
+
 import org.webpki.json.JSONEncoder;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONOutputFormats;
 import org.webpki.json.JSONAsymKeyEncrypter;
-
-import org.webpki.json.DataEncryptionAlgorithms;
-import org.webpki.json.KeyEncryptionAlgorithms;
 
 import org.webpki.util.Base64URL;
 
@@ -46,7 +46,7 @@ public class PayerAuthorizationEncoder extends JSONEncoder implements BaseProper
     public PayerAuthorizationEncoder(JSONObjectWriter unencryptedAuthorizationData,
                                      String providerAuthorityUrl,
                                      String paymentMethod,
-                                     DataEncryptionAlgorithms dataEncryptionAlgorithm,
+                                     ContentEncryptionAlgorithms dataEncryptionAlgorithm,
                                      PublicKey keyEncryptionKey,
                                      String optionalKeyId,
                                      KeyEncryptionAlgorithms keyEncryptionAlgorithm)
@@ -68,7 +68,7 @@ public class PayerAuthorizationEncoder extends JSONEncoder implements BaseProper
           .setObject(ENCRYPTED_AUTHORIZATION_JSON, encryptedData);
     }
 
-    public String getAuthorizationHash() throws IOException {
+    public String getAuthorizationHash() throws IOException, GeneralSecurityException {
         return Base64URL.encode(
             HashAlgorithms.SHA256.digest(
                 encryptedData.serializeToBytes(JSONOutputFormats.CANONICALIZED)));

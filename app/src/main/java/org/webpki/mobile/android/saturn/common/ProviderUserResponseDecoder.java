@@ -20,13 +20,13 @@ import java.io.IOException;
 
 import java.security.GeneralSecurityException;
 
+import org.webpki.crypto.encryption.ContentEncryptionAlgorithms;
+
 import org.webpki.json.JSONDecoder;
 import org.webpki.json.JSONDecryptionDecoder;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONCryptoHelper;
 import org.webpki.json.JSONParser;
-
-import org.webpki.json.DataEncryptionAlgorithms;
 
 public class ProviderUserResponseDecoder extends JSONDecoder implements BaseProperties {
 
@@ -35,17 +35,17 @@ public class ProviderUserResponseDecoder extends JSONDecoder implements BaseProp
     JSONDecryptionDecoder encryptedData;
     
     public EncryptedMessage getEncryptedMessage(byte[] dataEncryptionKey,
-                                                DataEncryptionAlgorithms dataEncryptionAlgorithm)
+                                                ContentEncryptionAlgorithms dataEncryptionAlgorithm)
     throws IOException, GeneralSecurityException {
-        if (encryptedData.getDataEncryptionAlgorithm() != dataEncryptionAlgorithm) {
+        if (encryptedData.getContentEncryptionAlgorithm() != dataEncryptionAlgorithm) {
             throw new IOException("Unexpected data encryption algorithm:" +
-                                  encryptedData.getDataEncryptionAlgorithm().toString());
+                                  encryptedData.getContentEncryptionAlgorithm().toString());
         }
         return new EncryptedMessage(JSONParser.parse(encryptedData.getDecryptedData(dataEncryptionKey)));
     }
 
     @Override
-    protected void readJSONData(JSONObjectReader rd) throws IOException {
+    protected void readJSONData(JSONObjectReader rd) throws IOException, GeneralSecurityException {
         encryptedData =
                 rd.getObject(ENCRYPTED_MESSAGE_JSON)
                         .getEncryptionObject(new JSONCryptoHelper.Options()

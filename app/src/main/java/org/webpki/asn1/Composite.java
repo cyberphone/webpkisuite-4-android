@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2020 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2021 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -209,12 +209,12 @@ public abstract class Composite extends BaseASN1Object {
     }
 
     void compositeString(StringBuilder s, String prefix) {
-        s.append("\n  " + getByteNumberBlanks() + prefix + "{");
+        s.append(" {");
         for (int i = 0; i < components.size(); i++) {
             s.append("\n");
-            components.get(i).toString(s, prefix + "    ");
+            components.get(i).toString(s, prefix + "  ");
         }
-        s.append("\n  " + getByteNumberBlanks() + prefix + "}");
+        s.append("\n" + getByteNumberBlanks() + prefix + "}");
     }
 
 

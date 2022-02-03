@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2020 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2021 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.webpki.json;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 import java.security.GeneralSecurityException;
 import java.security.PublicKey;
@@ -27,12 +26,14 @@ import java.util.LinkedHashSet;
 import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.CryptoRandom;
 
+import org.webpki.crypto.encryption.EncryptionCore;
+import org.webpki.crypto.encryption.KeyEncryptionAlgorithms;
+import org.webpki.crypto.encryption.ContentEncryptionAlgorithms;
+
 /**
  * Support class for encryption generators.
  */
-public abstract class JSONEncrypter implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public abstract class JSONEncrypter {
 
     JSONObjectReader extensions;
     
@@ -53,7 +54,7 @@ public abstract class JSONEncrypter implements Serializable {
 
     static class Header {
 
-        DataEncryptionAlgorithms dataEncryptionAlgorithm;
+        ContentEncryptionAlgorithms contentEncryptionAlgorithm;
 
         JSONObjectWriter encryptionWriter;
 
@@ -61,17 +62,17 @@ public abstract class JSONEncrypter implements Serializable {
         
         LinkedHashSet<String> foundExtensions = new LinkedHashSet<>();
         
-        Header(DataEncryptionAlgorithms dataEncryptionAlgorithm, JSONEncrypter encrypter) 
+        Header(ContentEncryptionAlgorithms contentEncryptionAlgorithm, JSONEncrypter encrypter) 
                 throws IOException {
-            this.dataEncryptionAlgorithm = dataEncryptionAlgorithm;
+            this.contentEncryptionAlgorithm = contentEncryptionAlgorithm;
             contentEncryptionKey = encrypter.contentEncryptionKey;
             encryptionWriter = new JSONObjectWriter();
             encryptionWriter.setString(JSONCryptoHelper.ALGORITHM_JSON, 
-                                       dataEncryptionAlgorithm.joseName);
+                                       contentEncryptionAlgorithm.getJoseAlgorithmId());
             if (encrypter.keyEncryptionAlgorithm != null && 
-                    encrypter.keyEncryptionAlgorithm.keyWrap) {
+                    encrypter.keyEncryptionAlgorithm.isKeyWrap()) {
                 contentEncryptionKey = 
-                        CryptoRandom.generateRandom(dataEncryptionAlgorithm.keyLength);
+                        CryptoRandom.generateRandom(contentEncryptionAlgorithm.getKeyLength());
             }
         }
 
@@ -79,7 +80,7 @@ public abstract class JSONEncrypter implements Serializable {
         throws IOException, GeneralSecurityException {
             if (encrypter.keyEncryptionAlgorithm != null) {
                 currentRecipient.setString(JSONCryptoHelper.ALGORITHM_JSON, 
-                                           encrypter.keyEncryptionAlgorithm.joseName);
+                                           encrypter.keyEncryptionAlgorithm.getJoseAlgorithmId());
             }
 
             if (encrypter.keyId != null) {
@@ -98,11 +99,12 @@ public abstract class JSONEncrypter implements Serializable {
                                                          encrypter.keyEncryptionAlgorithm,
                                                          encrypter.publicKey)
                                                        :
-                            EncryptionCore.senderKeyAgreement(contentEncryptionKey,
+                            EncryptionCore.senderKeyAgreement(false,
+                                                              contentEncryptionKey,
                                                               encrypter.keyEncryptionAlgorithm,
-                                                              dataEncryptionAlgorithm,
+                                                              contentEncryptionAlgorithm,
                                                               encrypter.publicKey);
-                contentEncryptionKey = asymmetricEncryptionResult.getDataEncryptionKey();
+                contentEncryptionKey = asymmetricEncryptionResult.getContentEncryptionKey();
                 if (!encrypter.keyEncryptionAlgorithm.isRsa()) {
                     currentRecipient
                         .setObject(JSONCryptoHelper.EPHEMERAL_KEY_JSON,
@@ -132,13 +134,13 @@ public abstract class JSONEncrypter implements Serializable {
                 encryptionWriter.setStringArray(JSONCryptoHelper.EXTENSIONS_JSON,
                                                 foundExtensions.toArray(new String[0]));
             }
-            byte[] iv = EncryptionCore.createIv(dataEncryptionAlgorithm);
+            byte[] iv = EncryptionCore.createIv(contentEncryptionAlgorithm);
             EncryptionCore.SymmetricEncryptionResult symmetricEncryptionResult =
-                EncryptionCore.dataEncryption(dataEncryptionAlgorithm,
-                                              contentEncryptionKey,
-                                              iv,
-                                              unencryptedData,
-                                              encryptionWriter.serializeToBytes(
+                EncryptionCore.contentEncryption(contentEncryptionAlgorithm,
+                                                 contentEncryptionKey,
+                                                 iv,
+                                                 unencryptedData,
+                                                 encryptionWriter.serializeToBytes(
                                                       JSONOutputFormats.CANONICALIZED));
             encryptionWriter.setBinary(JSONCryptoHelper.IV_JSON, iv);
             encryptionWriter.setBinary(JSONCryptoHelper.TAG_JSON,
@@ -149,13 +151,13 @@ public abstract class JSONEncrypter implements Serializable {
         }
     }
 
-    abstract void writeKeyData(JSONObjectWriter wr) throws IOException;
+    abstract void writeKeyData(JSONObjectWriter wr) throws IOException, GeneralSecurityException;
 
     /**
      * Set &quot;crit&quot; for this encryption object.
      * @param extensions JSON object holding the extension properties and associated values
      * @return this
-     * @throws IOException &nbsp;
+     * @throws IOException
      */
     public JSONEncrypter setExtensions(JSONObjectWriter extensions) throws IOException {
         this.extensions = new JSONObjectReader(extensions);

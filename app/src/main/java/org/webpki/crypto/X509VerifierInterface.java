@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2020 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2021 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,17 +16,27 @@
  */
 package org.webpki.crypto;
 
-
 import java.io.IOException;
 
+import java.security.GeneralSecurityException;
+
+import java.security.cert.X509Certificate;
+
 /**
- * Common interface for HMAC signatures.
- *
- */
-public interface SymKeySignerInterface {
+  * Common interface for X509 signature validation.
+  *
+  */
+public interface X509VerifierInterface {
 
-    public byte[] signData(byte[] data, HmacAlgorithms algorithm) throws IOException;
-
-    public HmacAlgorithms getHmacAlgorithm() throws IOException;
+    /**
+     * Verify certificate path.
+     * 
+     * @param certificatePath The path to be validated
+     * @return <code>true</code> if the path is verified and trusted
+     * @throws IOException
+     * @throws GeneralSecurityException
+     */
+    boolean verifyCertificatePath(X509Certificate[] certificatePath) 
+            throws IOException, GeneralSecurityException;
 
 }

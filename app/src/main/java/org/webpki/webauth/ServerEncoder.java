@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2020 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2021 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,15 +18,15 @@ package org.webpki.webauth;
 
 import java.io.IOException;
 
-import org.webpki.crypto.SignerInterface;
+import java.security.GeneralSecurityException;
+
+import org.webpki.crypto.X509SignerInterface;
 
 import org.webpki.json.JSONEncoder;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONX509Signer;
 
 abstract class ServerEncoder extends JSONEncoder {
-
-    private static final long serialVersionUID = 1L;
 
     abstract void writeServerRequest(JSONObjectWriter wr) throws IOException;
 
@@ -40,7 +40,8 @@ abstract class ServerEncoder extends JSONEncoder {
     }
 
     @Override
-    final protected void writeJSONData(JSONObjectWriter wr) throws IOException {
+    final protected void writeJSONData(JSONObjectWriter wr)
+            throws IOException, GeneralSecurityException {
         writeServerRequest(wr);
 
         ////////////////////////////////////////////////////////////////////////
@@ -51,9 +52,9 @@ abstract class ServerEncoder extends JSONEncoder {
         }
     }
 
-    private SignerInterface signer;
+    private X509SignerInterface signer;
 
-    public void setRequestSigner(SignerInterface signer) throws IOException {
+    public void setRequestSigner(X509SignerInterface signer) throws IOException {
         this.signer = signer;
     }
 }

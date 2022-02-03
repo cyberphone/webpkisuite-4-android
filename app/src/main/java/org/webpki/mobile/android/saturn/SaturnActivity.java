@@ -62,6 +62,7 @@ import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 
 import java.util.ArrayList;
@@ -884,23 +885,28 @@ public class SaturnActivity extends BaseProxyActivity {
                     webPkiVersion,
                     new ClientPlatform("Android", Build.VERSION.RELEASE, Build.MANUFACTURER),
                     new JSONAsymKeySigner(new AsymKeySignerInterface() {
+
                         @Override
-                        public PublicKey getPublicKey() throws IOException {
-                            return sks.getKeyAttributes(
-                                    account.signatureKeyHandle).getCertificatePath()[0].getPublicKey();
+                        public byte[] signData(byte[] data) throws IOException,
+                                                                   GeneralSecurityException{
+                            return sks.signHashedData(
+                                    account.signatureKeyHandle,
+                                    getAlgorithm().getAlgorithmId(AlgorithmPreferences.SKS),
+                                    null,
+                                    fingerPrintAuthenticationInProgess != null,
+                                    fingerPrintAuthenticationInProgess == null ?
+                                        pin.getBytes("UTF-8") : null,
+                                    getAlgorithm().getDigestAlgorithm().digest(data));
                         }
+
                         @Override
-                        public byte[] signData(byte[] data, AsymSignatureAlgorithms algorithm) throws IOException {
-                            return sks.signHashedData(account.signatureKeyHandle,
-                                                      algorithm.getAlgorithmId(AlgorithmPreferences.SKS),
-                                                      null,
-                                                      fingerPrintAuthenticationInProgess != null,
-                                                      fingerPrintAuthenticationInProgess == null ?
-                                                          pin.getBytes("UTF-8") : null,
-                                                      algorithm.getDigestAlgorithm().digest(data));
+                        public AsymSignatureAlgorithms getAlgorithm() throws IOException,
+                                                                             GeneralSecurityException {
+                            return account.signatureAlgorithm;
                         }
-                    }).setSignatureAlgorithm(account.signatureAlgorithm)
-                      .setOutputPublicKeyInfo(account.optionalKeyId == null)
+
+                    }).setPublicKey(account.optionalKeyId == null ? sks.getKeyAttributes(
+                            account.signatureKeyHandle).getCertificatePath()[0].getPublicKey() : null)
                       .setKeyId(account.optionalKeyId));
                 Log.i(SATURN, "Authorization before encryption:\n" + authorizationData);
                 return true;

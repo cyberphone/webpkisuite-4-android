@@ -19,8 +19,8 @@ package org.webpki.mobile.android.saturn;
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.HashAlgorithms;
 
-import org.webpki.json.DataEncryptionAlgorithms;
-import org.webpki.json.KeyEncryptionAlgorithms;
+import org.webpki.crypto.encryption.ContentEncryptionAlgorithms;
+import org.webpki.crypto.encryption.KeyEncryptionAlgorithms;
 
 import org.webpki.mobile.android.saturn.common.Currencies;
 
@@ -39,7 +39,7 @@ public class Account {
     byte[] cardImage;
     AsymSignatureAlgorithms signatureAlgorithm;
     int signatureKeyHandle;
-    DataEncryptionAlgorithms dataEncryptionAlgorithm;
+    ContentEncryptionAlgorithms dataEncryptionAlgorithm;
     KeyEncryptionAlgorithms keyEncryptionAlgorithm;
     PublicKey encryptionKey;
     String optionalKeyId;
@@ -66,7 +66,7 @@ public class Account {
             AsymSignatureAlgorithms signatureAlgorithm,
             // Encryption
             KeyEncryptionAlgorithms keyEncryptionAlgorithm,
-            DataEncryptionAlgorithms dataEncryptionAlgorithm,
+            ContentEncryptionAlgorithms dataEncryptionAlgorithm,
             PublicKey encryptionKey,
             // Not used in the current server PoC
             String optionalKeyId,

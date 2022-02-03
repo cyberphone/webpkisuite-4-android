@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2020 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2021 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -39,8 +39,9 @@ import org.webpki.crypto.AsymEncryptionAlgorithms;
 import org.webpki.crypto.AsymKeySignerInterface;
 import org.webpki.crypto.HmacAlgorithms;
 import org.webpki.crypto.AsymSignatureAlgorithms;
-import org.webpki.crypto.SignatureWrapper;
 import org.webpki.crypto.SymEncryptionAlgorithms;
+
+import org.webpki.crypto.signatures.SignatureWrapper;
 
 import org.webpki.sks.ProvSess.MacGenerator;
 
@@ -86,29 +87,28 @@ public class GenKey {
                             .add(BigInteger.valueOf(new GregorianCalendar().getTimeInMillis())),
                         start.getTime(),
                         end.getTime(),
-                        AsymSignatureAlgorithms.RSA_SHA256,
                         new AsymKeySignerInterface() {
 
                             @Override
-                            public PublicKey getPublicKey() throws IOException {
-                                return ProvSess.RSA_KEY_2.getPublic();
+                            public byte[] signData(byte[] data) throws IOException, GeneralSecurityException {
+                                SignatureWrapper signer = 
+                                        new SignatureWrapper(AsymSignatureAlgorithms.RSA_SHA256, 
+                                                             ProvSess.RSA_KEY_2.getPrivate());
+                                signer.setEcdsaSignatureEncoding(true);
+                                signer.update(data);
+                                return signer.sign();
+
                             }
 
                             @Override
-                            public byte[] signData(byte[] data, AsymSignatureAlgorithms algorithm) throws IOException {
-                                try {
-                                    SignatureWrapper signer = new SignatureWrapper(algorithm, 
-                                                                                   ProvSess.RSA_KEY_2.getPrivate());
-                                    signer.setEcdsaSignatureEncoding(true);
-                                    signer.update(data);
-                                    return signer.sign();
-                                } catch (GeneralSecurityException e) {
-                                    throw new IOException(e);
-                                }
-
+                            public AsymSignatureAlgorithms getAlgorithm() 
+                                    throws IOException, GeneralSecurityException {
+                                return AsymSignatureAlgorithms.RSA_SHA256;
                             }
 
-                        }, publicKey);
+                        },
+                        ProvSess.RSA_KEY_2.getPublic(),
+                        publicKey);
         return setCertificatePath(new X509Certificate[]{certificate});
     }
 
@@ -202,7 +202,7 @@ public class GenKey {
 
     public byte[] signData(AsymSignatureAlgorithms alg_id,
                            KeyAuthorization keyAuthorization,
-                           byte[] data) throws IOException {
+                           byte[] data) throws IOException, SKSException, GeneralSecurityException {
         return prov_sess.sks.signHashedData(keyHandle,
                 alg_id.getAlgorithmId(AlgorithmPreferences.SKS),
                 null,

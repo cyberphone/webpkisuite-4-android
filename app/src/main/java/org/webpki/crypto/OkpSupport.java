@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2020 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2021 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ public class OkpSupport {
     throws IOException {
         throw new IOException("Feature not yet available in Android");
     }
-    public static KeyAlgorithms getOkpKeyAlgorithm(Key key)  throws IOException {
-        throw new IOException("Feature not yet available in Android");
+    public static KeyAlgorithms getOkpKeyAlgorithm(Key key) {
+        throw new RuntimeException("Feature not yet available in Android");
     }
 }

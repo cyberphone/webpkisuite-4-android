@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2020 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2021 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -38,8 +38,6 @@ import static org.webpki.webauth.WebAuthConstants.*;
 
 
 public class AuthenticationResponseEncoder extends JSONEncoder {
-
-    private static final long serialVersionUID = 1L;
 
     private GregorianCalendar serverTime;
 
@@ -81,7 +79,8 @@ public class AuthenticationResponseEncoder extends JSONEncoder {
     }
 
     @Override
-    protected void writeJSONData(JSONObjectWriter wr) throws IOException {
+    protected void writeJSONData(JSONObjectWriter wr)
+            throws IOException, GeneralSecurityException {
         wr.setString(ID_JSON, id);
 
         wr.setDateTime(SERVER_TIME_JSON, serverTime, ISODateTime.UTC_NO_SUBSECONDS);

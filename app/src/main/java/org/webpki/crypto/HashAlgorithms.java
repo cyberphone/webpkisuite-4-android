@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2020 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2021 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -62,43 +62,38 @@ public enum HashAlgorithms implements CryptoAlgorithms {
         return jceName;
     }
 
-    public byte[] digest(byte[] data) throws IOException {
-        try {
-            return MessageDigest.getInstance(getJceName()).digest(data);
-        } catch (GeneralSecurityException gse) {
-            throw new IOException(gse);
-        }
+    public byte[] digest(byte[] data) throws IOException, GeneralSecurityException {
+        return MessageDigest.getInstance(getJceName()).digest(data);
     }
 
-    public static HashAlgorithms getAlgorithmFromOid(String oid) throws IOException {
+    public static HashAlgorithms getAlgorithmFromOid(String oid) {
         for (HashAlgorithms alg : values()) {
             if (oid.equals(alg.oid)) {
                 return alg;
             }
         }
-        throw new IOException("Unknown algorithm: " + oid);
+        throw new IllegalArgumentException("Unknown algorithm: " + oid);
     }
 
     public static HashAlgorithms getAlgorithmFromId(String algorithmId,
-                                                    AlgorithmPreferences algorithmPreferences)
-    throws IOException {
+                                                    AlgorithmPreferences algorithmPreferences) {
         for (HashAlgorithms alg : values()) {
             if (algorithmId.equals(alg.sksName)) {
                 if (algorithmPreferences == AlgorithmPreferences.JOSE) {
-                    throw new IOException(
+                    throw new IllegalArgumentException(
                             "JOSE algorithm expected: " + algorithmId);
                 }
                 return alg;
             }
             if (algorithmId.equals(alg.joseName)) {
                 if (algorithmPreferences == AlgorithmPreferences.SKS) {
-                    throw new IOException(
+                    throw new IllegalArgumentException(
                             "SKS algorithm expected: " + algorithmId);
                 }
                 return alg;
             }
         }
-        throw new IOException("Unknown algorithm: " + algorithmId);
+        throw new IllegalArgumentException("Unknown algorithm: " + algorithmId);
     }
     
     @Override
@@ -107,10 +102,11 @@ public enum HashAlgorithms implements CryptoAlgorithms {
     }
 
     @Override
-    public String getAlgorithmId(AlgorithmPreferences algorithmPreferences) throws IOException {
+    public String getAlgorithmId(AlgorithmPreferences algorithmPreferences) {
         if (joseName == null) {
             if (algorithmPreferences == AlgorithmPreferences.JOSE) {
-                throw new IOException("There is no JOSE algorithm for: " + toString());
+                throw new IllegalArgumentException("There is no JOSE algorithm for: " + 
+                                                   this.toString());
             }
             return sksName;
         }

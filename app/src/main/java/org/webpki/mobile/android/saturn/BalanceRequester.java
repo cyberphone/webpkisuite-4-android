@@ -39,6 +39,7 @@ import org.webpki.net.HTTPSWrapper;
 
 import java.io.IOException;
 
+import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 
 import java.util.GregorianCalendar;
@@ -71,23 +72,26 @@ public class BalanceRequester extends AsyncTask<Void, String, Boolean> {
                                                        account.accountId,
                                                        account.credentialId,
                 new JSONAsymKeySigner(new AsymKeySignerInterface() {
+
                     @Override
-                    public PublicKey getPublicKey() throws IOException {
-                        return saturnActivity.sks.getKeyAttributes(
-                            account.optionalBalanceKeyHandle).getCertificatePath()[0].getPublicKey();
-                    }
-                    @Override
-                    public byte[] signData(byte[] data, AsymSignatureAlgorithms algorithm)
-                    throws IOException {
+                    public byte[] signData(byte[] data)
+                            throws IOException, GeneralSecurityException {
                         return saturnActivity.sks.signHashedData(
                             account.optionalBalanceKeyHandle,
-                            algorithm.getAlgorithmId(AlgorithmPreferences.SKS),
+                            getAlgorithm().getAlgorithmId(AlgorithmPreferences.SKS),
                             null,
                             false,
                             null,
-                            algorithm.getDigestAlgorithm().digest(data));
+                            getAlgorithm().getDigestAlgorithm().digest(data));
                     }
-                }).setSignatureAlgorithm(account.signatureAlgorithm))
+
+                    @Override
+                    public AsymSignatureAlgorithms getAlgorithm()
+                            throws IOException, GeneralSecurityException {
+                        return account.signatureAlgorithm;
+                    }
+                }).setPublicKey(saturnActivity.sks.getKeyAttributes(
+                        account.optionalBalanceKeyHandle).getCertificatePath()[0].getPublicKey()))
                     .serializeToBytes(JSONOutputFormats.NORMALIZED);
             wrapper.makePostRequest(balanceUrl, json);
             account.balance =

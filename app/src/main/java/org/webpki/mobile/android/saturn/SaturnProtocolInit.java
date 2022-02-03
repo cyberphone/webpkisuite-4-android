@@ -17,6 +17,7 @@
 package org.webpki.mobile.android.saturn;
 
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 
 import android.os.AsyncTask;
 
@@ -116,7 +117,8 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
 
     EnumeratedKey collectPotentialAccount(EnumeratedKey signatureKey,
                                           CardDataDecoder cardData,
-                                          WalletRequestDecoder wrd) throws IOException {
+                                          WalletRequestDecoder wrd)
+            throws IOException, GeneralSecurityException {
         if (cardData.isRecognized()) {
             String paymentMethod = cardData.getPaymentMethod();
             for (WalletRequestDecoder.PaymentMethodDescriptor acceptedPaymentMethod
@@ -156,7 +158,7 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                             cardData.getSignatureAlgorithm(),
                             // Encryption
                             cardData.getKeyEncryptionAlgorithm(),
-                            cardData.getDataEncryptionAlgorithm(),
+                            cardData.getContentEncryptionAlgorithm(),
                             cardData.getEncryptionKey(),
                             cardData.getOptionalKeyId(),
                             saturnActivity.sks.getKeyProtectionInfo(

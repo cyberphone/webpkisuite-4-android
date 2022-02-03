@@ -53,6 +53,9 @@ import android.app.ListActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+
 public class PropertiesActivity extends ListActivity {
 
     static final int SETTINGS_ABOUT            = 0;
@@ -200,7 +203,7 @@ public class PropertiesActivity extends ListActivity {
                         devid.insert(j, '-');
                     }
                     device_id_builder.setMessage(devid);
-                } catch (SKSException e) {
+                } catch (SKSException | GeneralSecurityException | IOException e) {
                     device_id_builder.setMessage("Something went wrong");
                 }
                 device_id_builder.setPositiveButton(android.R.string.ok,

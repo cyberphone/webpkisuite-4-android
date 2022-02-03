@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2020 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2021 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.webpki.json;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -44,6 +43,8 @@ import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.OkpSupport;
 import org.webpki.crypto.KeyAlgorithms;
 
+import org.webpki.crypto.encryption.ContentEncryptionAlgorithms;
+
 import org.webpki.util.ArrayUtil;
 import org.webpki.util.Base64URL;
 import org.webpki.util.ISODateTime;
@@ -61,9 +62,7 @@ import org.webpki.util.ISODateTime;
  * <a href="https://tools.ietf.org/html/rfc7517" target="_blank"><b>JWK</b></a>
  * objects.</p>
  */
-public class JSONObjectWriter implements Serializable {
-
-    private static final long serialVersionUID = 1L;
+public class JSONObjectWriter {
 
     static final int STANDARD_INDENT = 2;
     
@@ -155,7 +154,7 @@ public class JSONObjectWriter implements Serializable {
      * @param name Property
      * @param value Value
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      */
     public JSONObjectWriter setString(String name, String value) throws IOException {
         return setProperty(name, new JSONValue(JSONTypes.STRING, value));
@@ -174,7 +173,7 @@ public class JSONObjectWriter implements Serializable {
      * @param name Property
      * @param value Value
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      */
     public JSONObjectWriter setInt(String name, int value) throws IOException {
         return setInt53(name, value);
@@ -190,7 +189,7 @@ public class JSONObjectWriter implements Serializable {
      * @param name Property
      * @param value Value
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      * @see #MAX_INTEGER
      */
     public JSONObjectWriter setInt53(String name, long value) throws IOException {
@@ -206,7 +205,7 @@ public class JSONObjectWriter implements Serializable {
      * @param name Property
      * @param value Value
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      * @see #setInt53(String, long)
      * @see #setBigInteger(String, BigInteger)
      */
@@ -223,7 +222,7 @@ public class JSONObjectWriter implements Serializable {
      * @param name Property
      * @param value Value
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      */
     public JSONObjectWriter setDouble(String name, double value) throws IOException {
         return setProperty(name, 
@@ -241,7 +240,7 @@ public class JSONObjectWriter implements Serializable {
      * @param name Property
      * @param value Value
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      */
     public JSONObjectWriter setBigInteger(String name, BigInteger value) throws IOException {
         return setString(name, value.toString());
@@ -261,7 +260,7 @@ public class JSONObjectWriter implements Serializable {
      * @param name Property
      * @param value Value
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      */
     public JSONObjectWriter setBigDecimal(String name, BigDecimal value) throws IOException {
         return setString(name, bigDecimalToString(value));
@@ -283,7 +282,7 @@ public class JSONObjectWriter implements Serializable {
      * @param name Property
      * @param value Value
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      * @see #setMoney(String, BigDecimal, int)
      */
     public JSONObjectWriter setMoney(String name, BigDecimal value) throws IOException {
@@ -303,10 +302,11 @@ public class JSONObjectWriter implements Serializable {
      * @param value Value
      * @param decimals Number of fractional digits
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      * @see #setMoney(String, BigDecimal)
      */
-    public JSONObjectWriter setMoney(String name, BigDecimal value, int decimals) throws IOException {
+    public JSONObjectWriter setMoney(String name, BigDecimal value, int decimals) 
+            throws IOException {
         return setString(name, moneyToString(value, decimals));
     }
 
@@ -319,7 +319,7 @@ public class JSONObjectWriter implements Serializable {
      * @param name Property
      * @param value Value
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      */
     public JSONObjectWriter setBoolean(String name, boolean value) throws IOException {
         return setProperty(name, new JSONValue(JSONTypes.BOOLEAN, Boolean.toString(value)));
@@ -333,7 +333,7 @@ public class JSONObjectWriter implements Serializable {
      * </pre>
      * @param name Property
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      * @see JSONObjectReader#getIfNULL(String)
      */
     public JSONObjectWriter setNULL(String name) throws IOException {
@@ -351,7 +351,7 @@ public class JSONObjectWriter implements Serializable {
      * @param dateTime Date/time value
      * @param format Requited output format
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      * @see org.webpki.util.ISODateTime#formatDateTime(GregorianCalendar, EnumSet)
      */
     public JSONObjectWriter setDateTime(String name, 
@@ -370,7 +370,7 @@ public class JSONObjectWriter implements Serializable {
      * @param name Property
      * @param value Array of bytes
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      * @see Base64URL#encode(byte[])
      */
     public JSONObjectWriter setBinary(String name, byte[] value) throws IOException {
@@ -384,7 +384,7 @@ public class JSONObjectWriter implements Serializable {
      * @param name Property
      * @param objectReader Object reader
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      */
     public JSONObjectWriter setObject(String name, JSONObjectReader objectReader) throws IOException {
         setProperty(name, new JSONValue(JSONTypes.OBJECT, objectReader.root));
@@ -398,7 +398,7 @@ public class JSONObjectWriter implements Serializable {
      * @param name Property
      * @param objectWriter Object writer
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      */
     public JSONObjectWriter setObject(String name, JSONObjectWriter objectWriter) throws IOException {
         setProperty(name, new JSONValue(JSONTypes.OBJECT, objectWriter.root));
@@ -410,7 +410,7 @@ public class JSONObjectWriter implements Serializable {
      * This method creates an empty JSON object and links it to the current object through a property.</p> 
      * @param name Property
      * @return New instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      */
     public JSONObjectWriter setObject(String name) throws IOException {
         JSONObjectWriter writer = new JSONObjectWriter();
@@ -423,7 +423,7 @@ public class JSONObjectWriter implements Serializable {
      * This method creates an empty JSON array and links it to the current object through a property.</p> 
      * @param name Property
      * @return New instance of {@link org.webpki.json.JSONArrayWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      */
     public JSONArrayWriter setArray(String name) throws IOException {
         JSONArrayWriter array = new JSONArrayWriter();
@@ -438,7 +438,7 @@ public class JSONObjectWriter implements Serializable {
      * @param name Property
      * @param arrayWriter Array writer
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      */
     public JSONObjectWriter setArray(String name, JSONArrayWriter arrayWriter) throws IOException {
         setProperty(name, new JSONValue(JSONTypes.ARRAY, arrayWriter.array));
@@ -463,7 +463,7 @@ public class JSONObjectWriter implements Serializable {
      * @param name Property
      * @param values List holding arrays of bytes
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      * @see Base64URL#encode(byte[])
      */
     public JSONObjectWriter setBinaryArray(String name, List<byte[]> values) throws IOException {
@@ -484,7 +484,7 @@ public class JSONObjectWriter implements Serializable {
      * @param name Property
      * @param values Array of <code>String</code>
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      */
     public JSONObjectWriter setStringArray(String name, String[] values) throws IOException {
         return setStringArray(name, values, JSONTypes.STRING);
@@ -498,7 +498,7 @@ public class JSONObjectWriter implements Serializable {
      * </pre>
      * @param jsonSetDynamic Interface (usually Lambda)
      * @return An instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      */
     public JSONObjectWriter setDynamic(Dynamic jsonSetDynamic) throws IOException {
         return jsonSetDynamic.set(this);
@@ -511,7 +511,7 @@ public class JSONObjectWriter implements Serializable {
      * @param sourceName Property name in the source object
      * @param source The JSON reader object
      * @return An instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      */
     public JSONObjectWriter copyElement(String newName, 
                                         String sourceName,
@@ -547,7 +547,8 @@ public class JSONObjectWriter implements Serializable {
     static void coreSign(JSONSigner signer, 
                          JSONObjectWriter innerObject,
                          JSONObjectWriter outerObject,
-                         JSONObjectWriter signedObject) throws IOException {
+                         JSONObjectWriter signedObject) throws IOException,
+                                                               GeneralSecurityException {
 
         innerObject.setString(JSONCryptoHelper.ALGORITHM_JSON,
                               signer.getAlgorithm().getAlgorithmId(signer.algorithmPreferences));
@@ -556,9 +557,7 @@ public class JSONObjectWriter implements Serializable {
             innerObject.setString(JSONCryptoHelper.KEY_ID_JSON, signer.keyId);
         }
 
-        if (signer.outputPublicKeyInfo) {
-            signer.writeKeyData(innerObject);
-        }
+        signer.writeKeyData(innerObject);
         
         // Optional extensions
         if (signer.extensionData != null) {
@@ -666,12 +665,15 @@ import org.webpki.json.JSONSignatureDecoder;
         System.out.println("Returned data: " + reader.getString("myProperty"));
     }
 </pre>
+     * @throws GeneralSecurityException 
     */
-    public JSONObjectWriter setSignature(JSONSigner signer) throws IOException {
+    public JSONObjectWriter setSignature(JSONSigner signer)
+            throws IOException, GeneralSecurityException {
         return setSignature(SIGNATURE_DEFAULT_LABEL_JSON, signer);
     }
     
-    public JSONObjectWriter setSignature(String signatureLabel, JSONSigner signer) throws IOException {
+    public JSONObjectWriter setSignature(String signatureLabel, JSONSigner signer)
+            throws IOException, GeneralSecurityException {
         JSONObjectWriter signatureObject = setObject(signatureLabel);
         coreSign(signer, signatureObject, signatureObject, this);
         return this;
@@ -679,7 +681,8 @@ import org.webpki.json.JSONSignatureDecoder;
     
     JSONObjectWriter setSignatureArrayElement(String signatureLabel,
                                               JSONSigner signer,
-                                              boolean chained) throws IOException {       
+                                              boolean chained) throws IOException,
+                                                                      GeneralSecurityException {       
         JSONObjectReader reader = new JSONObjectReader(root);
         ArrayList<JSONObject> oldSignatures = new ArrayList<>();
         String keyWord = chained ? JSONCryptoHelper.CHAIN_JSON : JSONCryptoHelper.SIGNERS_JSON;
@@ -732,13 +735,16 @@ import org.webpki.json.JSONSignatureDecoder;
      * @param signer Signature interface
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
      * @throws IOException In case there a problem with keys etc.
+     * @throws GeneralSecurityException 
      */
-    public JSONObjectWriter setMultiSignature(JSONSigner signer) throws IOException {
+    public JSONObjectWriter setMultiSignature(JSONSigner signer) throws IOException,
+                                                                        GeneralSecurityException {
         return setMultiSignature(SIGNATURE_DEFAULT_LABEL_JSON, signer);
     }
 
     public JSONObjectWriter setMultiSignature(String signatureLabel,
-                                              JSONSigner signer) throws IOException {
+                                              JSONSigner signer) throws IOException,
+                                                                        GeneralSecurityException {
         return setSignatureArrayElement(signatureLabel, signer, false);
     }
 
@@ -749,13 +755,16 @@ import org.webpki.json.JSONSignatureDecoder;
      * @param signer Signature interface
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
      * @throws IOException In case there a problem with keys etc.
+     * @throws GeneralSecurityException 
      */
-    public JSONObjectWriter setChainedSignature(JSONSigner signer) throws IOException {
+    public JSONObjectWriter setChainedSignature(JSONSigner signer) throws IOException,
+                                                                          GeneralSecurityException {
         return setChainedSignature(SIGNATURE_DEFAULT_LABEL_JSON, signer);
     }
 
     public JSONObjectWriter setChainedSignature(String signatureLabel,
-                                                JSONSigner signer) throws IOException {
+                                                JSONSigner signer) throws IOException,
+                                                                          GeneralSecurityException {
         return setSignatureArrayElement(signatureLabel, signer, true);
     }
 
@@ -777,7 +786,7 @@ import org.webpki.json.JSONSignatureDecoder;
      * @param publicKey Public key value
      * @param algorithmPreferences JOSE or SKS algorithm notation
      * @return New instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      */
     public static JSONObjectWriter createCorePublicKey(PublicKey publicKey, 
                                                        AlgorithmPreferences algorithmPreferences)
@@ -824,7 +833,7 @@ import org.webpki.json.JSONSignatureDecoder;
      * @param publicKey Public key value
      * @param algorithmPreferences JOSE or SKS algorithm notation
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      */
     public JSONObjectWriter setPublicKey(PublicKey publicKey, 
                                          AlgorithmPreferences algorithmPreferences)
@@ -840,7 +849,7 @@ import org.webpki.json.JSONSignatureDecoder;
      * using {@link AlgorithmPreferences#JOSE} as second argument.</p>
      * @param publicKey Public key value
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      */
     public JSONObjectWriter setPublicKey(PublicKey publicKey) throws IOException {
         return setPublicKey(publicKey, AlgorithmPreferences.JOSE);
@@ -857,10 +866,10 @@ import org.webpki.json.JSONSignatureDecoder;
 </pre>
      * @param certificatePath Sorted certificate path array
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
+     * @throws IOException
      */
     public JSONObjectWriter setCertificatePath(X509Certificate[] certificatePath) 
-    throws IOException {
+    throws IOException, GeneralSecurityException {
         return setArray(JSONCryptoHelper.CERTIFICATE_PATH_JSON, 
                         JSONArrayWriter.createCoreCertificatePath(certificatePath));
     }
@@ -869,19 +878,19 @@ import org.webpki.json.JSONSignatureDecoder;
      * Create a <a href="https://cyberphone.github.io/doc/security/jef.html" target="_blank"><b>JEF</b></a>
      * encrypted object.
      * @param unencryptedData Data to be encrypted
-     * @param dataEncryptionAlgorithm Content encryption algorithm
+     * @param contentEncryptionAlgorithm Content encryption algorithm
      * @param encrypter Holds keys etc.
      * @return New instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
-     * @throws GeneralSecurityException &nbsp;
+     * @throws IOException
+     * @throws GeneralSecurityException
      */
     public static JSONObjectWriter 
             createEncryptionObject(byte[] unencryptedData,
-                                   DataEncryptionAlgorithms dataEncryptionAlgorithm,
+                                   ContentEncryptionAlgorithms contentEncryptionAlgorithm,
                                    JSONEncrypter encrypter)
     throws IOException, GeneralSecurityException {
         JSONEncrypter.Header header = 
-                new JSONEncrypter.Header(dataEncryptionAlgorithm, encrypter);
+                new JSONEncrypter.Header(contentEncryptionAlgorithm, encrypter);
         JSONObjectWriter encryptionObject = header.encryptionWriter;
         if (encrypter.keyEncryptionAlgorithm != null) {
             encryptionObject = encryptionObject.setObject(JSONCryptoHelper.KEY_ENCRYPTION_JSON);
@@ -894,22 +903,22 @@ import org.webpki.json.JSONSignatureDecoder;
      * Create a <a href="https://cyberphone.github.io/doc/security/jef.html" target="_blank"><b>JEF</b></a>
      * encrypted object for multiple recipients.
      * @param unencryptedData Data to be encrypted
-     * @param dataEncryptionAlgorithm Content encryption algorithm
+     * @param contentEncryptionAlgorithm Content encryption algorithm
      * @param encrypters Holds keys etc.
      * @return New instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException &nbsp;
-     * @throws GeneralSecurityException &nbsp;
+     * @throws IOException
+     * @throws GeneralSecurityException
      */
     public static JSONObjectWriter 
             createEncryptionObjects(byte[] unencryptedData,
-                                    DataEncryptionAlgorithms dataEncryptionAlgorithm,
+                                    ContentEncryptionAlgorithms contentEncryptionAlgorithm,
                                     List<JSONEncrypter> encrypters)
     throws IOException, GeneralSecurityException {
         if (encrypters.isEmpty()) {
             throw new IOException("Empty encrypter list");
         }
         JSONEncrypter.Header header = 
-                new JSONEncrypter.Header(dataEncryptionAlgorithm, encrypters.get(0));
+                new JSONEncrypter.Header(contentEncryptionAlgorithm, encrypters.get(0));
         JSONArrayWriter recipientList = 
                 header.encryptionWriter.setArray(JSONCryptoHelper.RECIPIENTS_JSON);
         for (JSONEncrypter encrypter : encrypters) {
@@ -1204,7 +1213,7 @@ import org.webpki.json.JSONSignatureDecoder;
      * Serialize current object writer to a Java <code>String</code>.
      * @param outputFormat Any JSONOutputFormats
      * @return JSON string data
-     * @throws IOException &nbsp;
+     * @throws IOException
      */
     @SuppressWarnings("unchecked")
     public String serializeToString(JSONOutputFormats outputFormat) throws IOException {
@@ -1230,7 +1239,7 @@ import org.webpki.json.JSONSignatureDecoder;
      * Serialize current object writer to a Java <code>byte[]</code>.
      * @param outputFormat Any JSONOutputFormats
      * @return JSON UTF-8 data
-     * @throws IOException &nbsp;
+     * @throws IOException
      */
     public byte[] serializeToBytes(JSONOutputFormats outputFormat) throws IOException {
         return serializeToString(outputFormat).getBytes("UTF-8");

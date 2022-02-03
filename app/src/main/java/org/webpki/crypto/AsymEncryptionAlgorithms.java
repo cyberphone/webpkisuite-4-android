@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2020 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2021 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  *
  */
 package org.webpki.crypto;
-
-import java.io.IOException;
 
 /**
  * Asymmetric key encryption algorithms.
@@ -66,41 +64,42 @@ public enum AsymEncryptionAlgorithms implements EncryptionAlgorithms {
         return oid;
     }
 
-    public static AsymEncryptionAlgorithms getAlgorithmFromOid(String oid) throws IOException {
+    public static AsymEncryptionAlgorithms getAlgorithmFromOid(String oid) {
         for (AsymEncryptionAlgorithms alg : values()) {
             if (oid.equals(alg.oid)) {
                 return alg;
             }
         }
-        throw new IOException("Unknown algorithm: " + oid);
+        throw new IllegalArgumentException("Unknown algorithm: " + oid);
     }
 
-    public static AsymEncryptionAlgorithms getAlgorithmFromId(String algorithmId,
-                                                              AlgorithmPreferences algorithmPreferences) 
-    throws IOException {
+    public static AsymEncryptionAlgorithms getAlgorithmFromId(
+            String algorithmId,
+            AlgorithmPreferences algorithmPreferences) {
         for (AsymEncryptionAlgorithms alg : values()) {
             if (algorithmId.equals(alg.sksName)) {
                 if (algorithmPreferences == AlgorithmPreferences.JOSE) {
-                    throw new IOException("JOSE algorithm expected: " + algorithmId);
+                    throw new IllegalArgumentException("JOSE algorithm expected: " + algorithmId);
                 }
                 return alg;
             }
             if (algorithmId.equals(alg.joseName)) {
                 if (algorithmPreferences == AlgorithmPreferences.SKS) {
-                    throw new IOException("SKS algorithm expected: " + algorithmId);
+                    throw new IllegalArgumentException("SKS algorithm expected: " + algorithmId);
                 }
                 return alg;
             }
         }
-        throw new IOException("Unknown algorithm: " + algorithmId);
+        throw new IllegalArgumentException("Unknown algorithm: " + algorithmId);
     }
 
 
     @Override
-    public String getAlgorithmId(AlgorithmPreferences algorithmPreferences) throws IOException {
+    public String getAlgorithmId(AlgorithmPreferences algorithmPreferences) {
         if (joseName == null) {
             if (algorithmPreferences == AlgorithmPreferences.JOSE) {
-                throw new IOException("There is no JOSE algorithm for: " + toString());
+                throw new IllegalArgumentException("There is no JOSE algorithm for: " + 
+                                                   this.toString());
             }
             return sksName;
         }

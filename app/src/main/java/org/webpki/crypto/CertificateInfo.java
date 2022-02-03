@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2020 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2021 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -54,19 +54,23 @@ public class CertificateInfo {
     private boolean trustModeSet;
 
 
-    public CertificateInfo(X509Certificate certificate, boolean trusted) throws IOException {
+    public CertificateInfo(X509Certificate certificate, boolean trusted) 
+            throws IOException, GeneralSecurityException {
         this.certificate = certificate;
         this.trusted = trusted;
         trustModeSet = true;
-        issuerDn = CertificateUtil.convertRFC2253ToLegacy(certificate.getIssuerX500Principal().getName());
+        issuerDn = CertificateUtil.convertRFC2253ToLegacy(
+                certificate.getIssuerX500Principal().getName());
         serialNumber = certificate.getSerialNumber().toString();
-        subjectDn = CertificateUtil.convertRFC2253ToLegacy(certificate.getSubjectX500Principal().getName());
+        subjectDn = CertificateUtil.convertRFC2253ToLegacy(
+                certificate.getSubjectX500Principal().getName());
         notValidBefore.setTime(certificate.getNotBefore());
         notValidAfter.setTime(certificate.getNotAfter());
     }
 
 
-    public CertificateInfo(X509Certificate certificate) throws IOException {
+    public CertificateInfo(X509Certificate certificate)
+            throws IOException, GeneralSecurityException {
         this(certificate, true);
         trustModeSet = false;
     }
@@ -196,12 +200,8 @@ public class CertificateInfo {
     /*
      * Returns the certificate hash.
      */
-    public byte[] getCertificateHash() {
-        try {
-            return CertificateUtil.getCertificateSHA256(certificate);
-        } catch (IOException ioe) {
-            return null;
-        }
+    public byte[] getCertificateHash() throws IOException, GeneralSecurityException {
+        return CertificateUtil.getCertificateSHA256(certificate);
     }
 
 
@@ -254,27 +254,27 @@ public class CertificateInfo {
     }
 
 
-    public String[] getPolicyOIDs() throws IOException {
+    public String[] getPolicyOIDs() throws IOException, GeneralSecurityException {
         return CertificateUtil.getPolicyOIDs(certificate);
     }
 
 
-    public String[] getAIAOCSPResponders() throws IOException {
+    public String[] getAIAOCSPResponders() throws IOException, GeneralSecurityException {
         return CertificateUtil.getAIAOCSPResponders(certificate);
     }
 
 
-    public String[] getAIACAIssuers() throws IOException {
+    public String[] getAIACAIssuers() throws IOException, GeneralSecurityException {
         return CertificateUtil.getAIACAIssuers(certificate);
     }
 
 
-    public String[] getExtendedKeyUsage() throws IOException {
+    public String[] getExtendedKeyUsage() throws IOException, GeneralSecurityException {
         return CertificateUtil.getExtendedKeyUsage(certificate);
     }
 
 
-    public String[] getKeyUsages() throws IOException {
+    public String[] getKeyUsages() throws IOException, GeneralSecurityException {
         return CertificateUtil.getKeyUsages(certificate);
     }
 
@@ -290,7 +290,8 @@ public class CertificateInfo {
 
 
     public String getPublicKeyAlgorithm() throws IOException {
-        return KeyAlgorithms.getKeyAlgorithm(certificate.getPublicKey()).getAlgorithmId(AlgorithmPreferences.SKS);
+        return KeyAlgorithms.getKeyAlgorithm(
+                certificate.getPublicKey()).getAlgorithmId(AlgorithmPreferences.SKS);
     }
 
 
@@ -332,7 +333,7 @@ public class CertificateInfo {
     }
 
 
-    public String toString(boolean Verbose) {
+    public String toString(boolean Verbose) throws IOException, GeneralSecurityException {
         byte hash[] = getCertificateHash();
         return "  Subject DN: " + getSubject() + "\n" +
                "  Issuer DN: " + getIssuer() + "\n" +
@@ -347,7 +348,11 @@ public class CertificateInfo {
 
 
     public String toString() {
-        return toString(false);
+        try {
+            return toString(false);
+        } catch (IOException | GeneralSecurityException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

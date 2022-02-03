@@ -18,15 +18,18 @@ package org.webpki.mobile.android.saturn.common;
 
 import java.io.IOException;
 
+import java.security.GeneralSecurityException;
+
 import java.util.GregorianCalendar;
 
 import org.webpki.crypto.HashAlgorithms;
+
+import org.webpki.crypto.encryption.ContentEncryptionAlgorithms;
 
 import org.webpki.json.JSONArrayWriter;
 import org.webpki.json.JSONCryptoHelper;
 import org.webpki.json.JSONObjectWriter;
 import org.webpki.json.JSONSigner;
-import org.webpki.json.DataEncryptionAlgorithms;
 
 import org.webpki.util.ISODateTime;
 
@@ -40,14 +43,15 @@ public class AuthorizationDataEncoder implements BaseProperties {
                                           String credentialId,
                                           String accountId,
                                           byte[] dataEncryptionKey,
-                                          DataEncryptionAlgorithms dataEncryptionAlgorithm,
+                                          ContentEncryptionAlgorithms contentEncryptionAlgorithm,
                                           UserResponseItem[] optionalUserResponseItems,
                                           UserAuthorizationMethods userAuthorizationMethod,
                                           GregorianCalendar timeStamp,
                                           String applicationName,
                                           String applicationVersion,
                                           ClientPlatform clientPlatform,
-                                          JSONSigner signer) throws IOException {
+                                          JSONSigner signer) throws IOException,
+                                                                    GeneralSecurityException {
         JSONObjectWriter wr = new JSONObjectWriter()
             .setObject(REQUEST_HASH_JSON, new JSONObjectWriter()
                 .setString(JSONCryptoHelper.ALGORITHM_JSON, 
@@ -60,7 +64,8 @@ public class AuthorizationDataEncoder implements BaseProperties {
             .setString(CREDENTIAL_ID_JSON, credentialId)
             .setString(ACCOUNT_ID_JSON, accountId)
             .setObject(ENCRYPTION_PARAMETERS_JSON, new JSONObjectWriter()
-                .setString(JSONCryptoHelper.ALGORITHM_JSON, dataEncryptionAlgorithm.toString())
+                .setString(JSONCryptoHelper.ALGORITHM_JSON, 
+                           contentEncryptionAlgorithm.getJoseAlgorithmId())
                 .setBinary(ENCRYPTION_KEY_JSON, dataEncryptionKey));
         if (optionalUserResponseItems != null && optionalUserResponseItems.length > 0) {
             JSONArrayWriter aw = wr.setArray(USER_RESPONSE_ITEMS_JSON);

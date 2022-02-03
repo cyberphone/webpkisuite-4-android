@@ -1,5 +1,5 @@
 /*
- *  Copyright 2006-2020 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2021 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import java.util.GregorianCalendar;
 
+import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
 
 import java.security.interfaces.ECPublicKey;
@@ -34,8 +35,6 @@ import org.webpki.util.ISODateTime;
 import static org.webpki.keygen2.KeyGen2Constants.*;
 
 public class ProvisioningInitializationResponseEncoder extends JSONEncoder {
-
-    private static final long serialVersionUID = 1L;
 
     String serverSessionId;
 
@@ -70,7 +69,8 @@ public class ProvisioningInitializationResponseEncoder extends JSONEncoder {
     }
 
     @Override
-    protected void writeJSONData(JSONObjectWriter wr) throws IOException {
+    protected void writeJSONData(JSONObjectWriter wr)
+            throws IOException, GeneralSecurityException {
         //////////////////////////////////////////////////////////////////////////
         // Session properties
         //////////////////////////////////////////////////////////////////////////

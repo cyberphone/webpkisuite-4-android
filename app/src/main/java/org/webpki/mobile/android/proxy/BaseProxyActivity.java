@@ -24,6 +24,7 @@ import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
 
 import java.text.SimpleDateFormat;
@@ -256,7 +257,8 @@ public abstract class BaseProxyActivity extends Activity {
 
     public boolean postJSONData(String url,
                                 JSONEncoder json_object,
-                                RedirectPermitted redirectPermitted) throws IOException {
+                                RedirectPermitted redirectPermitted)
+            throws IOException, GeneralSecurityException {
         logOK("Writing \"" + json_object.getQualifier() + "\" object to: " + url);
         addOptionalCookies(url);
         httpsWrapper.setHeader("Content-Type", JSON_CONTENT);
@@ -332,14 +334,14 @@ public abstract class BaseProxyActivity extends Activity {
         logOK("Added JSON decoder for: " + decoder_class.getName());
     }
 
-    private JSONDecoder parseJSON(byte[] json_data) throws IOException {
+    private JSONDecoder parseJSON(byte[] json_data) throws IOException, GeneralSecurityException {
         protocolLog.add(json_data);
         JSONDecoder json_object = schemaCache.parse(json_data);
         logOK("Successfully read \"" + json_object.getQualifier() + "\" object");
         return json_object;
     }
 
-    public JSONDecoder parseJSONResponse() throws IOException {
+    public JSONDecoder parseJSONResponse() throws IOException, GeneralSecurityException {
         return parseJSON(httpsWrapper.getData());
     }
 
@@ -347,7 +349,7 @@ public abstract class BaseProxyActivity extends Activity {
         return serverCertificate;
     }
 
-    public JSONDecoder getInitialRequest() throws IOException {
+    public JSONDecoder getInitialRequest() throws IOException, GeneralSecurityException {
         return parseJSON(initialRequestObject);
     }
 

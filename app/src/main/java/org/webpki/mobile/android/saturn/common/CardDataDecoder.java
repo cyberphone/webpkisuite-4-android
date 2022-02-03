@@ -18,16 +18,19 @@ package org.webpki.mobile.android.saturn.common;
 
 import java.io.IOException;
 
+import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 
 import org.webpki.crypto.AsymSignatureAlgorithms;
 import org.webpki.crypto.HashAlgorithms;
 
-import org.webpki.json.DataEncryptionAlgorithms;
-import org.webpki.json.KeyEncryptionAlgorithms;
+import org.webpki.crypto.encryption.ContentEncryptionAlgorithms;
+import org.webpki.crypto.encryption.KeyEncryptionAlgorithms;
+
 import org.webpki.json.JSONCryptoHelper;
 import org.webpki.json.JSONObjectReader;
 import org.webpki.json.JSONParser;
+
 
 // This class holds the data associated with a virtual card (modulo the logotype).
 // The data is embedded in an SKS (Secure Key Store) extension object belonging to the signature key.
@@ -42,7 +45,8 @@ public class CardDataDecoder implements BaseProperties {
     // SKS specific solution for linking related keys
     static final String ACCOUNT_STATUS_KEY_HASH_JSON = "accountStatusKeyHash";
     
-    public CardDataDecoder(String expectedVersion, byte[] cardDataBlob) throws IOException {
+    public CardDataDecoder(String expectedVersion, byte[] cardDataBlob) throws IOException,
+                                                                               GeneralSecurityException {
         JSONObjectReader rd = JSONParser.parse(cardDataBlob);
         version = rd.getString(VERSION_JSON);
         if (version.equals(expectedVersion)) {
@@ -56,7 +60,7 @@ public class CardDataDecoder implements BaseProperties {
             signatureAlgorithm = 
                     CryptoUtils.getSignatureAlgorithm(rd, SIGNATURE_ALGORITHM_JSON);
             JSONObjectReader ep = rd.getObject(ENCRYPTION_PARAMETERS_JSON);
-            dataEncryptionAlgorithm = DataEncryptionAlgorithms
+            contentEncryptionAlgorithm = ContentEncryptionAlgorithms
                     .getAlgorithmFromId(ep.getString(DATA_ENCRYPTION_ALGORITHM_JSON));
             keyEncryptionAlgorithm = KeyEncryptionAlgorithms
                     .getAlgorithmFromId(ep.getString(KEY_ENCRYPTION_ALGORITHM_JSON));
@@ -67,7 +71,7 @@ public class CardDataDecoder implements BaseProperties {
         }
     }
 
-    public CardDataDecoder(byte[] cardDataBlob) throws IOException {
+    public CardDataDecoder(byte[] cardDataBlob) throws IOException, GeneralSecurityException {
         this(ACTUAL_VERSION, cardDataBlob);
     }
 
@@ -115,9 +119,9 @@ public class CardDataDecoder implements BaseProperties {
         return signatureAlgorithm;
     }
 
-    DataEncryptionAlgorithms dataEncryptionAlgorithm;
-    public DataEncryptionAlgorithms getDataEncryptionAlgorithm() {
-        return dataEncryptionAlgorithm;
+    ContentEncryptionAlgorithms contentEncryptionAlgorithm;
+    public ContentEncryptionAlgorithms getContentEncryptionAlgorithm() {
+        return contentEncryptionAlgorithm;
     }
     
     KeyEncryptionAlgorithms keyEncryptionAlgorithm;
