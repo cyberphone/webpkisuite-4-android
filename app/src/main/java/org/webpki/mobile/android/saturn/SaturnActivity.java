@@ -781,6 +781,9 @@ public class SaturnActivity extends BaseProxyActivity {
     @JavascriptInterface
     public void setAuthenticationMode(boolean useBiometrics) {
         if (fingerPrintAuthenticationInProgess != null) {
+            if (useBiometrics) {
+                return;
+            }
             fingerPrintAuthenticationInProgess.cancel();
             fingerPrintAuthenticationInProgess = null;
         }
