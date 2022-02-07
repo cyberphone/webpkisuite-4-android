@@ -20,7 +20,7 @@ import java.io.IOException;
 
 import java.security.GeneralSecurityException;
 
-import org.webpki.crypto.encryption.ContentEncryptionAlgorithms;
+import org.webpki.crypto.ContentEncryptionAlgorithms;
 
 import org.webpki.json.JSONDecoder;
 import org.webpki.json.JSONDecryptionDecoder;
