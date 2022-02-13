@@ -40,7 +40,7 @@ import org.webpki.mobile.android.util.WebViewHtmlLoader;
 
 import org.webpki.util.HTMLEncoder;
 import org.webpki.util.ArrayUtil;
-import org.webpki.util.DebugFormatter;
+import org.webpki.util.HexaDecimal;
 
 import org.webpki.mobile.android.R;
 
@@ -95,7 +95,7 @@ public class CertificateViewActivity extends Activity {
     }
 
     private String binaryDump(byte[] binary, boolean show_text) {
-        return formatCodeString(DebugFormatter.getHexDebugData(binary, show_text ? 16 : -16));
+        return formatCodeString(HexaDecimal.getHexDebugData(binary, show_text ? 16 : -16));
     }
 
     @Override
