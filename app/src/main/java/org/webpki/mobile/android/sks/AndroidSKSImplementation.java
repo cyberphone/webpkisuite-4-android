@@ -1077,7 +1077,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
         if (Build.VERSION.SDK_INT >= 33) {
             addAlgorithm("https://webpki.github.io/sks/algorithm#ed25519",
                          "Ed25519",
-                         ALG_ASYM_SGN | ALG_EDDSA_KEY | ALG_KEY_GEN).addEcCurve(32);
+                         ALG_ASYM_SGN | ALG_EDDSA_KEY | ALG_KEY_GEN).ecPointLength = 32;
         }
         
         //////////////////////////////////////////////////////////////////////////////////////

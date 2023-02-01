@@ -21,6 +21,8 @@ import java.security.cert.X509Certificate;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 
+import android.os.Build;
+
 import android.content.Context;
 
 import android.graphics.Bitmap;
@@ -80,6 +82,8 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
     private KeyGen2Activity keyGen2Activity;
 
     private int pin_count;
+
+    private static final String ED25519 = "https://webpki.github.io/sks/algorithm#ed25519";
 
     private class PINDialog {
         private EditText pin1;
@@ -284,6 +288,11 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
                     invocation_response.addSupportedFeature(KeyGen2URIs.CLIENT_FEATURES.BIOMETRIC_SUPPORT);
                 }
             }
+
+            if (Build.VERSION.SDK_INT >= 33 &&
+                keyGen2Activity.invocationRequest.getQueriedCapabilities().contains(ED25519)) {
+                    invocation_response.addSupportedFeature(ED25519);
+             }
 
             keyGen2Activity.postJSONData(keyGen2Activity.getTransactionURL(),
                                           invocation_response,
