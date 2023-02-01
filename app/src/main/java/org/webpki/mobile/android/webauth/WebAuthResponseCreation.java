@@ -75,13 +75,13 @@ public class WebAuthResponseCreation extends AsyncTask<Void, String, String> {
                         @Override
                         public byte[] signData(byte[] data)
                                 throws IOException, GeneralSecurityException {
-                            return webauth_activity.sks.signHashedData(
+                            return webauth_activity.sks.signData(
                                     key_handle,
                                     getAlgorithm().getAlgorithmId(AlgorithmPreferences.SKS),
                                     null,
                                     false,
                                     authorization.getBytes("UTF-8"),
-                                    getAlgorithm().getDigestAlgorithm().digest(data));
+                                    data);
                         }
 
                         @Override

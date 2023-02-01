@@ -76,13 +76,13 @@ public class BalanceRequester extends AsyncTask<Void, String, Boolean> {
                     @Override
                     public byte[] signData(byte[] data)
                             throws IOException, GeneralSecurityException {
-                        return saturnActivity.sks.signHashedData(
+                        return saturnActivity.sks.signData(
                             account.optionalBalanceKeyHandle,
                             getAlgorithm().getAlgorithmId(AlgorithmPreferences.SKS),
                             null,
                             false,
                             null,
-                            getAlgorithm().getDigestAlgorithm().digest(data));
+                            data);
                     }
 
                     @Override

@@ -889,14 +889,14 @@ public class SaturnActivity extends BaseProxyActivity {
                         @Override
                         public byte[] signData(byte[] data) throws IOException,
                                                                    GeneralSecurityException{
-                            return sks.signHashedData(
+                            return sks.signData(
                                     account.signatureKeyHandle,
                                     getAlgorithm().getAlgorithmId(AlgorithmPreferences.SKS),
                                     null,
                                     fingerPrintAuthenticationInProgess != null,
                                     fingerPrintAuthenticationInProgess == null ?
                                         pin.getBytes("UTF-8") : null,
-                                    getAlgorithm().getDigestAlgorithm().digest(data));
+                                    data);
                         }
 
                         @Override
