@@ -139,6 +139,7 @@ public class OkpSupport {
                     ((EdECKey)key).getParams().getName(),
                     AlgorithmPreferences.JOSE);
         }
-        throw new IllegalArgumentException("Unknown OKP key type: " + key.getClass().getName());
+        // Ugly fix while waiting for Google to implement everything...
+        return KeyAlgorithms.ED25519;
     }
 }
