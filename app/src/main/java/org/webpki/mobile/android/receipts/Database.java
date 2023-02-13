@@ -135,7 +135,8 @@ public class Database extends SQLiteOpenHelper {
                                 ReceiptsEntry.COMMON_NAME + "," +
                                 ReceiptsEntry.AMOUNT + "||' '||" +
                                 ReceiptsEntry.CURRENCY +
-                                " FROM " + ReceiptsEntry.RECEIPTS_TABLE,
+                                " FROM " + ReceiptsEntry.RECEIPTS_TABLE +
+                                " ORDER BY " + ReceiptsEntry.TIME_STAMP + " DESC",
                            new String[0]);
     }
 
