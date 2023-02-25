@@ -515,8 +515,7 @@ public class SaturnActivity extends BaseProxyActivity {
                 "let fpFrameTop = (Saturn.height() - pinRow.offsetHeight + paydata.offsetHeight " +
                     "+ paydataTop - fpFrame.offsetHeight) / 2;\n" +
                 "fpFrame.style.top = fpFrameTop + 'px';\n" +
-                "fpFrame.style.right = ((kbd.offsetWidth - fpFrame.offsetWidth " +
-                    "- document.getElementById('pinSwitch').offsetWidth) / 2 " +
+                "fpFrame.style.right = ((kbd.offsetWidth - fpFrame.offsetWidth) / 2 " +
                     "+ kbdRight) + 'px';\n");
         } else {
             js.append(
@@ -539,12 +538,11 @@ public class SaturnActivity extends BaseProxyActivity {
                 "let fpFrameTop = (Saturn.height() + paydata.offsetHeight " +
                     "+ paydataTop - fpFrame.offsetHeight) / 2 - pinRow.offsetHeight;\n" +
                 "fpFrame.style.top = fpFrameTop + 'px';\n" +
-                "fpFrame.style.left = ((Saturn.width() - fpFrame.offsetWidth " +
-                    "+ document.getElementById('pinSwitch').offsetWidth) / 2) + 'px';\n");
+                "fpFrame.style.left = ((Saturn.width() - fpFrame.offsetWidth) / 2) + 'px';\n");
         }
         js.append (walletRequest.getOptionalMarqueeCode())
           .append(
-              "fpFrame.style.maxWidth = (fpFrame.offsetWidth + 20) + 'px';" +
+              "fpFrame.style.minWidth = fpFrame.style.maxWidth = fpFrame.offsetWidth + 'px';" +
               "card.style.visibility='visible';\n" +
               "paydata.style.visibility='visible';\n" +
               "setAccountSpecificDetails();\n" +
@@ -708,11 +706,10 @@ public class SaturnActivity extends BaseProxyActivity {
             "</table>" +
 
             "<table id='fpFrame' style='visibility:hidden;position:absolute'>" +
-            "<tr><td class='label' style='text-align:center'>Authorize</td><td></td></tr>" +
-            "<tr><td style='text-align:center;padding-top:3pt'>")
+            "<tr><td class='label' colspan='2' style='text-align:center'>Authorize</td></tr>" +
+            "<tr id='fpSymb'><td style='text-align:center;padding:3pt 1em 0 0'>")
           .append(ImageGenerator.getFingerPrintSymbol("0.6",
-                                                      "Saturn.toast('Use the fingerprint sensor', " +
-                                                          Gravity.BOTTOM + ")",
+                                                      "Saturn.clickedBioMetricAuth()",
                                                       "inline-block",
                                                       0,
                                                       visuallyImpaired ? 60 : 40))
@@ -720,9 +717,7 @@ public class SaturnActivity extends BaseProxyActivity {
             "</td><td id='pinSwitch' onclick=\"selectAuthMode(false)\">")
           .append(ImageGenerator.getFingerPrintSwitch(visuallyImpaired))
           .append(
-            "</td></tr>" +
-            "<tr><td id='fpText' colspan='2' style='height:0px'></td></tr>" +
-            "</table>" +
+            "</td></tr></table>" +
 
             "<div id='kbd' style='visibility:hidden;position:absolute;width:")
           .append(landscapeMode ? (width * 50) / factor : (width * 88) / factor)
@@ -767,14 +762,46 @@ public class SaturnActivity extends BaseProxyActivity {
         }
     }
 
-    void setFingerPrintError(String message) {
+    void setFingerPrintSymbText(String message) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 saturnView.evaluateJavascript(
-                    "document.getElementById('fpText').innerHTML = '" + message + "';", null);
+                    "document.getElementById('fpSymb').innerHTML = " +
+                            "'<td colspan=\"2\" style=\"text-align:center\">" +
+                            message +
+                            "</td>';", null);
             }
         });
+    }
+
+    void setupFingerPrint() {
+        FingerprintManagerCompat fingerprintManager = FingerprintManagerCompat.from(this);
+        if (fingerprintManager.hasEnrolledFingerprints()) {
+            fingerPrintAuthenticationInProgess = new CancellationSignal();
+            fingerprintManager.authenticate(
+                    null,
+                    0,
+                    fingerPrintAuthenticationInProgess,
+                    new FingerprintManagerCompat.AuthenticationCallback() {
+
+                        @Override
+                        public void onAuthenticationSucceeded(
+                                FingerprintManagerCompat.AuthenticationResult result) {
+                            performPayment();
+                        }
+
+                        @Override
+                        public void onAuthenticationError(int errMsgId, CharSequence errString) {
+                            if (errMsgId != FingerprintManager.FINGERPRINT_ERROR_CANCELED) {
+                                setFingerPrintSymbText("Failed to authenticate, try again later");
+                            }
+                        }
+                    },
+                    null);
+        } else {
+            setFingerPrintSymbText("You need to enable the fingerprint reader");
+        }
     }
 
     CancellationSignal fingerPrintAuthenticationInProgess;
@@ -788,34 +815,12 @@ public class SaturnActivity extends BaseProxyActivity {
             fingerPrintAuthenticationInProgess.cancel();
             fingerPrintAuthenticationInProgess = null;
         }
-        if (useBiometrics) {
-            FingerprintManagerCompat fingerprintManager = FingerprintManagerCompat.from(this);
-            if (fingerprintManager.hasEnrolledFingerprints()) {
-                fingerPrintAuthenticationInProgess = new CancellationSignal();
-                fingerprintManager.authenticate(
-                    null,
-                    0,
-                    fingerPrintAuthenticationInProgess,
-                    new FingerprintManagerCompat.AuthenticationCallback() {
+    }
 
-                        @Override
-                        public void onAuthenticationSucceeded(
-                            FingerprintManagerCompat.AuthenticationResult result) {
-                            performPayment();
-                        }
-
-                        @Override
-                        public void onAuthenticationError(int errMsgId, CharSequence errString) {
-                            if (errMsgId != FingerprintManager.FINGERPRINT_ERROR_CANCELED) {
-                                setFingerPrintError("Failed to authenticate, try again later");
-                            }
-                        }
-                    },
-                    null);
-            } else {
-                setFingerPrintError("You need to enable the fingerprint reader");
-            }
-        }
+    @JavascriptInterface
+    public void clickedBioMetricAuth() {
+        setFingerPrintSymbText("Use fingerprint sensor");
+        setupFingerPrint();
     }
 
     @JavascriptInterface
