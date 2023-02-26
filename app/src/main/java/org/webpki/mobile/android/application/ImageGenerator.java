@@ -51,7 +51,7 @@ public class ImageGenerator {
                                           int height,
                                           int xOffset,
                                           int yOffset) {
-        return new StringBuilder("<a xlink:href=\"javascript:addDigit('")
+        return new StringBuilder("<g onTouchStart=\"addDigit('")
             .append(value)
             .append("')\">")
             .append(addButtonCore(width, height, xOffset, yOffset))
@@ -63,18 +63,17 @@ public class ImageGenerator {
             .append(visuallyImpaired ? 38 : 26)
             .append("' text-anchor='middle' font-weight='bold'>")
             .append(value)
-            .append("</text></a>");
+            .append("</text></g>");
     }
 
     public static StringBuilder getKeyBoard(boolean visuallyImpaired) {
         int xOffset;
         int yOffset;
 
-        StringBuilder s = new StringBuilder("<svg viewBox='0 0 416 ")
+        StringBuilder s = new StringBuilder("<svg style='user-select:none' viewBox='0 0 416 ")
             .append(visuallyImpaired ? 210 : 162)
             .append(
-                "' xmlns='http://www.w3.org/2000/svg' " +
-                    "xmlns:xlink='http://www.w3.org/1999/xlink'>" +
+                "' xmlns='http://www.w3.org/2000/svg'>" +
                 "<defs>" +
                     "<filter height='150%' width='150%' y='-25%' x='-25%' id='actorsBlur'>" +
                         "<feGaussianBlur stdDeviation='3'/>" +
@@ -108,7 +107,7 @@ public class ImageGenerator {
         }
 
         int deleteSize = visuallyImpaired ? 30 : 20;
-        s.append("<a xlink:href=\"javascript:deleteDigit()\">")
+        s.append("<g onTouchStart=\"deleteDigit()\">")
             .append(addButtonCore(width, height, distance * 4, 0))
             .append("<svg x='")
             .append(distance * 4  + (width - deleteSize) / 2)
@@ -123,12 +122,12 @@ public class ImageGenerator {
                     "<path fill='#be1018' d='m 5,9.9 6.3,9.8 H 7.7 l -7.2,-9.5 V 9.6 l 7.2,-9.4 " +
                     "H 11.3 Z M 13.2,9.9 19.5,19.7 H 15.9 L 8.7,10.2 8.7,9.6 15.9,0.2 h 3.6 z'/>" +
                     "</svg>" +
-                    "</a>");
+                    "</g>");
 
         int validateWidth = visuallyImpaired ? 100 : 80;
         int validateHeight = visuallyImpaired ? 78 : 60;
         int validateSize = visuallyImpaired ? 50 : 30;
-        s.append("<a xlink:href=\"javascript:validatePin()\">")
+        s.append("<g onTouchStart=\"validatePin()\">")
             .append(addButtonCore(validateWidth,
                                   validateHeight,
                                   xOffset = distance * 4 + width - validateWidth,
@@ -147,7 +146,7 @@ public class ImageGenerator {
                     "C 16.6,17.4 22.3,9 29.1,2 h -4 C 18.5,9.5 16.4,12.5 10.6,23 8.8,19.6 " +
                     "7.6,17.8 4.8,14.2 Z'/>" +
                     "</svg>" +
-                    "</a>" +
+                    "</g>" +
 
                     "</svg>");
         return s;
@@ -179,15 +178,14 @@ public class ImageGenerator {
                                                      int leftPadding,
                                                      int height) {
         return new StringBuilder(
-                "<svg style='height:")
+                "<svg style='user-select:none;height:")
             .append(height)
             .append("pt;padding-left:")
             .append(leftPadding)
             .append("pt;display:")
             .append(displayMode)
             .append(
-                "' viewBox='0 0 18 20' xmlns='http://www.w3.org/2000/svg' " +
-                "xmlns:xlink='http://www.w3.org/1999/xlink'><g stroke='")
+                "' viewBox='0 0 18 20' xmlns='http://www.w3.org/2000/svg'><g stroke='")
             .append(Settings.isWhiteTheme() ? "blue" : "white")
             .append("' stroke-linecap='round' stroke-width='")
             .append(strokeSize)
@@ -209,11 +207,11 @@ public class ImageGenerator {
                 "<path d='M 15.04059,17.316012 C 11.229809,18.072804 8.9429657,15.238722 " +
                     "8.9261197,12.653027'/>" +
                 "</g>" +
-                "<a xlink:href=\"javascript:")
+                "<g onTouchStart=\"")
             .append(javaScript)
             .append(
                 "\"><rect width='18' height='20' opacity='0'/>" +
-                "</a>" +
+                "</g>" +
                 "</svg>");
     }
 
