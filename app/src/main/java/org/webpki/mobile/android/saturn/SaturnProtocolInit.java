@@ -18,6 +18,7 @@ package org.webpki.mobile.android.saturn;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
+import java.util.Arrays;
 
 import android.os.AsyncTask;
 
@@ -130,7 +131,7 @@ public class SaturnProtocolInit extends AsyncTask<Void, String, Boolean> {
                         EnumeratedKey ek = (EnumeratedKey)signatureKey.clone();
                         while ((ek = saturnActivity.sks.enumerateKeys(ek.getKeyHandle())) != null) {
                             balanceKeyHandle = ek.getKeyHandle();
-                            if (ArrayUtil.compare(hash, HashAlgorithms.SHA256.digest(
+                            if (Arrays.equals(hash, HashAlgorithms.SHA256.digest(
                                 saturnActivity.sks.getKeyAttributes(balanceKeyHandle)
                                     .getCertificatePath()[0].getPublicKey().getEncoded()))) {
                                 break;

@@ -16,19 +16,15 @@
  */
 package org.webpki.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ByteArrayOutputStream;
-
 /**
- * Useful functions for arrays.
+ * Collection of support functions for arrays.
+ * <p>
+ * To be deprecated in favor of {@link java.util.Arrays}.
+ * </p>
  */
 public class ArrayUtil {
-    private ArrayUtil() {
-    }  // No instantiation please
+
+    private ArrayUtil() {}  // No instantiation please
 
     /*
      * Find first difference between two byte arrays.
@@ -70,62 +66,6 @@ public class ArrayUtil {
         return firstDiff(a, b, 0, Math.min(a.length, b.length));
     }
 
-    /*
-     * Compare two byte arrays.
-     * return true if contents are the same and both are non-null.
-     */
-    public static boolean compare(byte[] a, int aOffset, byte[] b, int bOffset, int length) {
-        if (a == null || b == null ||
-                aOffset + length > a.length ||
-                bOffset + length > b.length) {
-            return false;
-        }
-        if (a == b && aOffset == bOffset) {
-            return true;
-        }
-        for (int i = 0; i < length; i++) {
-            if (a[aOffset + i] != b[bOffset + i]) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /*
-     * Compare two byte arrays.
-     * return true if a.length - aOffset == b.length - bOffset and all values in a starting at aOffset match the values in b starting at bOffset.
-     */
-    public static boolean compare(byte[] a, int aOffset, byte[] b, int bOffset) {
-        return a.length - aOffset == b.length - bOffset &&
-                compare(a, aOffset, b, bOffset, a.length - aOffset);
-    }
-
-    /*
-     * Compare two byte arrays.
-     */
-    public static boolean compare(byte[] a, byte[] b, int offset, int length) {
-        return compare(a, offset, b, offset, length);
-    }
-
-    /*
-     * Compare two byte arrays.
-     */
-    public static boolean compare(byte[] a, byte[] b, int offset) {
-        return compare(a, offset, b, offset);
-    }
-
-    /*
-     * Compare two byte arrays.
-     */
-    public static boolean compare(byte[] a, byte[] b) {
-        return a == b || compare(a, b, 0);
-    }
-
-    /*
-     * Returns the index of the (first) minimal element of an <code>int</code> array.
-     * return The index of the (first) minimal element.
-     * throws IllegalArgumentException If <code><i>a</i></code> is empty.
-     */
     public static int indexOfMin(int[] a) {
         if (a.length == 0) {
             throw new IllegalArgumentException("Empty array.");
@@ -237,24 +177,6 @@ public class ArrayUtil {
                 (byte) (value & 0xFF)}, 0, -1, true, byteSeparator);
     }
 
-    public static byte[] readFile(File file) throws IOException {
-        return getByteArrayFromInputStream(new FileInputStream(file));
-    }
-
-    public static byte[] readFile(String filename) throws IOException {
-        return readFile(new File(filename));
-    }
-
-    public static void writeFile(File file, byte[] b) throws IOException {
-        FileOutputStream fos = new FileOutputStream(file);
-        fos.write(b);
-        fos.close();
-    }
-
-    public static void writeFile(String filename, byte[] b) throws IOException {
-        writeFile(new File(filename), b);
-    }
-
     /*
      * Copies a part or the whole of the supplied byte array to a new array of the indicated size.
      * If <i>newSize</i> is larger than <code>b.length</code> the remaining bytes of the 
@@ -293,16 +215,5 @@ public class ArrayUtil {
             r[i] = b[l - i - 1];
         }
         return r;
-    }
-
-    public static byte[] getByteArrayFromInputStream(InputStream is) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(10000);
-        byte[] buffer = new byte[10000];
-        int bytes;
-        while ((bytes = is.read(buffer)) != -1) {
-            baos.write(buffer, 0, bytes);
-        }
-        is.close();
-        return baos.toByteArray();
     }
 }

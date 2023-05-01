@@ -14,18 +14,30 @@
  *  limitations under the License.
  *
  */
-package org.webpki.asn1;
+package org.webpki.crypto;
 
-public class ASN1VisibleString extends ASN1String {
-    ASN1VisibleString(String value) {
-        super(VISIBLESTRING, value);
+/**
+ * Wrapper for making the WebPKI crypto library only throw unchecked exceptions.
+ */
+public class CryptoException extends RuntimeException {
+
+    private static final long serialVersionUID = 1L;
+    
+    /**
+     * Constructor for rethrowing checked exceptions.
+     *  
+     * @param sourceException
+     */
+    public CryptoException(Exception sourceException) {
+        super(sourceException);
     }
-
-    ASN1VisibleString(DerDecoder decoder) {
-        super(decoder);
-    }
-
-    void toString(StringBuilder s, String prefix) {
-        s.append(getByteNumber()).append(prefix).append("VisibleString '").append(value()).append('\'');
+    
+    /**
+     * Constructor for original exceptions.
+     * 
+     * @param message
+     */
+    public CryptoException(String message) {
+        super(message);
     }
 }

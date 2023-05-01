@@ -20,10 +20,10 @@ import java.io.IOException;
 
 import java.security.GeneralSecurityException;
 
+import java.util.Arrays;
+
 import org.webpki.crypto.HmacAlgorithms;
 import org.webpki.crypto.HmacVerifierInterface;
-
-import org.webpki.util.ArrayUtil;
 
 /**
  * Initiator object for HMAC signature verifiers.
@@ -53,11 +53,11 @@ public class JSONHmacVerifier extends JSONVerifier {
         this(new HmacVerifierInterface() {
 
             @Override
-            public boolean verifyData(byte[] data,
-                                      byte[] digest,
-                                      HmacAlgorithms algorithm,
-                                      String keyId) throws IOException, GeneralSecurityException {
-                return ArrayUtil.compare(digest, algorithm.digest(rawKey, data));
+            public boolean verifySignature(byte[] data,
+                                           byte[] digest,
+                                           HmacAlgorithms algorithm,
+                                           String keyId) {
+                return Arrays.equals(digest, algorithm.digest(rawKey, data));
             }
             
         });
@@ -65,10 +65,10 @@ public class JSONHmacVerifier extends JSONVerifier {
 
     @Override
     void verify(JSONSignatureDecoder signatureDecoder) throws IOException, GeneralSecurityException {
-        if (!verifier.verifyData(signatureDecoder.normalizedData,
-                                 signatureDecoder.signatureValue,
-                                 (HmacAlgorithms) signatureDecoder.signatureAlgorithm,
-                                 signatureDecoder.keyId)) {
+        if (!verifier.verifySignature(signatureDecoder.normalizedData,
+                                      signatureDecoder.signatureValue,
+                                      (HmacAlgorithms) signatureDecoder.signatureAlgorithm,
+                                      signatureDecoder.keyId)) {
             throw new IOException("Bad signature for key: " + signatureDecoder.keyId);
         }
     }

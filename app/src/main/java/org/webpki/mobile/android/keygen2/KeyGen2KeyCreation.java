@@ -20,11 +20,11 @@ import java.io.IOException;
 
 import java.security.GeneralSecurityException;
 
+import java.util.Arrays;
+
 import android.os.AsyncTask;
 
 import org.webpki.mobile.android.proxy.BaseProxyActivity;
-
-import org.webpki.util.ArrayUtil;
 
 import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.HashAlgorithms;
@@ -76,7 +76,7 @@ public class KeyGen2KeyCreation extends AsyncTask<Void, String, String> {
             }
             if (ek.getProvisioningHandle() == oldProvisioningSession.getProvisioningHandle()) {
                 KeyAttributes ka = keyGen2Activity.sks.getKeyAttributes(ek.getKeyHandle());
-                if (ArrayUtil.compare(HashAlgorithms.SHA256.digest(ka.getCertificatePath()[0].getEncoded()),
+                if (Arrays.equals(HashAlgorithms.SHA256.digest(ka.getCertificatePath()[0].getEncoded()),
                         postOperation.getCertificateFingerprint())) {
                     switch (postOperation.getPostOperation()) {
                         case ProvisioningFinalizationRequestDecoder.PostOperation.CLONE_KEY_PROTECTION:

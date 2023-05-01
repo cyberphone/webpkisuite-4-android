@@ -33,6 +33,7 @@ import org.webpki.crypto.CertificateUtil;
 
 import org.webpki.util.Base64URL;
 import org.webpki.util.ISODateTime;
+import org.webpki.util.UTF8;
 
 /**
  * Writes JSON arrays.<p>
@@ -112,7 +113,7 @@ public class JSONArrayWriter {
     }
 
     public JSONArrayWriter setDateTime(GregorianCalendar dateTime, EnumSet<ISODateTime.DatePatterns> format) throws IOException {
-        return setString(ISODateTime.formatDateTime(dateTime, format));
+        return setString(ISODateTime.encode(dateTime, format));
     }
 
     public JSONArrayWriter setBinary(byte[] value) throws IOException {
@@ -188,7 +189,7 @@ public class JSONArrayWriter {
     }
 
     public byte[] serializeToBytes(JSONOutputFormats outputFormat) throws IOException {
-        return serializeToString(outputFormat).getBytes("UTF-8");
+        return UTF8.encode(serializeToString(outputFormat));
     }
 
     @Override

@@ -47,6 +47,7 @@ import org.webpki.crypto.KeyAlgorithms;
 import org.webpki.util.ArrayUtil;
 import org.webpki.util.Base64URL;
 import org.webpki.util.ISODateTime;
+import org.webpki.util.UTF8;
 
 /**
  * Creates JSON objects and performs serialization
@@ -351,12 +352,12 @@ public class JSONObjectWriter {
      * @param format Requited output format
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
      * @throws IOException
-     * @see org.webpki.util.ISODateTime#formatDateTime(GregorianCalendar, EnumSet)
+     * @see org.webpki.util.ISODateTime#encode(GregorianCalendar, EnumSet)
      */
     public JSONObjectWriter setDateTime(String name, 
                                         GregorianCalendar dateTime,
                                         EnumSet<ISODateTime.DatePatterns> format) throws IOException {
-        return setString(name, ISODateTime.formatDateTime(dateTime, format));
+        return setString(name, ISODateTime.encode(dateTime, format));
     }
 
     /**
@@ -1239,7 +1240,7 @@ import org.webpki.json.JSONSignatureDecoder;
      * @throws IOException
      */
     public byte[] serializeToBytes(JSONOutputFormats outputFormat) throws IOException {
-        return serializeToString(outputFormat).getBytes("UTF-8");
+        return UTF8.encode(serializeToString(outputFormat));
     }
 
     /**

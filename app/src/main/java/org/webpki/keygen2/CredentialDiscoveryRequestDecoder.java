@@ -23,6 +23,7 @@ import java.security.PublicKey;
 
 import java.security.cert.X509Certificate;
 
+import java.util.Arrays;
 import java.util.GregorianCalendar;
 import java.util.LinkedHashMap;
 
@@ -36,8 +37,6 @@ import org.webpki.json.JSONSignatureDecoder;
 
 import org.webpki.sks.AppUsage;
 import org.webpki.sks.Grouping;
-
-import org.webpki.util.ArrayUtil;
 
 import static org.webpki.keygen2.KeyGen2Constants.*;
 
@@ -56,7 +55,7 @@ public class CredentialDiscoveryRequestDecoder extends ClientDecoder {
 
         LookupSpecifier(JSONObjectReader rd) throws IOException, GeneralSecurityException {
             id = KeyGen2Validator.getID(rd, ID_JSON);
-            if (!ArrayUtil.compare(nonce_reference, rd.getBinary(NONCE_JSON))) {
+            if (!Arrays.equals(nonce_reference, rd.getBinary(NONCE_JSON))) {
                 throw new IOException("\"" + NONCE_JSON + "\"  error");
             }
             if (rd.hasProperty(SEARCH_FILTER_JSON)) {
@@ -114,7 +113,7 @@ public class CredentialDiscoveryRequestDecoder extends ClientDecoder {
         }
 
         @Override
-        public boolean matches(X509Certificate[] certificatePath) throws IOException {
+        public boolean matches(X509Certificate[] certificatePath) {
             if (issuedBefore != null && issuedBefore.getTimeInMillis() < (certificatePath[0].getNotBefore().getTime())) {
                 return false;
             }

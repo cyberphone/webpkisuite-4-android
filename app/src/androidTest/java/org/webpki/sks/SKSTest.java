@@ -36,6 +36,7 @@ import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyAgreement;
@@ -319,7 +320,7 @@ public class SKSTest {
             assertTrue("Should pass", error == null);
             sess.closeSession();
             Extension ext = device.sks.getExtension(key.keyHandle, type);
-            assertTrue("Ext data", ArrayUtil.compare(ext.getExtensionData(), extension_data));
+            assertTrue("Ext data", Arrays.equals(ext.getExtensionData(), extension_data));
             assertTrue("Qualifier", qualifier.equals(ext.getQualifier()));
             assertTrue("Sub type", ext.getSubType() == subType);
             if (subType == SecureKeyStore.SUB_TYPE_PROPERTY_BAG) {
@@ -789,7 +790,7 @@ public class SKSTest {
         byte[] enc = cipher.doFinal(TEST_STRING);
         try {
             assertTrue("Encryption error: " + encryption_algorithm,
-                   ArrayUtil.compare(key.asymmetricKeyDecrypt(encryption_algorithm,
+                   Arrays.equals(key.asymmetricKeyDecrypt(encryption_algorithm,
                                                               new KeyAuthorization(good_pin),
                                                               enc), TEST_STRING));
         } catch (SKSException e) {
@@ -1573,7 +1574,7 @@ public class SKSTest {
         Cipher cipher = Cipher.getInstance(AsymEncryptionAlgorithms.RSA_ES_PKCS_1_5.getJceName());
         cipher.init(Cipher.ENCRYPT_MODE, key.getPublicKey());
         byte[] enc = cipher.doFinal(TEST_STRING);
-        assertTrue("Encryption error", ArrayUtil.compare(key.asymmetricKeyDecrypt(
+        assertTrue("Encryption error", Arrays.equals(key.asymmetricKeyDecrypt(
                 AsymEncryptionAlgorithms.RSA_ES_PKCS_1_5,
                 new KeyAuthorization(good_pin),
                 enc), TEST_STRING));
@@ -1603,7 +1604,7 @@ public class SKSTest {
             authorizationErrorCheck(e);
         }
         key.unlockKey(good_puk);
-        assertTrue("Encryption error", ArrayUtil.compare(key.asymmetricKeyDecrypt(
+        assertTrue("Encryption error", Arrays.equals(key.asymmetricKeyDecrypt(
                                                          AsymEncryptionAlgorithms.RSA_ES_PKCS_1_5,
                                                          new KeyAuthorization(good_pin),
                                                          enc), TEST_STRING));
@@ -1624,7 +1625,7 @@ public class SKSTest {
         }
         key.setPIN(good_puk, good_pin + "2");
         assertTrue("Encryption error", 
-                ArrayUtil.compare(key.asymmetricKeyDecrypt(AsymEncryptionAlgorithms.RSA_ES_PKCS_1_5,
+                Arrays.equals(key.asymmetricKeyDecrypt(AsymEncryptionAlgorithms.RSA_ES_PKCS_1_5,
                                                            new KeyAuthorization(good_pin + "2"),
                                                            enc), TEST_STRING));
     }
@@ -1880,7 +1881,7 @@ public class SKSTest {
         byte[] result = key.performHMAC(HmacAlgorithms.HMAC_SHA256,
                                         new KeyAuthorization(good_pin), 
                                         TEST_STRING);
-        assertTrue("HMAC error", ArrayUtil.compare(result, HmacAlgorithms.HMAC_SHA256.digest(symmetricKey, TEST_STRING)));
+        assertTrue("HMAC error", Arrays.equals(result, HmacAlgorithms.HMAC_SHA256.digest(symmetricKey, TEST_STRING)));
         try {
             sess.sks.performHmac(key.keyHandle,
                     HmacAlgorithms.HMAC_SHA512.getAlgorithmId(AlgorithmPreferences.SKS),
@@ -1959,8 +1960,8 @@ public class SKSTest {
             } else {
                 crypt.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(symmetricKey, "AES"));
             }
-            assertTrue("encrypt error", ArrayUtil.compare(res2, crypt.doFinal(data)));
-            assertTrue("decrypt error", ArrayUtil.compare(data, key.symmetricKeyEncrypt(sym_enc,
+            assertTrue("encrypt error", Arrays.equals(res2, crypt.doFinal(data)));
+            assertTrue("decrypt error", Arrays.equals(data, key.symmetricKeyEncrypt(sym_enc,
                     false,
                     sym_enc.needsIv() && !sym_enc.internalIv() ? iv_val : null,
                     new KeyAuthorization(good_pin),
@@ -2011,7 +2012,7 @@ public class SKSTest {
             byte[] result = key.performHMAC(hmac, 
                                             new KeyAuthorization(good_pin), 
                                             data);
-            assertTrue("HMAC error", ArrayUtil.compare(result, hmac.digest(symmetricKey, data)));
+            assertTrue("HMAC error", Arrays.equals(result, hmac.digest(symmetricKey, data)));
         }
     }
 
@@ -2069,7 +2070,7 @@ public class SKSTest {
             assertTrue("Auth error", e.getError() == SKSException.ERROR_AUTHORIZATION);
         }
         try {
-            assertTrue("Wrong key", ArrayUtil.compare(symmetricKey, device.sks.exportKey(key.keyHandle, good_pin.getBytes("UTF-8"))));
+            assertTrue("Wrong key", Arrays.equals(symmetricKey, device.sks.exportKey(key.keyHandle, good_pin.getBytes("UTF-8"))));
         } catch (SKSException e) {
             fail("Good PIN should work");
         }
@@ -2161,7 +2162,7 @@ public class SKSTest {
             Cipher cipher = Cipher.getInstance(AsymEncryptionAlgorithms.RSA_ES_PKCS_1_5.getJceName());
             cipher.init(Cipher.ENCRYPT_MODE, key.getPublicKey());
             byte[] enc = cipher.doFinal(TEST_STRING);
-            assertTrue("Encryption error", ArrayUtil.compare(key.asymmetricKeyDecrypt(AsymEncryptionAlgorithms.RSA_ES_PKCS_1_5,
+            assertTrue("Encryption error", Arrays.equals(key.asymmetricKeyDecrypt(AsymEncryptionAlgorithms.RSA_ES_PKCS_1_5,
                     new KeyAuthorization(good_pin),
                     enc), TEST_STRING));
             byte[] result = key.signData(AsymSignatureAlgorithms.RSA_SHA256, 
@@ -2256,7 +2257,7 @@ public class SKSTest {
         key_agreement.init(key_pair.getPrivate());
         key_agreement.doPhase(key.getPublicKey(), true);
         byte[] Z = key_agreement.generateSecret();
-        assertTrue("DH fail", ArrayUtil.compare(z, Z));
+        assertTrue("DH fail", Arrays.equals(z, Z));
     }
 
     @Test

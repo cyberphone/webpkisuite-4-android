@@ -18,7 +18,6 @@ package org.webpki.asn1;
 
 import java.math.*;
 import java.util.*;
-import java.io.*;
 
 public final class ASN1ObjectID extends Simple {
     String id;
@@ -28,7 +27,7 @@ public final class ASN1ObjectID extends Simple {
         this.id = id;
     }
 
-    ASN1ObjectID(DerDecoder decoder) throws IOException {
+    ASN1ObjectID(DerDecoder decoder) {
         super(decoder);
         byte[] content = decoder.content();
         int i = 0;
@@ -48,7 +47,7 @@ public final class ASN1ObjectID extends Simple {
         }
     }
 
-    public void encode(Encoder encoder) throws IOException {
+    public void encode(Encoder encoder) {
         ArrayList<BigInteger> v = new ArrayList<>();
 
         StringTokenizer st = new StringTokenizer(id, ".");
@@ -108,10 +107,10 @@ public final class ASN1ObjectID extends Simple {
         }
     }
 
-    public static String oid(String name) throws IOException {
+    public static String oid(String name) {
         String r;
         if (nameToOID == null || (r = nameToOID.get(name)) == null) {
-            throw new IOException("Unknown OID name " + name + ".");//return oid;
+            throw new ASN1Exception("Unknown OID name " + name + ".");//return oid;
         } else {
             return r;
         }
@@ -120,14 +119,11 @@ public final class ASN1ObjectID extends Simple {
     static Hashtable<String, String> oidToName, nameToOID;
 
     static {
-        try {
-            tryReadOIDNames(null);
-        } catch (IOException e) {
-        }
+        tryReadOIDNames(null);
     }
 
-    public static void tryReadOIDNames(String filename) throws IOException { 
-        Hashtable<String, String> on = new Hashtable<>(), no = new Hashtable<>(); 
+    public static void tryReadOIDNames(String filename) {
+        Hashtable<String, String> on = new Hashtable<>(), no = new Hashtable<>();
         oidToName = on;
         nameToOID = no;
     }

@@ -16,8 +16,6 @@
  */
 package org.webpki.util;
 
-import java.io.IOException;
-
 /**
  * Encodes/decodes hexadecimal data.
  */
@@ -113,19 +111,30 @@ public class HexaDecimal {
         return res.toString();
     }
 
-    public static String getHexDebugData(byte[] binaryBlob, int bytesPerLine) {
-        return new HexaDecimal().toHexDebugData(binaryBlob, bytesPerLine);
+    /**
+     * Formats byte array data into readable lines.
+     * <p>
+     * After each line (<code>nn:&nbsp;hh&nbsp;hh...</code>) the ASCII counterpart is listed as well.
+     * </p>
+     * @param byteArray The data to be listed
+     * @param bytesPerLine Bytes per line
+     * @return Human-readable String
+     */
+    public static String getHexDebugData(byte[] byteArray, int bytesPerLine) {
+        return new HexaDecimal().toHexDebugData(byteArray, bytesPerLine);
     }
 
-    public static String getHexDebugData(byte[] binaryBlob) {
-        return getHexDebugData(binaryBlob, 16);
+    /**
+     * Encodes byte array data.
+     *
+     * @param byteArray Data to be encoded
+     * @return String with zero or more hexadecimal pairs (<code>hh</code>)
+     */
+    public static String encode(byte[] byteArray) {
+        return new HexaDecimal().toHexString(byteArray);
     }
 
-    public static String encode(byte[] binaryBlob) {
-        return new HexaDecimal().toHexString(binaryBlob);
-    }
-
-    public static int toHex(char c) {
+    static int toHex(char c) {
         if (c >= '0') {
             if (c <= '9') return c - '0';
             if (c >= 'a') {
@@ -138,38 +147,20 @@ public class HexaDecimal {
         throw new IllegalArgumentException("Bad hexchar: " + c);
     }
 
+    /**
+     * Decodes a hexadecimal String.
+     * 
+     * @param hexString String with zero or more hexadecimal pairs (<code>hh</code>)
+     * @return byteArray
+     */
     public static byte[] decode(String hexString) {
         int l = hexString.length();
         int bl;
-        if (l == 0 || l % 2 != 0) throw new IllegalArgumentException("Bad hexstring: " + hexString);
+        if (l % 2 != 0) throw new IllegalArgumentException("Bad hexstring: " + hexString);
         byte[] data = new byte[bl = l / 2];
         while (--bl >= 0) {
             data[bl] = (byte) (toHex(hexString.charAt(--l)) + (toHex(hexString.charAt(--l)) << 4));
         }
         return data;
     }
-
-
-    /*##################################################################*/
-    /*                                                                  */
-    /*  Method: main                                                    */
-    /*                                                                  */
-    /*  Description: This is a command-line interface for testing only  */
-    /*                                                                  */
-    /*##################################################################*/
-
-    public static void main(String[] args) throws IOException {
-        if (args.length == 3 && args[0].equals("tobin")) {
-            ArrayUtil.writeFile(args[2], HexaDecimal.decode(new String(ArrayUtil.readFile(args[1]), "UTF-8")));
-            System.exit(0);
-        }
-        if (args.length != 2 || !(args[0].equals("hex") || args[0].equals("dump"))) {
-            System.out.println("Usage: HexaDecimal hex|dump bininputfile \n" +
-                    "                      tobin inputfileinhex outputfilebin\n");
-            System.exit(0);
-        }
-        byte[] data = ArrayUtil.readFile(args[1]);
-        System.out.print(args[0].equals("dump") ? HexaDecimal.getHexDebugData(data) : HexaDecimal.encode(data));
-    }
-
 }

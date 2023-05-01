@@ -102,6 +102,8 @@ import org.webpki.sks.SKSException;
 
 import org.webpki.util.ArrayUtil;
 import org.webpki.util.HTMLEncoder;
+import org.webpki.util.IO;
+import org.webpki.util.UTF8;
 
 
 public class SaturnActivity extends BaseProxyActivity {
@@ -433,7 +435,7 @@ public class SaturnActivity extends BaseProxyActivity {
                                               "<svg style='height:")
                 .append((int)((Math.max(displayMetrics.heightPixels, displayMetrics.widthPixels)  * 5) / factor))
                 .append("px'")
-                .append(new String(ArrayUtil.getByteArrayFromInputStream(getResources()
+                .append(new String(IO.getByteArrayFromInputStream(getResources()
                             .openRawResource(Settings.isWhiteTheme() ?
                                  R.raw.saturnlogo_white : R.raw.saturnlogo_space)),"utf-8").substring(4))
                     .toString();
@@ -892,21 +894,19 @@ public class SaturnActivity extends BaseProxyActivity {
                     new JSONAsymKeySigner(new AsymKeySignerInterface() {
 
                         @Override
-                        public byte[] signData(byte[] data) throws IOException,
-                                                                   GeneralSecurityException{
+                        public byte[] signData(byte[] data) {
                             return sks.signData(
                                     account.signatureKeyHandle,
                                     getAlgorithm().getAlgorithmId(AlgorithmPreferences.SKS),
                                     null,
                                     fingerPrintAuthenticationInProgess != null,
                                     fingerPrintAuthenticationInProgess == null ?
-                                        pin.getBytes("UTF-8") : null,
+                                            UTF8.encode(pin) : null,
                                     data);
                         }
 
                         @Override
-                        public AsymSignatureAlgorithms getAlgorithm() throws IOException,
-                                                                             GeneralSecurityException {
+                        public AsymSignatureAlgorithms getAlgorithm() {
                             return account.signatureAlgorithm;
                         }
 

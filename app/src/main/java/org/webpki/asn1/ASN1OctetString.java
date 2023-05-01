@@ -16,17 +16,14 @@
  */
 package org.webpki.asn1;
 
-import java.io.IOException;
 import java.util.*;
-
-import org.webpki.util.ArrayUtil;
 
 public final class ASN1OctetString extends Binary {
     public ASN1OctetString(byte[] value) {
         super(OCTETSTRING, true, value);
     }
 
-    ASN1OctetString(DerDecoder decoder) throws IOException {
+    ASN1OctetString(DerDecoder decoder) {
         super(decoder);
         if (isPrimitive()) {
             value = decoder.content();
@@ -53,13 +50,13 @@ public final class ASN1OctetString extends Binary {
         }
     }
 
-    public void encode(Encoder encoder) throws IOException {
+    public void encode(Encoder encoder) {
         encode(encoder, value);
     }
 
     public boolean deepCompare(BaseASN1Object o) {
         return sameType(o) &&
-                ArrayUtil.compare(((ASN1OctetString) o).value, value);
+                Arrays.equals(((ASN1OctetString) o).value, value);
     }
 
     public String stringValue() {

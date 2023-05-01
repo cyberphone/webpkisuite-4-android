@@ -74,8 +74,7 @@ public class BalanceRequester extends AsyncTask<Void, String, Boolean> {
                 new JSONAsymKeySigner(new AsymKeySignerInterface() {
 
                     @Override
-                    public byte[] signData(byte[] data)
-                            throws IOException, GeneralSecurityException {
+                    public byte[] signData(byte[] data) {
                         return saturnActivity.sks.signData(
                             account.optionalBalanceKeyHandle,
                             getAlgorithm().getAlgorithmId(AlgorithmPreferences.SKS),
@@ -86,8 +85,7 @@ public class BalanceRequester extends AsyncTask<Void, String, Boolean> {
                     }
 
                     @Override
-                    public AsymSignatureAlgorithms getAlgorithm()
-                            throws IOException, GeneralSecurityException {
+                    public AsymSignatureAlgorithms getAlgorithm() {
                         return account.signatureAlgorithm;
                     }
                 }).setPublicKey(saturnActivity.sks.getKeyAttributes(

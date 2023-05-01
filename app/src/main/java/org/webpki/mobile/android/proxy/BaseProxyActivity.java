@@ -29,6 +29,7 @@ import java.security.cert.X509Certificate;
 
 import java.text.SimpleDateFormat;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -63,7 +64,6 @@ import org.webpki.mobile.android.saturn.common.MobileProxyParameters;
 
 import org.webpki.mobile.android.sks.AndroidSKSImplementation;
 import org.webpki.mobile.android.sks.HardwareKeyStore;
-import org.webpki.util.ArrayUtil;
 
 /**
  * Class for taking care of "webpkiproxy://" JSON protocol handlers
@@ -403,7 +403,7 @@ public abstract class BaseProxyActivity extends Activity {
         localTesting = serverCertificate.getIssuerX500Principal()
             .getName().equals("CN=WebPKI.org TLS Root CA");
         byte[] eeCert = intent.getByteArrayExtra("eeCert");
-        if (eeCert != null && !ArrayUtil.compare(eeCert, serverCertificate.getEncoded())) {
+        if (eeCert != null && !Arrays.equals(eeCert, serverCertificate.getEncoded())) {
             throw new IOException("Certificate mismatch");
         }
         checkContentType();

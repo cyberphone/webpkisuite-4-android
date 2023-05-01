@@ -18,7 +18,7 @@ package org.webpki.crypto;
 
 import androidx.annotation.RequiresApi;
 
-import java.io.IOException;
+import java.util.Arrays;
 
 import java.security.GeneralSecurityException;
 import java.security.KeyFactory;
@@ -35,7 +35,6 @@ import java.security.spec.X509EncodedKeySpec;
 
 import java.util.HashMap;
 
-import org.webpki.util.ArrayUtil;
 import org.webpki.util.HexaDecimal;
 
 // Source configured for Android 13+
@@ -84,50 +83,54 @@ public class OkpSupport {
                           HexaDecimal.decode("3046020100300506032b656f043a0438"));
     }
 
-    public static byte[] public2RawKey(PublicKey publicKey, KeyAlgorithms keyAlgorithm)
-            throws IOException {
+    public static byte[] public2RawKey(PublicKey publicKey, KeyAlgorithms keyAlgorithm) {
         byte[] encoded = publicKey.getEncoded();
         int prefixLength = pubKeyPrefix.get(keyAlgorithm).length;
-        if (okpKeyLength.get(keyAlgorithm) != encoded.length - prefixLength) {
-            throw new IOException("Wrong public key length for: " + keyAlgorithm.toString());
+        int keyLength = okpKeyLength.get(keyAlgorithm);
+        if (keyLength != encoded.length - prefixLength) {
+            throw new CryptoException("Wrong public key length for: " + keyAlgorithm.toString());
         }
-        byte[] rawKey = new byte[encoded.length - prefixLength];
-        System.arraycopy(encoded, prefixLength, rawKey, 0, rawKey.length);
-        return rawKey;
+        return Arrays.copyOfRange(encoded, prefixLength, prefixLength + keyLength);
     }
 
-    public static PublicKey raw2PublicKey(byte[] x, KeyAlgorithms keyAlgorithm) 
-            throws IOException, GeneralSecurityException {
+    public static PublicKey raw2PublicKey(byte[] x, KeyAlgorithms keyAlgorithm) {
         if (okpKeyLength.get(keyAlgorithm) != x.length) {
-            throw new IOException("Wrong public key length for: " + keyAlgorithm.toString());
+            throw new CryptoException("Wrong public key length for: " + keyAlgorithm.toString());
         }
-        return KeyFactory.getInstance(keyAlgorithm.getJceName())
-                .generatePublic(
-                        new X509EncodedKeySpec(
-                                ArrayUtil.add(pubKeyPrefix.get(keyAlgorithm), x)));
+        byte[] prefix = pubKeyPrefix.get(keyAlgorithm);
+        byte[] spki = Arrays.copyOf(prefix, prefix.length + x.length);
+        System.arraycopy(x, 0, spki, prefix.length, x.length);
+        try {
+            return KeyFactory.getInstance(keyAlgorithm.getKeyType() == KeyTypes.XEC ? "XDH" : "EC")
+                    .generatePublic(new X509EncodedKeySpec(spki));
+        } catch (GeneralSecurityException e) {
+            throw new CryptoException(e);
+        }
     }
 
-    public static byte[] private2RawKey(PrivateKey privateKey, KeyAlgorithms keyAlgorithm) 
-            throws IOException {
+    public static byte[] private2RawKey(PrivateKey privateKey, KeyAlgorithms keyAlgorithm) {
         byte[] encoded = privateKey.getEncoded();
         int keyLength = okpKeyLength.get(keyAlgorithm);
         byte[] prefix = privKeyPrefix.get(keyAlgorithm);
         if (encoded.length <= prefix.length || encoded[PRIV_KEY_LENGTH] != keyLength) {
-            throw new IOException("Wrong private key length for: " + keyAlgorithm.toString());
+            throw new CryptoException("Wrong private key length for: " + keyAlgorithm.toString());
         }
-        byte[] rawKey = new byte[keyLength];
-        System.arraycopy(encoded, prefix.length, rawKey, 0, keyLength);
-        return rawKey;
+        return Arrays.copyOfRange(encoded, prefix.length, prefix.length + keyLength);
     }
 
-    public static PrivateKey raw2PrivateKey(byte[] d, KeyAlgorithms keyAlgorithm)
-            throws IOException, GeneralSecurityException {
-        KeyFactory keyFactory = KeyFactory.getInstance(keyAlgorithm.getJceName());
+    public static PrivateKey raw2PrivateKey(byte[] d, KeyAlgorithms keyAlgorithm) {
         if (okpKeyLength.get(keyAlgorithm) != d.length) {
-            throw new IOException("Wrong private key length for: " + keyAlgorithm.toString());
+            throw new CryptoException("Wrong private key length for: " + keyAlgorithm.toString());
         }
-        byte[] pkcs8 = ArrayUtil.add(privKeyPrefix.get(keyAlgorithm), d);
-        return keyFactory.generatePrivate(new PKCS8EncodedKeySpec(pkcs8));
+        byte[] prefix = privKeyPrefix.get(keyAlgorithm);
+        byte[] pkcs8 = Arrays.copyOf(prefix, prefix.length + d.length);
+        System.arraycopy(d, 0, pkcs8, prefix.length, d.length);
+        try {
+            return KeyFactory.getInstance(keyAlgorithm.getKeyType() == KeyTypes.XEC ? "XDH" : "EC")
+                    .generatePrivate(new PKCS8EncodedKeySpec(pkcs8));
+        } catch (GeneralSecurityException e) {
+            throw new CryptoException(e);
+        }
     }
 
     @RequiresApi(api = 33)
@@ -142,10 +145,14 @@ public class OkpSupport {
                     ((EdECKey)key).getParams().getName(),
                     AlgorithmPreferences.JOSE);
         }
-        // Saturn ugly fix while waiting for for EdDSA support.
+        // Ugly fix while waiting for for EdDSA support.
         if (key.getAlgorithm().equals("1.3.101.112")) {
             return KeyAlgorithms.ED25519;
         }
-        throw new IllegalArgumentException("Unknown OKP key type: " + key.getClass().getName());
+        // Ugly fix while waiting for for XDH support.
+        if (key.getAlgorithm().equals("XDH")) {
+            return KeyAlgorithms.X25519;
+        }
+        throw new CryptoException("Unknown OKP key type: " + key.getClass().getName());
     }
 }

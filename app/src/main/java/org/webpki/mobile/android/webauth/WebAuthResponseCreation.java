@@ -30,6 +30,7 @@ import org.webpki.mobile.android.proxy.BaseProxyActivity;
 
 import org.webpki.sks.SKSException;
 
+import org.webpki.util.UTF8;
 import org.webpki.webauth.AuthenticationResponseEncoder;
 
 import org.webpki.crypto.AlgorithmPreferences;
@@ -64,7 +65,7 @@ public class WebAuthResponseCreation extends AsyncTask<Void, String, String> {
             JSONX509Signer signer = new JSONX509Signer(
                     new X509SignerInterface() {
                         @Override
-                        public X509Certificate[] getCertificatePath() throws IOException {
+                        public X509Certificate[] getCertificatePath() {
                             X509Certificate[] certificate_path = webauth_activity.sks.getKeyAttributes(key_handle).getCertificatePath();
                             if (webauth_activity.authenticationRequest.wantsExtendedCertPath()) {
                                 return certificate_path;
@@ -73,20 +74,18 @@ public class WebAuthResponseCreation extends AsyncTask<Void, String, String> {
                         }
 
                         @Override
-                        public byte[] signData(byte[] data)
-                                throws IOException, GeneralSecurityException {
+                        public byte[] signData(byte[] data) {
                             return webauth_activity.sks.signData(
                                     key_handle,
                                     getAlgorithm().getAlgorithmId(AlgorithmPreferences.SKS),
                                     null,
                                     false,
-                                    authorization.getBytes("UTF-8"),
+                                    UTF8.encode(authorization),
                                     data);
                         }
 
                         @Override
-                        public AsymSignatureAlgorithms getAlgorithm() throws
-                                IOException, GeneralSecurityException {
+                        public AsymSignatureAlgorithms getAlgorithm() {
                             return webauth_activity.matchingKeys.get(key_handle);
                         }
                     });
