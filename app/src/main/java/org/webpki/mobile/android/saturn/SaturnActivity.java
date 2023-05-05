@@ -752,16 +752,12 @@ public class SaturnActivity extends BaseProxyActivity {
             accountCollection.get(cardIndex).biometricProtection != BiometricProtection.NONE;
         boolean supportsPinCodes =
             accountCollection.get(cardIndex).biometricProtection != BiometricProtection.EXCLUSIVE;
-        try {
-            return new JSONObjectWriter()
-                .setBoolean("supportsBiometric", supportsBiometric)
-                .setBoolean("supportsPinCodes", supportsPinCodes)
-                .setBoolean("useBiometrics",
-                            supportsBiometric && Settings.isBiometricsPreferred())
-                    .toString();
-        } catch (IOException e) {
-            return null;
-        }
+        return new JSONObjectWriter()
+            .setBoolean("supportsBiometric", supportsBiometric)
+            .setBoolean("supportsPinCodes", supportsPinCodes)
+            .setBoolean("useBiometrics",
+                        supportsBiometric && Settings.isBiometricsPreferred())
+                .toString();
     }
 
     void setFingerPrintSymbText(String message) {
