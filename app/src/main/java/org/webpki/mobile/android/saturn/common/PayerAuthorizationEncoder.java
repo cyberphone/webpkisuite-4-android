@@ -16,9 +16,6 @@
  */
 package org.webpki.mobile.android.saturn.common;
 
-import java.io.IOException;
-
-import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 
 import org.webpki.crypto.HashAlgorithms;
@@ -34,8 +31,6 @@ import org.webpki.util.Base64URL;
 
 public class PayerAuthorizationEncoder extends JSONEncoder implements BaseProperties {
     
-    private static final long serialVersionUID = 1L;
-
     String providerAuthorityUrl;
 
     String paymentMethod;
@@ -48,8 +43,7 @@ public class PayerAuthorizationEncoder extends JSONEncoder implements BaseProper
                                      ContentEncryptionAlgorithms dataEncryptionAlgorithm,
                                      PublicKey keyEncryptionKey,
                                      String optionalKeyId,
-                                     KeyEncryptionAlgorithms keyEncryptionAlgorithm)
-    throws GeneralSecurityException, IOException {
+                                     KeyEncryptionAlgorithms keyEncryptionAlgorithm) {
         this.providerAuthorityUrl = providerAuthorityUrl;
         this.paymentMethod = paymentMethod;
         this.encryptedData =
@@ -61,13 +55,13 @@ public class PayerAuthorizationEncoder extends JSONEncoder implements BaseProper
     }
 
     @Override
-    protected void writeJSONData(JSONObjectWriter wr) throws IOException {
+    protected void writeJSONData(JSONObjectWriter wr) {
         wr.setString(PROVIDER_AUTHORITY_URL_JSON, providerAuthorityUrl)
           .setString(PAYMENT_METHOD_JSON, paymentMethod)
           .setObject(ENCRYPTED_AUTHORIZATION_JSON, encryptedData);
     }
 
-    public String getAuthorizationHash() throws IOException, GeneralSecurityException {
+    public String getAuthorizationHash() {
         return Base64URL.encode(
             HashAlgorithms.SHA256.digest(
                 encryptedData.serializeToBytes(JSONOutputFormats.CANONICALIZED)));
