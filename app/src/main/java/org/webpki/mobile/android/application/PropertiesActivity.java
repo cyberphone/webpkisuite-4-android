@@ -203,7 +203,7 @@ public class PropertiesActivity extends ListActivity {
                         devid.insert(j, '-');
                     }
                     device_id_builder.setMessage(devid);
-                } catch (SKSException | GeneralSecurityException | IOException e) {
+                } catch (SKSException  e) {
                     device_id_builder.setMessage("Something went wrong");
                 }
                 device_id_builder.setPositiveButton(android.R.string.ok,

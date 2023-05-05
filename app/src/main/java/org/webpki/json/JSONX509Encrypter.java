@@ -16,10 +16,6 @@
  */
 package org.webpki.json;
 
-import java.io.IOException;
-
-import java.security.GeneralSecurityException;
-
 import java.security.cert.X509Certificate;
 
 import org.webpki.crypto.KeyEncryptionAlgorithms;
@@ -38,14 +34,14 @@ public class JSONX509Encrypter extends JSONEncrypter {
      * @throws IOException
      */
     public JSONX509Encrypter(X509Certificate[] certificatePath,
-                             KeyEncryptionAlgorithms keyEncryptionAlgorithm) throws IOException {
+                             KeyEncryptionAlgorithms keyEncryptionAlgorithm) {
         this.certificatePath = certificatePath;
         this.keyEncryptionAlgorithm = keyEncryptionAlgorithm;
         this.publicKey = certificatePath[0].getPublicKey();
     }
 
     @Override
-    void writeKeyData(JSONObjectWriter wr) throws IOException, GeneralSecurityException {
+    void writeKeyData(JSONObjectWriter wr) {
         wr.setCertificatePath(certificatePath);
     }
 }

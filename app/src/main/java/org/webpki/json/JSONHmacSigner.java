@@ -16,10 +16,6 @@
  */
 package org.webpki.json;
 
-import java.io.IOException;
-
-import java.security.GeneralSecurityException;
-
 import org.webpki.crypto.AlgorithmPreferences;
 import org.webpki.crypto.HmacAlgorithms;
 import org.webpki.crypto.SignatureAlgorithms;
@@ -38,8 +34,7 @@ public class JSONHmacSigner extends JSONSigner {
      * @throws IOException
      * @throws GeneralSecurityException 
      */
-    public JSONHmacSigner(HmacSignerInterface signer) throws IOException,
-                                                                 GeneralSecurityException {
+    public JSONHmacSigner(HmacSignerInterface signer) {
         this.signer = signer;
     }
 
@@ -47,10 +42,8 @@ public class JSONHmacSigner extends JSONSigner {
      * Constructor for JCE based solutions.
      * @param rawKey Key
      * @param algorithm MAC algorithm
-     * @throws IOException
      */
-    public JSONHmacSigner(final byte[] rawKey, final HmacAlgorithms algorithm) 
-            throws IOException {
+    public JSONHmacSigner(final byte[] rawKey, final HmacAlgorithms algorithm) {
         signer = new HmacSignerInterface() {
 
             @Override
@@ -72,16 +65,16 @@ public class JSONHmacSigner extends JSONSigner {
     }
 
     @Override
-    SignatureAlgorithms getAlgorithm() throws IOException, GeneralSecurityException {
+    SignatureAlgorithms getAlgorithm() {
         return signer.getAlgorithm();
     }
 
     @Override
-    byte[] signData(byte[] data) throws IOException, GeneralSecurityException {
+    byte[] signData(byte[] data) {
         return signer.signData(data);
     }
 
     @Override
-    void writeKeyData(JSONObjectWriter wr) throws IOException {
+    void writeKeyData(JSONObjectWriter wr) {
     }
 }

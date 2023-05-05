@@ -1,5 +1,5 @@
 /*
- *  Copyright 2015-2020 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2021 WebPKI.org (http://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,28 +16,28 @@
  */
 package org.webpki.mobile.android.saturn.common;
 
-import org.webpki.json.JSONDecoder;
-import org.webpki.json.JSONObjectReader;
+/**
+ * Wrapper for making the WebPKI CBOR library only throw unchecked exceptions.
+ */
+public class SaturnException extends RuntimeException {
 
-public class WalletAlertDecoder extends JSONDecoder implements BaseProperties {
+    private static final long serialVersionUID = 1L;
     
-    String text;
-    public String getText() {
-        return text;
+    /**
+     * Constructor for rethrowing checked exceptions.
+     *  
+     * @param sourceException
+     */
+    public SaturnException(Exception sourceException) {
+        super(sourceException);
     }
-
-    @Override
-    protected void readJSONData(JSONObjectReader rd) {
-        text = rd.getString(TEXT_JSON);
-    }
-
-    @Override
-    public String getContext() {
-        return SATURN_WEB_PAY_CONTEXT_URI;
-    }
-
-    @Override
-    public String getQualifier() {
-        return Messages.PAYMENT_CLIENT_ALERT.toString();
+    
+    /**
+     * Constructor for original exceptions.
+     * 
+     * @param message
+     */
+    public SaturnException(String message) {
+        super(message);
     }
 }
