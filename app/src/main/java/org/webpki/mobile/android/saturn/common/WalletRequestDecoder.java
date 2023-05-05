@@ -16,8 +16,6 @@
  */
 package org.webpki.mobile.android.saturn.common;
 
-import java.io.IOException;
-
 import java.math.BigDecimal;
 import java.util.Vector;
 
@@ -26,8 +24,6 @@ import org.webpki.json.JSONDecoder;
 import org.webpki.json.JSONObjectReader;
 
 public class WalletRequestDecoder extends JSONDecoder implements BaseProperties {
-
-    private static final long serialVersionUID = 1L;
 
     public static class PaymentMethodDescriptor {
         public String paymentMethod;
@@ -44,14 +40,13 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
 
     private NonDirectPaymentDecoder nonDirectPayment;
 
-    public static String getFormattedMoney(BigDecimal amount, Currencies currency)
-    throws IOException {
+    public static String getFormattedMoney(BigDecimal amount, Currencies currency) {
         return "<span class='money'>" +
                currency.amountToDisplayString(amount, true) +
                "</span>";
     }
 
-    public String getFormattedTotal() throws IOException {
+    public String getFormattedTotal() {
         return (nonDirectPayment == null ||
                 nonDirectPayment.getType() == NonDirectPaymentTypes.RESERVATION ?
             "" : "<span class='moneynote'>Upfront fee:</span> ") +
@@ -124,7 +119,7 @@ public class WalletRequestDecoder extends JSONDecoder implements BaseProperties 
     }
 
     @Override
-    protected void readJSONData(JSONObjectReader rd) throws IOException {
+    protected void readJSONData(JSONObjectReader rd) {
         JSONArrayReader methodList = rd.getArray(SUPPORTED_PAYMENT_METHODS_JSON);
         do {
             PaymentMethodDescriptor pmd = new PaymentMethodDescriptor();

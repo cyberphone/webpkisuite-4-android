@@ -16,11 +16,8 @@
  */
 package org.webpki.mobile.android.saturn.common;
 
-import java.io.IOException;
-
-import java.security.GeneralSecurityException;
-
 import org.webpki.crypto.ContentEncryptionAlgorithms;
+import org.webpki.crypto.CryptoException;
 
 import org.webpki.json.JSONDecoder;
 import org.webpki.json.JSONDecryptionDecoder;
@@ -30,22 +27,20 @@ import org.webpki.json.JSONParser;
 
 public class ProviderUserResponseDecoder extends JSONDecoder implements BaseProperties {
 
-    private static final long serialVersionUID = 1L;
-
     JSONDecryptionDecoder encryptedData;
     
     public EncryptedMessage getEncryptedMessage(byte[] dataEncryptionKey,
                                                 ContentEncryptionAlgorithms dataEncryptionAlgorithm)
-    throws IOException, GeneralSecurityException {
+    {
         if (encryptedData.getContentEncryptionAlgorithm() != dataEncryptionAlgorithm) {
-            throw new IOException("Unexpected data encryption algorithm:" +
-                                  encryptedData.getContentEncryptionAlgorithm().toString());
+            throw new CryptoException("Unexpected data encryption algorithm:" +
+                                       encryptedData.getContentEncryptionAlgorithm().toString());
         }
         return new EncryptedMessage(JSONParser.parse(encryptedData.getDecryptedData(dataEncryptionKey)));
     }
 
     @Override
-    protected void readJSONData(JSONObjectReader rd) throws IOException, GeneralSecurityException {
+    protected void readJSONData(JSONObjectReader rd) {
         encryptedData =
                 rd.getObject(ENCRYPTED_MESSAGE_JSON)
                         .getEncryptionObject(new JSONCryptoHelper.Options()
