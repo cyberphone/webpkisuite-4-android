@@ -31,8 +31,6 @@ public class JSONHmacSigner extends JSONSigner {
     /**
      * Constructor for custom crypto solutions.
      * @param signer Handle to implementation
-     * @throws IOException
-     * @throws GeneralSecurityException 
      */
     public JSONHmacSigner(HmacSignerInterface signer) {
         this.signer = signer;

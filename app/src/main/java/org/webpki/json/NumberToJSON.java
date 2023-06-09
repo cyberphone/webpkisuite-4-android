@@ -107,7 +107,6 @@ public final class NumberToJSON {
      * 
      * @param value Value to be formatted
      * @return String representation
-     * @throws IOException NaN/Infinity
      */
     public static String serializeNumber(double value) {
         // Step 1: Decode the floating point number, and unify normalized and

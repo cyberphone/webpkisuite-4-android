@@ -31,7 +31,6 @@ public class JSONX509Encrypter extends JSONEncrypter {
      * Constructor for JCE based solutions.
      * @param certificatePath Certificate path used for encrypting the key
      * @param keyEncryptionAlgorithm The algorithm used for encrypting the key
-     * @throws IOException
      */
     public JSONX509Encrypter(X509Certificate[] certificatePath,
                              KeyEncryptionAlgorithms keyEncryptionAlgorithm) {

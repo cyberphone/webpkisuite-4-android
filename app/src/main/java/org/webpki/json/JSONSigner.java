@@ -51,7 +51,6 @@ public abstract class JSONSigner extends JSONCryptoHelper.ExtensionsEncoder {
      * scenario
      * @param names A list of permitted extensions 
      * @return <code>this</code>
-     * @throws IOException
      */
     public JSONSigner setExtensionNames(String[] names) {
         super.setExtensionNames(names, false);

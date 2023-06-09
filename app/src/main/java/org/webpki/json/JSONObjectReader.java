@@ -19,7 +19,6 @@ package org.webpki.json;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import java.security.GeneralSecurityException;
 import java.security.KeyPair;
 import java.security.PublicKey;
 
@@ -79,7 +78,6 @@ public class JSONObjectReader implements Cloneable {
      * Check for unread data.
      * Throws an exception if any property or array element in the current object or
      * child objects have not been read.
-     * @throws IOException
      * @see JSONObjectReader#scanAway(String)
      * @see JSONObjectReader#getPropertyType(String)
      * @see JSONObjectReader#getProperties()
@@ -122,7 +120,6 @@ public class JSONObjectReader implements Cloneable {
      * Read a JSON string property.
      * @param name Property
      * @return Java <code>String</code>
-     * @throws IOException
      * @see JSONObjectWriter#setString(String, String)
      */
     public String getString(String name) {
@@ -163,7 +160,6 @@ public class JSONObjectReader implements Cloneable {
      * This method only accepts true integer values.  I.e. 10.4 would throw an exception.</p>
      * @param name Property
      * @return Java <code>int</code>
-     * @throws IOException
      * @see JSONObjectWriter#setInt(String, int)
      */
     public int getInt(String name) {
@@ -177,7 +173,6 @@ public class JSONObjectReader implements Cloneable {
      * values outside this range throw exceptions.</p>
      * @param name Property
      * @return Java <code>long</code>
-     * @throws IOException
      * @see JSONObjectWriter#setInt53(String, long)
      * @see JSONObjectWriter#MAX_INTEGER
      * @see #getBigInteger(String)
@@ -193,7 +188,6 @@ public class JSONObjectReader implements Cloneable {
      * which does not have a native counterpart in JavaScript.</p>
      * @param name Property
      * @return Java <code>long</code>
-     * @throws IOException
      * @see JSONObjectWriter#setLong(String, long)
      * @see #getBigInteger(String)
      * @see #getInt53(String)
@@ -206,7 +200,6 @@ public class JSONObjectReader implements Cloneable {
      * Read a JSON double property.
      * @param name Property
      * @return Java <code>double</code>
-     * @throws IOException
      * @see JSONObjectWriter#setDouble(String, double)
      */
     public double getDouble(String name) {
@@ -217,7 +210,6 @@ public class JSONObjectReader implements Cloneable {
      * Read JSON boolean property.
      * @param name Property
      * @return Java <code>boolean</code>
-     * @throws IOException
      * @see JSONObjectWriter#setBoolean(String, boolean)
      */
     public boolean getBoolean(String name) {
@@ -231,7 +223,6 @@ public class JSONObjectReader implements Cloneable {
      * @param name Property
      * @param constraints Required input format
      * @return Java <code>GregorianCalendar</code>
-     * @throws IOException
      * @see org.webpki.util.ISODateTime#decode(String, EnumSet)
      * @see JSONObjectWriter#setDateTime(String, GregorianCalendar, EnumSet)
      */
@@ -245,7 +236,6 @@ public class JSONObjectReader implements Cloneable {
      * Read a base64url encoded JSON property.
      * @param name Property
      * @return Java <code>byte[]</code>
-     * @throws IOException
      * @see JSONObjectWriter#setBinary(String, byte[])
      */
     public byte[] getBinary(String name) {
@@ -256,7 +246,6 @@ public class JSONObjectReader implements Cloneable {
      * Conditionally read a base64url encoded JSON property.
      * @param name Property
      * @return Java <code>byte[]</code> or <b>null</b> if property is not present
-     * @throws IOException
      * @see JSONObjectWriter#setBinary(String, byte[])
      */
     public byte[] getBinaryConditional(String name) {
@@ -282,7 +271,6 @@ public class JSONObjectReader implements Cloneable {
      * this method builds on <i>mapping</i>.</p>
      * @param name Property
      * @return Java <code>BigInteger</code>
-     * @throws IOException
      * @see JSONObjectWriter#setMoney(String, BigDecimal)
      */
     public BigDecimal getMoney(String name) {
@@ -296,7 +284,6 @@ public class JSONObjectReader implements Cloneable {
      * @param name Property
      * @param decimals Required number of fractional digits or <b>null</b> if unspecified
      * @return Java <code>BigDecimal</code>
-     * @throws IOException
      * @see JSONObjectWriter#setMoney(String, BigDecimal, int)
      */
     public BigDecimal getMoney(String name, int decimals) {
@@ -316,7 +303,6 @@ public class JSONObjectReader implements Cloneable {
      * this method builds on <i>mapping</i>.</p>
      * @param name Property
      * @return Java <code>BigInteger</code>
-     * @throws IOException
      * @see JSONObjectWriter#setBigDecimal(String, BigDecimal)
      */
     public BigDecimal getBigDecimal(String name) {
@@ -336,7 +322,6 @@ public class JSONObjectReader implements Cloneable {
      * this method builds on <i>mapping</i>.</p>
      * @param name Property
      * @return Java <code>BigInteger</code>
-     * @throws IOException
      * @see JSONObjectWriter#setBigInteger(String, BigInteger)
      */
     public BigInteger getBigInteger(String name) {
@@ -361,7 +346,6 @@ public class JSONObjectReader implements Cloneable {
      * Note: Only if the property contains a <b>null</b> the property is marked as "read".</p>
      * @param name Property
      * @return <code>true</code> if <b>null</b> was found, else <code>false</code>
-     * @throws IOException
      * @see JSONObjectReader#checkForUnread()
      */
     public boolean getIfNULL(String name) {
@@ -376,7 +360,6 @@ public class JSONObjectReader implements Cloneable {
      * Read a JSON object property.
      * @param name Property
      * @return Object reader
-     * @throws IOException
      */
     public JSONObjectReader getObject(String name) {
         JSONValue value = getProperty(name, JSONTypes.OBJECT);
@@ -387,7 +370,6 @@ public class JSONObjectReader implements Cloneable {
      * Read a JSON array property.
      * @param name Property
      * @return Array reader
-     * @throws IOException
      */
     @SuppressWarnings("unchecked")
     public JSONArrayReader getArray(String name) {
@@ -400,7 +382,6 @@ public class JSONObjectReader implements Cloneable {
      * Note: This method is equivalent to <code>getStringConditional(name, null)</code>.
      * @param name Property
      * @return The <code>String</code> if available else <b>null</b>
-     * @throws IOException
      */
     public String getStringConditional(String name) {
         return this.getStringConditional(name, null);
@@ -411,7 +392,6 @@ public class JSONObjectReader implements Cloneable {
      * @param name Property
      * @param defaultValue Default value including possibly <b>null</b>
      * @return The <code>String</code> if available else <code>defaultValue</code>
-     * @throws IOException
      */
     public String getStringConditional(String name, String defaultValue) {
         return hasProperty(name) ? getString(name) : defaultValue;
@@ -421,7 +401,6 @@ public class JSONObjectReader implements Cloneable {
      * Conditionally read a JSON boolean property.<br>
      * @param name Property
      * @return The boolean if available else <code>false</code>
-     * @throws IOException
      */
     public boolean getBooleanConditional(String name) {
         return this.getBooleanConditional(name, false);
@@ -432,7 +411,6 @@ public class JSONObjectReader implements Cloneable {
      * @param name Property
      * @param defaultValue Default value
      * @return The boolean if available else <code>defaultValue</code>
-     * @throws IOException
      */
     public boolean getBooleanConditional(String name, boolean defaultValue) {
         return hasProperty(name) ? getBoolean(name) : defaultValue;
@@ -442,7 +420,6 @@ public class JSONObjectReader implements Cloneable {
      * Conditionally read an array of JSON strings.
      * @param name Property
      * @return Array of <code>String</code> or <b>null</b> if property is not present
-     * @throws IOException
      */
     public String[] getStringArrayConditional(String name) {
         return hasProperty(name) ? getStringArray(name) : null;
@@ -465,7 +442,6 @@ public class JSONObjectReader implements Cloneable {
      * Read an array of JSON strings.
      * @param name Property
      * @return Array of <code>String</code>
-     * @throws IOException
      */
     public String[] getStringArray(String name) {
         return getSimpleArray(name, JSONTypes.STRING);
@@ -475,7 +451,6 @@ public class JSONObjectReader implements Cloneable {
      * Read an array of base64url encoded JSON strings.
      * @param name Property
      * @return ArrayList holding arrays of bytes
-     * @throws IOException
      */
     public ArrayList<byte[]> getBinaryArray(String name) {
         return getArray(name).getBinaryArray();
@@ -503,7 +478,6 @@ public class JSONObjectReader implements Cloneable {
      * Get the native JSON type of a property.
      * @param name Property
      * @return JSON type
-     * @throws IOException
      * @see org.webpki.json.JSONTypes
      * @see JSONObjectReader#hasProperty(String)
      */
@@ -517,8 +491,6 @@ public class JSONObjectReader implements Cloneable {
      * 
      * @param options Allowed/expected options
      * @return An object which can be used to verify keys etc.
-     * @throws IOException
-     * @throws GeneralSecurityException 
      * @see org.webpki.json.JSONObjectWriter#setSignature(JSONSigner)
      * @see org.webpki.json.JSONCryptoHelper.Options
      */

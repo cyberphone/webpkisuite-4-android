@@ -16,12 +16,9 @@
  */
 package org.webpki.json;
 
-import java.io.IOException;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import java.security.GeneralSecurityException;
 import java.security.PublicKey;
 
 import java.security.cert.X509Certificate;
@@ -112,7 +109,6 @@ public class JSONObjectWriter {
      * For updating already read JSON objects.
      *
      * @param objectReader Existing object reader
-     * @throws IOException For any kind of underlying error...
      */
     public JSONObjectWriter(JSONObjectReader objectReader) {
         this(objectReader.root);
@@ -155,7 +151,6 @@ public class JSONObjectWriter {
      * @param name Property
      * @param value Value
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      */
     public JSONObjectWriter setString(String name, String value) {
         return setProperty(name, new JSONValue(JSONTypes.STRING, value));
@@ -174,7 +169,6 @@ public class JSONObjectWriter {
      * @param name Property
      * @param value Value
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      */
     public JSONObjectWriter setInt(String name, int value) {
         return setInt53(name, value);
@@ -190,7 +184,6 @@ public class JSONObjectWriter {
      * @param name Property
      * @param value Value
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      * @see #MAX_INTEGER
      */
     public JSONObjectWriter setInt53(String name, long value) {
@@ -206,7 +199,6 @@ public class JSONObjectWriter {
      * @param name Property
      * @param value Value
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      * @see #setInt53(String, long)
      * @see #setBigInteger(String, BigInteger)
      */
@@ -223,7 +215,6 @@ public class JSONObjectWriter {
      * @param name Property
      * @param value Value
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      */
     public JSONObjectWriter setDouble(String name, double value) {
         return setProperty(name, 
@@ -241,7 +232,6 @@ public class JSONObjectWriter {
      * @param name Property
      * @param value Value
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      */
     public JSONObjectWriter setBigInteger(String name, BigInteger value) {
         return setString(name, value.toString());
@@ -261,7 +251,6 @@ public class JSONObjectWriter {
      * @param name Property
      * @param value Value
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      */
     public JSONObjectWriter setBigDecimal(String name, BigDecimal value) {
         return setString(name, bigDecimalToString(value));
@@ -283,7 +272,6 @@ public class JSONObjectWriter {
      * @param name Property
      * @param value Value
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      * @see #setMoney(String, BigDecimal, int)
      */
     public JSONObjectWriter setMoney(String name, BigDecimal value) {
@@ -303,7 +291,6 @@ public class JSONObjectWriter {
      * @param value Value
      * @param decimals Number of fractional digits
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      * @see #setMoney(String, BigDecimal)
      */
     public JSONObjectWriter setMoney(String name, BigDecimal value, int decimals) 
@@ -320,7 +307,6 @@ public class JSONObjectWriter {
      * @param name Property
      * @param value Value
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      */
     public JSONObjectWriter setBoolean(String name, boolean value) {
         return setProperty(name, new JSONValue(JSONTypes.BOOLEAN, Boolean.toString(value)));
@@ -334,7 +320,6 @@ public class JSONObjectWriter {
      * </pre>
      * @param name Property
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      * @see JSONObjectReader#getIfNULL(String)
      */
     public JSONObjectWriter setNULL(String name) {
@@ -352,7 +337,6 @@ public class JSONObjectWriter {
      * @param dateTime Date/time value
      * @param format Requited output format
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      * @see org.webpki.util.ISODateTime#encode(GregorianCalendar, EnumSet)
      */
     public JSONObjectWriter setDateTime(String name, 
@@ -371,7 +355,6 @@ public class JSONObjectWriter {
      * @param name Property
      * @param value Array of bytes
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      * @see Base64URL#encode(byte[])
      */
     public JSONObjectWriter setBinary(String name, byte[] value) {
@@ -385,7 +368,6 @@ public class JSONObjectWriter {
      * @param name Property
      * @param objectReader Object reader
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      */
     public JSONObjectWriter setObject(String name, JSONObjectReader objectReader) {
         setProperty(name, new JSONValue(JSONTypes.OBJECT, objectReader.root));
@@ -399,7 +381,6 @@ public class JSONObjectWriter {
      * @param name Property
      * @param objectWriter Object writer
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      */
     public JSONObjectWriter setObject(String name, JSONObjectWriter objectWriter) {
         setProperty(name, new JSONValue(JSONTypes.OBJECT, objectWriter.root));
@@ -411,7 +392,6 @@ public class JSONObjectWriter {
      * This method creates an empty JSON object and links it to the current object through a property.</p> 
      * @param name Property
      * @return New instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      */
     public JSONObjectWriter setObject(String name) {
         JSONObjectWriter writer = new JSONObjectWriter();
@@ -424,7 +404,6 @@ public class JSONObjectWriter {
      * This method creates an empty JSON array and links it to the current object through a property.</p> 
      * @param name Property
      * @return New instance of {@link org.webpki.json.JSONArrayWriter}
-     * @throws IOException
      */
     public JSONArrayWriter setArray(String name) {
         JSONArrayWriter array = new JSONArrayWriter();
@@ -439,7 +418,6 @@ public class JSONObjectWriter {
      * @param name Property
      * @param arrayWriter Array writer
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      */
     public JSONObjectWriter setArray(String name, JSONArrayWriter arrayWriter) {
         setProperty(name, new JSONValue(JSONTypes.ARRAY, arrayWriter.array));
@@ -464,7 +442,6 @@ public class JSONObjectWriter {
      * @param name Property
      * @param values List holding arrays of bytes
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      * @see Base64URL#encode(byte[])
      */
     public JSONObjectWriter setBinaryArray(String name, List<byte[]> values) {
@@ -485,7 +462,6 @@ public class JSONObjectWriter {
      * @param name Property
      * @param values Array of <code>String</code>
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      */
     public JSONObjectWriter setStringArray(String name, String[] values) {
         return setStringArray(name, values, JSONTypes.STRING);
@@ -499,7 +475,6 @@ public class JSONObjectWriter {
      * </pre>
      * @param jsonSetDynamic Interface (usually Lambda)
      * @return An instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      */
     public JSONObjectWriter setDynamic(Dynamic jsonSetDynamic) {
         return jsonSetDynamic.set(this);
@@ -512,7 +487,6 @@ public class JSONObjectWriter {
      * @param sourceName Property name in the source object
      * @param source The JSON reader object
      * @return An instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      */
     public JSONObjectWriter copyElement(String newName, 
                                         String sourceName,
@@ -664,7 +638,6 @@ import org.webpki.json.JSONSignatureDecoder;
         System.out.println("Returned data: " + reader.getString("myProperty"));
     }
 </pre>
-     * @throws GeneralSecurityException 
     */
     public JSONObjectWriter setSignature(JSONSigner signer) {
         return setSignature(SIGNATURE_DEFAULT_LABEL_JSON, signer);
@@ -775,8 +748,7 @@ import org.webpki.json.JSONSignatureDecoder;
      * @return New instance of {@link org.webpki.json.JSONObjectWriter}
      */
     public static JSONObjectWriter createCorePublicKey(PublicKey publicKey, 
-                                                       AlgorithmPreferences algorithmPreferences)
-    {
+                                                       AlgorithmPreferences algorithmPreferences) {
         JSONObjectWriter corePublicKey = new JSONObjectWriter();
         KeyAlgorithms keyAlg = KeyAlgorithms.getKeyAlgorithm(publicKey);
         corePublicKey.setString(JSONCryptoHelper.KTY_JSON, keyAlg.getKeyType().getJoseKty());
@@ -817,7 +789,6 @@ import org.webpki.json.JSONSignatureDecoder;
      * @param publicKey Public key value
      * @param algorithmPreferences JOSE or SKS algorithm notation
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      */
     public JSONObjectWriter setPublicKey(PublicKey publicKey, 
                                          AlgorithmPreferences algorithmPreferences)
@@ -833,7 +804,6 @@ import org.webpki.json.JSONSignatureDecoder;
      * using {@link AlgorithmPreferences#JOSE} as second argument.</p>
      * @param publicKey Public key value
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      */
     public JSONObjectWriter setPublicKey(PublicKey publicKey) {
         return setPublicKey(publicKey, AlgorithmPreferences.JOSE);
@@ -850,7 +820,6 @@ import org.webpki.json.JSONSignatureDecoder;
 </pre>
      * @param certificatePath Sorted certificate path array
      * @return Current instance of {@link org.webpki.json.JSONObjectWriter}
-     * @throws IOException
      */
     public JSONObjectWriter setCertificatePath(X509Certificate[] certificatePath) {
         return setArray(JSONCryptoHelper.CERTIFICATE_PATH_JSON, 
@@ -1190,7 +1159,6 @@ import org.webpki.json.JSONSignatureDecoder;
      * Serialize current object writer to a Java <code>String</code>.
      * @param outputFormat Any JSONOutputFormats
      * @return JSON string data
-     * @throws IOException
      */
     @SuppressWarnings("unchecked")
     public String serializeToString(JSONOutputFormats outputFormat) {
