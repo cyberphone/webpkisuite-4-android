@@ -706,8 +706,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
     }
     
 
-    class MacBuilder extends ByteWriter implements Serializable {
-        private static final long serialVersionUID = 1L;
+    class MacBuilder extends ByteWriter {
 
         Mac mac;
 
@@ -889,8 +888,7 @@ public class AndroidSKSImplementation implements SecureKeyStore, Serializable, G
     // Algorithm Support
     /////////////////////////////////////////////////////////////////////////////////////////////
 
-    static class Algorithm implements Serializable {
-        private static final long serialVersionUID = 1L;
+    static class Algorithm {
 
         int mask;
         String jceName;
