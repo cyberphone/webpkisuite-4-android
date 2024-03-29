@@ -6,5 +6,6 @@ build
 **/*.iml
 maven-repository
 local.properties
+keystore.properties
 mvn-clone
 
