@@ -1,11 +1,11 @@
 /*
- *  Copyright 2006-2021 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2024 WebPKI.org (https://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *      https://apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
@@ -68,7 +68,7 @@ public class OkpSupport {
                          HexaDecimal.decode("3042300506032b656f033900"));
     }
 
-    static final byte PRIV_KEY_LENGTH = 15;
+    static final byte PRIV_KEY_LENGTH_INDEX = 15;
 
     static final HashMap<KeyAlgorithms,byte[]> privKeyPrefix = new HashMap<>();
 
@@ -112,7 +112,7 @@ public class OkpSupport {
         byte[] encoded = privateKey.getEncoded();
         int keyLength = okpKeyLength.get(keyAlgorithm);
         byte[] prefix = privKeyPrefix.get(keyAlgorithm);
-        if (encoded.length <= prefix.length || encoded[PRIV_KEY_LENGTH] != keyLength) {
+        if (encoded.length <= prefix.length || encoded[PRIV_KEY_LENGTH_INDEX] != keyLength) {
             throw new CryptoException("Wrong private key length for: " + keyAlgorithm.toString());
         }
         return Arrays.copyOfRange(encoded, prefix.length, prefix.length + keyLength);

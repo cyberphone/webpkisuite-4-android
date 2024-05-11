@@ -1,3 +1,5 @@
+.DS_Store
+app/release
 gen
 target
 .gradle

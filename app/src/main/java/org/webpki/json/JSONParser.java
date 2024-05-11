@@ -1,11 +1,11 @@
 /*
- *  Copyright 2006-2021 WebPKI.org (http://webpki.org).
+ *  Copyright 2006-2024 WebPKI.org (https://webpki.org).
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
  *
- *      https://www.apache.org/licenses/LICENSE-2.0
+ *      https://apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
@@ -38,6 +38,8 @@ public class JSONParser {
 
     static final Pattern BOOLEAN_PATTERN = Pattern.compile("true|false");
     static final Pattern NUMBER_PATTERN  = Pattern.compile("-?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+)?");
+
+    static final Double NEGATIVE_ZERO    = Double.valueOf(-0.0);
 
     int index;
 
@@ -160,7 +162,10 @@ public class JSONParser {
         }
         JSONTypes type = JSONTypes.NUMBER;
         if (NUMBER_PATTERN.matcher(token).matches()) {
-            double number = Double.valueOf(token);  // Syntax check...
+            Double number = Double.valueOf(token);  // Syntax check...
+            if (NEGATIVE_ZERO.equals(number)) {
+                throw new JSONException("-0 is not permitted in this implementation");
+            }
             if (strictNumericMode) {
                 String serializedNumber = NumberToJSON.serializeNumber(number);
                 if (!serializedNumber.equals(token)) {
