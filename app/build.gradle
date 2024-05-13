@@ -13,7 +13,7 @@ android {
             storePassword keystoreProperties['storePassword']
         }
     }
-    compileSdkVersion 33
+    compileSdk 34
     defaultConfig {
         minSdkVersion 24
         targetSdkVersion project.androidTargetSdk
