@@ -33,7 +33,7 @@ android {
         // We test with primitives such as Rect, and rely on their default behaviour working.
         unitTests.returnDefaultValues = true
     }
-    compileSdkVersion 33
+    compileSdk 34
     defaultConfig {
         minSdkVersion 24
     }
