@@ -95,7 +95,7 @@ public class CertificateViewActivity extends Activity {
     }
 
     private String binaryDump(byte[] binary, boolean show_text) {
-        return formatCodeString(HexaDecimal.getHexDebugData(binary, show_text ? 16 : -16));
+        return formatCodeString(HexaDecimal.encodeDebugData(binary, show_text ? 16 : -16));
     }
 
     @Override
