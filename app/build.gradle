@@ -15,10 +15,10 @@ android {
     }
     compileSdk 34
     defaultConfig {
-        minSdkVersion 24
+        minSdkVersion 29
         targetSdkVersion project.androidTargetSdk
-        versionCode 43
-        versionName "1.43"
+        versionCode 44
+        versionName "1.44"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
