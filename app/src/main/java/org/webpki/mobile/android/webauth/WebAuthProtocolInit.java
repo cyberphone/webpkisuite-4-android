@@ -76,25 +76,25 @@ public class WebAuthProtocolInit extends AsyncTask<Void, String, Boolean> {
             EnumeratedKey ek = new EnumeratedKey();
             sks = HardwareKeyStore.createSKS(WebAuthActivity.WEBAUTH, webAuthActivity, false);
 
-            ////////////////////////////////////////////////////////////////////////////////////
+            //================================================================================//
             // Maybe the requester wants better protected keys...
-            ////////////////////////////////////////////////////////////////////////////////////
+            //================================================================================//
             if (webAuthActivity.authenticationRequest.getOptionalKeyContainerList() != null &&
                     !webAuthActivity.authenticationRequest.getOptionalKeyContainerList().contains(KeyContainerTypes.SOFTWARE)) {
                 throw new IOException("The requester asked for another key container type: " +
                         webAuthActivity.authenticationRequest.getOptionalKeyContainerList().toString());
             }
 
-            ////////////////////////////////////////////////////////////////////////////////////
+            //================================================================================//
             // Passed that hurdle, now check keys for compliance...
-            ////////////////////////////////////////////////////////////////////////////////////
+            //================================================================================//
             while ((ek = sks.enumerateKeys(ek.getKeyHandle())) != null) {
                 Log.i(WebAuthActivity.WEBAUTH, "KeyHandle=" + ek.getKeyHandle());
                 KeyAttributes ka = sks.getKeyAttributes(ek.getKeyHandle());
 
-                ////////////////////////////////////////////////////////////////////////////////////
+                //================================================================================//
                 // All keys are NOT usable (or intended) for PKI-based authentication...
-                ////////////////////////////////////////////////////////////////////////////////////
+                //================================================================================//
                 if (ka.isSymmetricKey() ||
                         (ka.getAppUsage() != AppUsage.AUTHENTICATION && ka.getAppUsage() != AppUsage.UNIVERSAL)) {
                     continue;
@@ -115,9 +115,9 @@ public class WebAuthProtocolInit extends AsyncTask<Void, String, Boolean> {
                 }
                 if (webAuthActivity.authenticationRequest.getCertificateFilters().length > 0) {
                     did_it = false;
-                    ////////////////////////////////////////////////////////////////////////////////////
+                    //================================================================================//
                     // The requester wants to discriminate keys further...
-                    ////////////////////////////////////////////////////////////////////////////////////
+                    //================================================================================//
                     for (CertificateFilter cf : webAuthActivity.authenticationRequest.getCertificateFilters()) {
                         if (cf.matches(cert_path)) {
                             did_it = true;
@@ -148,9 +148,9 @@ public class WebAuthProtocolInit extends AsyncTask<Void, String, Boolean> {
         }
         webAuthActivity.noMoreWorkToDo();
         if (success) {
-            ///////////////////////////////////////////////////////////////////////////////////
+            //===============================================================================//
             // Successfully received the request, now show the domain name of the requester
-            ///////////////////////////////////////////////////////////////////////////////////
+            //===============================================================================//
             ((TextView) webAuthActivity.findViewById(R.id.partyInfo)).setText(webAuthActivity.getRequestingHost());
             ((TextView) webAuthActivity.findViewById(R.id.partyInfo)).setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -167,17 +167,17 @@ public class WebAuthProtocolInit extends AsyncTask<Void, String, Boolean> {
                 public void onClick(View v) {
                     webAuthActivity.logOK("The user hit OK");
 
-                    ///////////////////////////////////////////////////////////////////////////////////
+                    //===============================================================================//
                     // We have no keys at all or no keys that matches the filter criterions, abort
-                    ///////////////////////////////////////////////////////////////////////////////////
+                    //===============================================================================//
                     if (webAuthActivity.matchingKeys.isEmpty()) {
                         webAuthActivity.showAlert("You have no matching credentials");
                         return;
                     }
                     try {
-                        ///////////////////////////////////////////////////////////////////////////////////
+                        //===============================================================================//
                         // Seem we got something here to authenticate with!
-                        ///////////////////////////////////////////////////////////////////////////////////
+                        //===============================================================================//
                         if (((CheckBox) webAuthActivity.findViewById(R.id.grantCheckBox)).isChecked()) {
                             sks.setGrant(firstKey(), webAuthActivity.getRequestingHost(), true);
                         }

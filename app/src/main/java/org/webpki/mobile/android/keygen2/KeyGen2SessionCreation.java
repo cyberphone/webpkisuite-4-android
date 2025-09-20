@@ -384,9 +384,9 @@ public class KeyGen2SessionCreation extends AsyncTask<Void, String, String> {
         if (result != null) {
             if (result.equals(BaseProxyActivity.CONTINUE_EXECUTION)) {
                 try {
-                    ///////////////////////////////////////////////////////////////////////////
+                    //=======================================================================//
                     // Note: There may be zero PINs but the test in the constructor fixes that
-                    ///////////////////////////////////////////////////////////////////////////
+                    //=======================================================================//
                     new PINDialog(keyGen2Activity.keyCreationRequest.getUserPINDescriptors().iterator());
                 } catch (Exception e) {
                     keyGen2Activity.logException(e);

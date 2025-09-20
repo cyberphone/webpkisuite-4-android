@@ -69,9 +69,9 @@ import org.webpki.mobile.android.sks.HardwareKeyStore;
  * Class for taking care of "webpkiproxy://" JSON protocol handlers
  */
 public abstract class BaseProxyActivity extends Activity {
-    //////////////////////
+    //==================//
     // Progress messages
-    //////////////////////
+    //==================//
     public enum RedirectPermitted {FORBIDDEN, OPTIONAL, REQUIRED};
 
     public static final String PROGRESS_INITIALIZING   = "Initializing...";
